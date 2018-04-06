@@ -1,4 +1,4 @@
-# elasticdeveloper
+# Elastic Developer
 
 This is a vscode extension that I have built to make it easier to work with Elastichsearch queries. This is also my first vscode extension and I took the opportunity to refresh my memory with some typescript. There is probably some undocumented "features".
 
