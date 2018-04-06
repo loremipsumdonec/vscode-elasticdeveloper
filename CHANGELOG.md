@@ -1,11 +1,12 @@
 # Change Log
 All notable changes to the "elasticdeveloper" extension will be documented in this file.
 
-## Known Issues
-- HTML transformations not working on Mac OS X, problem when loading input template.
-
 ## [Unreleased]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
+
+## [1.0.1-preview] - 2018-04-06
+### Fixed
+- Fixed problem with HTML transformations not working on Mac OS X.
 
 ## [1.0.0-preview] - 2018-04-06
 ### Added
