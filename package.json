@@ -2,7 +2,7 @@
   "name": "elasticdeveloper",
   "displayName": "Elastic Developer",
   "description": "Elasticsearch extension for VSCode",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "preview": true,
   "publisher": "crasnam",
