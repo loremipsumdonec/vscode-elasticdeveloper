@@ -146,9 +146,6 @@ By defining a configuration object in an *esquery* file it is possible to manage
         }
     }
 ```
-
-> Known issue, at the moment the configuration must begin on the first line.
-
 > The extension is using the same syntax as Mustache for identifying sections to replace, so this will cause some trouble when using Search templates, see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html.
 
 ### Run all queries

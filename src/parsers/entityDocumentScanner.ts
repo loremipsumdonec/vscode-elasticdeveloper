@@ -67,11 +67,17 @@ export class EntityDocumentScanner {
         let withinEntity = false;
         let position = this._stream.position;
 
-        let value = this._stream.retreatToTheClosest([/\{/]);
+        if(this._stream.char === '{') {
+            this._state = ScannerState.WithinContent;
+        } else {
 
-        if(value === '{') {
-            this._state = ScannerState.AfterOpenEntity;
-            withinEntity = true;
+            let value = this._stream.retreatToTheClosest([/\{/]);
+
+                if(value === '{') {
+                    this._state = ScannerState.AfterOpenEntity;
+                    withinEntity = true;
+                }
+
         }
 
     }

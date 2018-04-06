@@ -43,6 +43,16 @@ suite("ElasticsearchQueryDocument", () => {
         assert.equal(document.configurations[0].params.query, 'hello world');
     });
 
+    test("parse_textContainingConfigurationNotOnFirstChar_returnDocumentWithOneConfiguration", () => {
+
+        let firstQuery = ' { "params": { "query": "hello world" }}';
+        let query = firstQuery;
+
+        let document = ElasticsearchQueryDocument.parse(query);
+        assert.equal(document.configurations.length, 1);
+        assert.equal(document.configurations[0].params.query, 'hello world');
+    });
+
     test("parse_textContainingConfigurationAndQuery_returnDocumentWithOneConfigurationAndOneQuery", () => {
 
         let firstQuery = '{ "params": { "query": "hello world" }}';
