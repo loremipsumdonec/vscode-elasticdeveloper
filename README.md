@@ -19,6 +19,10 @@ This is a vscode extension that I have built to make it easier to work with Elas
     - Save and transform response to HTML
     - Save multiple response as both JSON and HTML at the same time
 
+### Demo
+Checkout the demo project https://github.com/Crasnam/vscode-elasticdeveloper/tree/master/demo/eslorem for examples.
+
+## Description
 ### Environment
 This is an Elasticsearch server and should be created in a file with extension *esenv*, see below for an example. It is possible to have multiple environments in a workspace but these must be separate files.
 
