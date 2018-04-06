@@ -1,0 +1,18 @@
+/**
+    Create a new index with the name lorem
+*/
+PUT /lorem
+{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "mappings" : {
+        "document" : {
+            "properties" : {
+                "title" : { "type" : "text" },
+                "preamble": {"type": "text"},
+                "main": {"type": "text"}
+            }
+        }
+    }
+}

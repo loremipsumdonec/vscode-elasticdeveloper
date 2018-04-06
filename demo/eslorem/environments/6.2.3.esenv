@@ -1,0 +1,8 @@
+/**
+    A default environment
+*/
+
+{
+    "host": "http://localhost:9201",
+    "name": "dev 6.2.3"
+}

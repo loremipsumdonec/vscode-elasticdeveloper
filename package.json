@@ -1,0 +1,167 @@
+{
+  "name": "elasticdeveloper",
+  "displayName": "Elastic Developer",
+  "description": "Elasticsearch extension for VSCode",
+  "version": "1.0.0-preview",
+  "license": "MIT",
+  "preview": true,
+  "publisher": "crasnam",
+  "engines": {
+    "vscode": "^1.21.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Crasnam/vscode-elasticdeveloper.git"
+  },
+  "categories": [
+    "Languages",
+    "Other"
+  ],
+  "keywords": [
+    "Elasticsearch",
+    "Elastic",
+    "es",
+    "Kibana"
+  ],
+  "activationEvents": [
+    "onLanguage:esquery",
+    "onLanguage:esenv",
+    "onLanguage:esind"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "keybindings": [
+      {
+        "command": "elasticdeveloper.query.runAll",
+        "key": "alt+enter",
+        "when": "resourceExtname == .esquery"
+      },
+      {
+        "command": "elasticdeveloper.environment.setAsTarget",
+        "key": "alt+enter",
+        "when": "resourceExtname == .esenv"
+      }
+    ],
+    "commands": [
+      {
+        "command": "elasticdeveloper.query.runAll",
+        "title": "Run all queries"
+      },
+      {
+        "command": "elasticdeveloper.indexTemplate.deploy",
+        "title": "Deploy index template"
+      },
+      {
+        "command": "elasticdeveloper.indexTemplate.retract",
+        "title": "Retract index template"
+      },
+      {
+        "command": "elasticdeveloper.environment.ping",
+        "title": "Ping environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.setAsTarget",
+        "title": "Set as target environment"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "elasticdeveloper.environment.setAsTarget",
+          "when": "resourceExtname == .esenv"
+        },
+        {
+          "command": "elasticdeveloper.environment.ping",
+          "when": "resourceExtname == .esenv"
+        },
+        {
+          "command": "elasticdeveloper.query.runAll",
+          "when": "resourceExtname == .esquery"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.deploy",
+          "when": "resourceExtname == .esind"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.retract",
+          "when": "resourceExtname == .esind"
+        }
+      ],
+      "editor/title/context": [],
+      "editor/title": [],
+      "editor/context": [],
+      "commandPalette": []
+    },
+    "languages": [
+      {
+        "id": "esquery",
+        "aliases": [
+          "Elasticsearch Query",
+          "esquery"
+        ],
+        "extensions": [
+          ".esquery"
+        ],
+        "configuration": "./languages/esquery-configuration.json"
+      },
+      {
+        "id": "esenv",
+        "aliases": [
+          "Elasticsearch Environment",
+          "esenv"
+        ],
+        "extensions": [
+          ".esenv"
+        ],
+        "configuration": "./languages/esenv-configuration.json"
+      },
+      {
+        "id": "esind",
+        "aliases": [
+          "Elasticsearch Index template",
+          "esind"
+        ],
+        "extensions": [
+          ".esind"
+        ],
+        "configuration": "./languages/esind-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "esind",
+        "scopeName": "source.esind",
+        "path": "./syntaxes/esind.tmLanguage.json"
+      },
+      {
+        "language": "esenv",
+        "scopeName": "source.esenv",
+        "path": "./syntaxes/esenv.tmLanguage.json"
+      },
+      {
+        "language": "esquery",
+        "scopeName": "source.esquery",
+        "path": "./syntaxes/esquery.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^7.0.59",
+    "typescript": "^2.8.1",
+    "vscode": "^1.1.14"
+  },
+  "dependencies": {
+    "handlebars": "^4.0.11",
+    "path": "^0.12.7",
+    "request": "^2.85.0",
+    "tmp": "0.0.33"
+  }
+}

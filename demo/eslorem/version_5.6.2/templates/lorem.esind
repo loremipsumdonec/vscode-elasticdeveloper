@@ -1,0 +1,15 @@
+{
+  "template": "lorem*",
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings" : {
+      "document" : {
+          "properties" : {
+              "title" : { "type" : "text" },
+              "preamble": {"type": "text"},
+              "main": {"type": "text"}
+            }
+        }
+    }
+}
