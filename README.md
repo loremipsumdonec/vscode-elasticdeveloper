@@ -241,9 +241,9 @@ It is possible to apply HTML transformation and save the JSON file by specifying
 ```
 
 ##### Use a web browser
-If you use this in combination with a web browser you can have much larger workspace. All you have to do is add a configuration in *.vscode/launch.json* that should launch your browser with the output file.
+If you use this in combination with a web browser you can have much larger workspace. You will need a debbuger extension for an browser and then you can add a configuration in *.vscode/launch.json* that should launch your browser with the output file.
 
-*Example configuration*
+*Example configuration for "Debugger for FireFox"*
 
 ```json
     {
