@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "elasticdeveloper" extension will be documented in this file.
 
+## Known Issue
+- The configuration object in a esquery must begin on the first line.
+
 ## [Unreleased]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
 
