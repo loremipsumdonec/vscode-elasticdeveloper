@@ -4,6 +4,10 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 ## [Unreleased]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
 
+## [1.0.7-preview] - 2018-04-09
+### Fixed
+- Removed logger from indexTemplateDocument.parse
+
 ## [1.0.6-preview] - 2018-04-09
 ### Fixed
 - Index template mappings did not support objects in array, example dynamic_mappings. 

@@ -63,7 +63,8 @@ export class IndexTemplateDocument {
             }
 
         }catch(ex) {
-            LogManager.warning(false, ex.message);
+
+            
         }
 
         return document;
