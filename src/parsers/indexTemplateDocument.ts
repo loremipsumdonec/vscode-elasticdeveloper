@@ -5,6 +5,7 @@ import { TextToken } from "../models/textToken";
 
 import { IndexTemplate } from "../models/indexTemplate";
 import { EntityDocumentScanner, ScannerState, TokenType } from "./entityDocumentScanner";
+import { LogManager } from "../managers/logManager";
 
 export class IndexTemplateDocument {
 
@@ -40,23 +41,29 @@ export class IndexTemplateDocument {
 
         let document = new IndexTemplateDocument();
 
-        let scanner = new EntityDocumentScanner(text);
-        let token = scanner.scan();
-        let indexTemplate = null;
+        try{
 
-        while(token) {
-
-            if(token.type === TokenType.OpenEntity) {
-                indexTemplate = new IndexTemplate();
-                indexTemplate.addTextToken(token);
-                document.addIndexTemplate(indexTemplate);
-            } else if(token.type === TokenType.Property) {
-                indexTemplate.addTextToken(token);
-            } else if(token.type == TokenType.Comment) {
-                document.addComment(token);
+            let scanner = new EntityDocumentScanner(text);
+            let token = scanner.scan();
+            let indexTemplate = null;
+    
+            while(token) {
+    
+                if(token.type === TokenType.OpenEntity) {
+                    indexTemplate = new IndexTemplate();
+                    indexTemplate.addTextToken(token);
+                    document.addIndexTemplate(indexTemplate);
+                } else if(token.type === TokenType.Property) {
+                    indexTemplate.addTextToken(token);
+                } else if(token.type == TokenType.Comment) {
+                    document.addComment(token);
+                }
+    
+                token = scanner.scan();
             }
 
-            token = scanner.scan();
+        }catch(ex) {
+            LogManager.warning(false, ex.message);
         }
 
         return document;

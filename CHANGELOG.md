@@ -4,6 +4,11 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 ## [Unreleased]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
 
+## [1.0.6-preview] - 2018-04-09
+### Fixed
+- Index template mappings did not support objects in array, example dynamic_mappings. 
+- Wrong name on Index template property index_pattern, changed to index_patterns.
+
 ## [1.0.5-preview] - 2018-04-06
 ### Fixed
 - Fixed problem with configuration object in a esquery must begin on the first line.

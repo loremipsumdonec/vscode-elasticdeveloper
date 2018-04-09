@@ -8,7 +8,7 @@ export class IndexTemplate extends Entity {
 
     private _name:string;
     private _template:string;
-    private _index_pattern:string[];
+    private _index_patterns:string[];
     private _version:number;
     private _order:number;
     private _mappings:any = {};
@@ -39,12 +39,12 @@ export class IndexTemplate extends Entity {
         this._template = template;
     }
 
-    public get index_pattern():string[] {
-        return this._index_pattern;
+    public get index_patterns():string[] {
+        return this._index_patterns;
     }
 
-    public set index_pattern(pattern:string[]) {
-        this._index_pattern = pattern;
+    public set index_patterns(pattern:string[]) {
+        this._index_patterns = pattern;
     }
 
     public get version():number {
@@ -86,12 +86,16 @@ export class IndexTemplate extends Entity {
 
             for(let index = 0; index < steps.length; index++) {
                 let step = steps[index];
+                let position = -1;
+
+                if(step.indexOf('[') > -1) {
+                    let start = step.indexOf('[') + 1;
+                    let length = step.indexOf(']') - start;
+                    position = Number(step.substr(start, length));
+                    step = step.substring(0, step.indexOf('['));
+                }
 
                 if(index === lastStepIndex) {
-
-                    if(step.indexOf('[') > -1) {
-                        step = step.substring(0, step.indexOf('['));
-                    }
 
                     if(textToken.propertyValueToken.type === TokenType.PropertyValue) {
 
@@ -102,9 +106,14 @@ export class IndexTemplate extends Entity {
                         }
                         
                     } else if(textToken.propertyValueToken.type === TokenType.OpenEntity) {
-                        if(!context[step]) {
+                        
+                        if(position > -1) {
+                            context[step].push({});
+                        } else if(!context[step]) {
                             context[step] = {}
                         }
+
+
                     } else if(textToken.propertyValueToken.type === TokenType.OpenArray) {
                         if(!context[step]) {
                             context[step] = [];
@@ -112,7 +121,14 @@ export class IndexTemplate extends Entity {
                     }
 
                 } else {
-                    context = context[step];
+
+                    if(position > -1) {
+                        context = context[step][position];
+                    } else {
+                        context = context[step];
+                    }
+
+                    
                 }
 
             }
@@ -121,15 +137,15 @@ export class IndexTemplate extends Entity {
 
     public toJSON() {
 
-        let index_pattern;
+        let index_patterns;
 
-        if(this.index_pattern && this.index_pattern.length > 0) {
-            index_pattern = this.index_pattern;
+        if(this.index_patterns && this.index_patterns.length > 0) {
+            index_patterns = this.index_patterns;
         }
 
         return {
             template: this.template,
-            index_pattern: index_pattern,
+            index_patterns: index_patterns,
             version: this.version,
             settings: this.settings,
             mappings: this.mappings,
