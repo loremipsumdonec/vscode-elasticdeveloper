@@ -1,8 +1,10 @@
 # Change Log
 All notable changes to the "elasticdeveloper" extension will be documented in this file.
 
-## [Unreleased]
+## [Future]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
+- Support for Bulk Api
+- Treeview of existing indices, aliases, templates etc from target environment
 
 ## [1.0.7-preview] - 2018-04-09
 ### Fixed
