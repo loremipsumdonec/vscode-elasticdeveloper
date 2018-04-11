@@ -8,6 +8,7 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 
 ## Unreleased
 - When working with search templates the "source" in a search template body will be stringify so it supports Mustache syntax.
+    - Add color highlight for mustache syntax
 
 ## [1.0.7-preview] - 2018-04-09
 ### Fixed
