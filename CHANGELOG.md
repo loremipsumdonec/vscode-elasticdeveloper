@@ -6,6 +6,9 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 - Support for Bulk Api
 - Treeview of existing indices, aliases, templates etc from target environment
 
+## Unreleased
+- When working with search templates the "source" in a search template body will be stringify so it supports Mustache syntax.
+
 ## [1.0.7-preview] - 2018-04-09
 ### Fixed
 - Removed logger from indexTemplateDocument.parse

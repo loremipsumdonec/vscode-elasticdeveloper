@@ -7,6 +7,7 @@ import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocumen
 import { TokenType } from "../parsers/elasticsearchQueryDocumentScanner";
 import { Entity } from './entity';
 import { PropertyToken } from './propertyToken';
+import { TextStream } from '../parsers/textStream';
 
 export class ElasticsearchQuery extends Entity {
 
@@ -100,6 +101,31 @@ export class ElasticsearchQuery extends Entity {
 
     public set body(value:string) {
         this._body = value;
+        this.stringifySearchTemplateSource();
+    }
+
+    private stringifySearchTemplateSource() {
+
+        let stream = new TextStream(this._body, 0);
+        let value = stream.advanceUntilRegEx(/"source"\s*:\s*{/);
+    
+        if(value) {
+            stream.advance(value.length - 1);
+            let s = stream.position;
+            stream.advanceToJsonObjectEnd();
+    
+            if(stream.char === '}') {
+
+                let source = JSON.stringify(
+                    this._body.substring(s, stream.position + 1)
+                );
+
+                let first = this._body.substring(0, s);
+                let last = this._body.substring(stream.position + 1);
+
+                this._body = first + source + last;
+            }
+        }
     }
 
     public addTextToken(textToken:TextToken) {

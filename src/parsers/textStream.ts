@@ -157,6 +157,32 @@ export class TextStream {
 
     }
 
+    public advanceToJsonObjectEnd(openingChar='{', closingChar='}') {
+
+        let startTagsTicks = 0;
+
+        if(this.char === openingChar) {
+
+            while(!this.endOfStream) {
+
+                if(this.char === openingChar) {    
+                    startTagsTicks++;
+    
+                } else if(this.char === closingChar) {
+                    startTagsTicks--;
+    
+                    if(startTagsTicks === 0) {
+                        break;
+                    }
+                }
+
+                this.advance();
+            }
+
+        }
+
+    }
+
     public advanceToEnd() {
         this._position = this._length;
     }

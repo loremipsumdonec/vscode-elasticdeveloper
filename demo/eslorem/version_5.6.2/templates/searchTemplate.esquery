@@ -1,0 +1,16 @@
+
+
+GET _render/template
+{
+    "source" : {
+        "query" : {
+            "term": {
+                "http_access_log": "lorem"
+            }
+        }
+    },
+    "params": {
+        "host": "https://www.elastic.co/",
+        "page": "learn"
+    }
+}
