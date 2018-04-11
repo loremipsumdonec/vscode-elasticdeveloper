@@ -7,6 +7,7 @@ import { ElasticsearchQuery } from '../models/elasticSearchQuery';
 import { ElasticsearchResponse } from '../models/elasticSearchResponse';
 import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocument';
 import { Environment } from '../models/environment';
+import { LogManager } from '../managers/logManager';
 
 export class ElasticService {
 
@@ -82,14 +83,31 @@ export class ElasticService {
                     elasticsearchResponse.message = response.statusMessage;
                     
                     if(elasticsearchResponse.body) {
-                        elasticsearchResponse.body = JSON.parse(elasticsearchResponse.body);
-                    }
 
-                    if(response.statusCode === 200) {
-                        elasticsearchResponse.completed = true;
+                        try
+                        {
+                            elasticsearchResponse.body = JSON.parse(elasticsearchResponse.body);
+                        
+                            if(response.statusCode === 200) {
+                                elasticsearchResponse.completed = true;
+                            } else {
+                                elasticsearchResponse.completed = false;
+                            }
+
+                        } catch(ex) {
+                            
+                            LogManager.warning(false, 'failed parse elasticsearchResponse.body with reason %s', ex.message);
+                            elasticsearchResponse.message = 'elastic developer failed parse elasticsearchResponse.body with reason ' + ex.message;
+                            elasticsearchResponse.completed = false;
+                        }
                     } else {
-                        elasticsearchResponse.completed = false;
-                    }
+
+                        if(response.statusCode === 200) {
+                            elasticsearchResponse.completed = true;
+                        } else {
+                            elasticsearchResponse.completed = false;
+                        }
+                    }                    
 
                     resolve(elasticsearchResponse);
                     
