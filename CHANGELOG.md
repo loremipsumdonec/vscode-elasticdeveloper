@@ -11,6 +11,8 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 ## [1.0.9] - 2018-07-01
 - I guess it's time to remove the preview. :)
 - Added support for Bulk API, Multi Search API
+- Upgrade vscode
+- Fixed problem with keybindings
 
 ## [1.0.8-preview] - 2018-04-12
 ### Fixed
