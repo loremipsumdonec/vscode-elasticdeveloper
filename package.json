@@ -26,18 +26,6 @@
   ],
   "main": "./out/extension",
   "contributes": {
-    "keybindings": [
-      {
-        "command": "elasticdeveloper.query.runAll",
-        "key": "alt+enter",
-        "when": "resourceExtname == .esquery"
-      },
-      {
-        "command": "elasticdeveloper.environment.setAsTarget",
-        "key": "alt+enter",
-        "when": "resourceExtname == .esenv"
-      }
-    ],
     "commands": [
       {
         "command": "elasticdeveloper.query.runAll",
@@ -138,6 +126,13 @@
         "language": "esquery",
         "scopeName": "source.esquery",
         "path": "./syntaxes/esquery.tmLanguage.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "elasticdeveloper.query.runAll.fromTextEditor",
+        "key": "alt+enter",
+        "when": "resourceLangId == 'esquery'"
       }
     ]
   },

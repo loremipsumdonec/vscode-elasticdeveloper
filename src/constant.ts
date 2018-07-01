@@ -14,6 +14,7 @@ export const ElasticsearchQueryLanguageId = 'esquery';
 export const ElasticsearchQueryDocumentSelector = ElasticsearchQueryLanguageId;
 export const ElasticsearchQueryCodeLensCommandRunQuery = 'query.run.fromCodeLens';
 export const ElasticsearchQueryCodeLensCommandRunAllQueries = 'query.runAll.fromCodeLens';
+export const ElasticsearchQueryTextEditorCommandRunAllQueries = 'query.runAll.fromTextEditor';
 export const ElasticsearchQueryCommandRunAllQueries = 'query.runAll';
 
 /**

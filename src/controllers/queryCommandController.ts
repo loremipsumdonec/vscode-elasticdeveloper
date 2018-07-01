@@ -12,7 +12,14 @@ export class QueryCommandController extends QueryController {
     public registerCommands() {
 
         this.registerCommand(constant.ElasticsearchQueryCommandRunAllQueries, 
-            (input) => { this.runAllQueriesInUri(input) });
+            (input) => { 
+                this.runAllQueriesInUri(input) 
+            });
+
+        this.registerTextEditorCommand(constant.ElasticsearchQueryTextEditorCommandRunAllQueries, 
+            (input) => { 
+                this.runAllQueriesInUri(input) 
+            });
     }
 
     private async runAllQueriesInUri(input:any) {

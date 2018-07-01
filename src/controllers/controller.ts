@@ -91,6 +91,18 @@ export abstract class Controller {
         return constant.CommandPrefix + '.' + partialCommand;
     }
 
+    protected registerTextEditorCommand(command: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any) {
+
+        command = constant.CommandPrefix + '.' + command;
+
+        this.verbose('register text editor command %s', command);
+
+        this._context.subscriptions.push(
+            vscode.commands.registerTextEditorCommand(command, callback)
+        );
+
+    }
+
     protected registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
         
         command = constant.CommandPrefix + '.' + command;
