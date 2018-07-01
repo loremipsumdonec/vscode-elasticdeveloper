@@ -8,7 +8,8 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 ## Unreleased
 - Add color highlight for mustache syntax
 
-## [1.0.9] - 2018-07-01
+## [1.0.10] - 2018-07-01
+### Fixed
 - I guess it's time to remove the preview. :)
 - Added support for Bulk API, Multi Search API
 - Upgrade vscode
