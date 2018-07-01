@@ -102,30 +102,30 @@ export abstract class Controller {
         );
     }
 
-    protected registerCodeLensProvider(selector: vscode.DocumentSelector, provider: vscode.CodeLensProvider) {
+    protected registerCodeLensProvider(languageId: string, provider: vscode.CodeLensProvider) {
 
-        this.verbose('register code lens provider with selector %s', selector);
+        this.verbose('register code lens provider with selector %s', languageId);
 
         this._context.subscriptions.push(
-            vscode.languages.registerCodeLensProvider(selector, provider)
+            vscode.languages.registerCodeLensProvider({ scheme: 'file', language: languageId}, provider)
         );
     }
 
-    protected registerDocumentHighlightProvider(selector: vscode.DocumentSelector, provider: vscode.DocumentHighlightProvider) {
+    protected registerDocumentHighlightProvider(languageId: string, provider: vscode.DocumentHighlightProvider) {
         
-        this.verbose('register highlight provider with selector %s', selector);
+        this.verbose('register highlight provider with selector %s', languageId);
 
         this._context.subscriptions.push(
-            vscode.languages.registerDocumentHighlightProvider(selector, provider)
+            vscode.languages.registerDocumentHighlightProvider({ scheme: 'file', language: languageId}, provider)
         );
     }
 
-    protected registerCompletionItemProvider(selector: vscode.DocumentSelector, provider: vscode.CompletionItemProvider, ...triggerCharacters: string[]) {
+    protected registerCompletionItemProvider(languageId: string, provider: vscode.CompletionItemProvider, ...triggerCharacters: string[]) {
         
-        this.verbose('register completion item provider with selector %s', selector);
+        this.verbose('register completion item provider with selector %s', languageId);
         
         this._context.subscriptions.push(
-            vscode.languages.registerCompletionItemProvider(selector, provider, ...triggerCharacters)
+            vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: languageId}, provider, ...triggerCharacters)
         );
     }
 
