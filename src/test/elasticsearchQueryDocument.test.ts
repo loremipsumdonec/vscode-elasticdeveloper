@@ -6,8 +6,8 @@ suite("ElasticsearchQueryDocument", () => {
     test("parse_textContainingTwoQueriesWithNoInputOrBody_returnDocumentWithTwoQueries", () => {
 
         let firstQuery = 'GET /lorem/command';
-        let secondeQuery = 'GET /ipsum/donec';
-        let query = firstQuery + '\r\n' + secondeQuery;
+        let secondQuery = 'GET /ipsum/donec';
+        let query = firstQuery + '\r\n' + secondQuery;
 
         let document = ElasticsearchQueryDocument.parse(query);
         assert.equal(document.queries.length, 2);
@@ -16,8 +16,8 @@ suite("ElasticsearchQueryDocument", () => {
     test("parse_textContainingTwoQueriesOneWithAndEmptyInput_returnDocumentWithTwoQueries", () => {
 
         let firstQuery = 'GET /lorem/command()';
-        let secondeQuery = 'GET /ipsum/donec';
-        let query = firstQuery + '\r\n' + secondeQuery;
+        let secondQuery = 'GET /ipsum/donec';
+        let query = firstQuery + '\r\n' + secondQuery;
 
         let document = ElasticsearchQueryDocument.parse(query);
         assert.equal(document.queries.length, 2);
@@ -26,8 +26,8 @@ suite("ElasticsearchQueryDocument", () => {
     test("parse_textContainingTwoQueriesOneWithInput_returnDocumentWithTwoQueries", () => {
 
         let firstQuery = 'GET /lorem/command(lorem=5)';
-        let secondeQuery = 'GET /ipsum/donec';
-        let query = firstQuery + '\r\n' + secondeQuery;
+        let secondQuery = 'GET /ipsum/donec';
+        let query = firstQuery + '\r\n' + secondQuery;
 
         let document = ElasticsearchQueryDocument.parse(query);
         assert.equal(document.queries.length, 2);
@@ -56,8 +56,8 @@ suite("ElasticsearchQueryDocument", () => {
     test("parse_textContainingConfigurationAndQuery_returnDocumentWithOneConfigurationAndOneQuery", () => {
 
         let firstQuery = '{ "params": { "query": "hello world" }}';
-        let secondeQuery = 'GET /lorem/command(lorem=5)';
-        let query = firstQuery + '\r\n' + secondeQuery;
+        let secondQuery = 'GET /lorem/command(lorem=5)';
+        let query = firstQuery + '\r\n' + secondQuery;
 
         let document = ElasticsearchQueryDocument.parse(query);
         assert.equal(document.configurations.length, 1);
