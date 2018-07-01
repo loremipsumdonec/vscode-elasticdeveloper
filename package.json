@@ -2,9 +2,9 @@
   "name": "elasticdeveloper",
   "displayName": "Elastic Developer",
   "description": "Elasticsearch extension for VSCode",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "MIT",
-  "preview": true,
+  "preview": false,
   "publisher": "crasnam",
   "engines": {
     "vscode": "^1.21.0"
@@ -13,10 +13,6 @@
     "type": "git",
     "url": "https://github.com/Crasnam/vscode-elasticdeveloper.git"
   },
-  "categories": [
-    "Languages",
-    "Other"
-  ],
   "keywords": [
     "Elasticsearch",
     "Elastic",

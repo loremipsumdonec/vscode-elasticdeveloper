@@ -3,11 +3,14 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 
 ## [Future]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
-- Support for Bulk Api
 - Treeview of existing indices, aliases, templates etc from target environment
 
 ## Unreleased
 - Add color highlight for mustache syntax
+
+## [1.0.9] - 2018-07-01
+- I guess it's time to remove the preview. :)
+- Added support for Bulk API, Multi Search API
 
 ## [1.0.8-preview] - 2018-04-12
 ### Fixed

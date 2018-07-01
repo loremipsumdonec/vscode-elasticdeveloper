@@ -17,6 +17,7 @@ export class ElasticsearchQuery extends Entity {
     private _method:string;
     private _command:string;
     private _body:string;
+    private _bulk:string[] = [];
     private _hasInput:boolean = false;
 
     public static parse(queryAsString:string, body?:any):ElasticsearchQuery {
@@ -101,14 +102,33 @@ export class ElasticsearchQuery extends Entity {
 
     public set body(value:string) {
         this._body = value;
-        this.stringifySearchTemplateSource();
     }
 
-    private stringifySearchTemplateSource() {
+    public addBody(value:string) {
+        
+        value = this.stringifySearchTemplateSource(value);
 
-        let stream = new TextStream(this._body, 0);
+        if(!this.hasBody) {
+            this.body = value;
+        }
+
+        this._bulk.push(value);
+    }
+
+    public get bulk():string[] {
+        return this._bulk;
+    }
+
+    public  get isBulk() : boolean {
+        return this._bulk.length > 1;
+    }
+
+    private stringifySearchTemplateSource(inputValue:string):string {
+
+        let output:string = '';
+        let stream = new TextStream(inputValue, 0);
         let value = stream.advanceUntilRegEx(/"source"\s*:\s*{/);
-    
+        
         if(value) {
             stream.advance(value.length - 1);
             let s = stream.position;
@@ -123,9 +143,13 @@ export class ElasticsearchQuery extends Entity {
                 let first = this._body.substring(0, s);
                 let last = this._body.substring(stream.position + 1);
 
-                this._body = first + source + last;
+                output = first + source + last;
             }
+        } else {
+            output = inputValue;
         }
+
+        return output;
     }
 
     public addTextToken(textToken:TextToken) {
@@ -144,7 +168,7 @@ export class ElasticsearchQuery extends Entity {
             }
 
         } else if(textToken.type === TokenType.Body) {
-            this.body = textToken.text;
+            this.addBody(textToken.text);
         }
 
     }

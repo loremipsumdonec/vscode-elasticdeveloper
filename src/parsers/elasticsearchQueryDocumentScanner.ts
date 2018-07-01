@@ -479,111 +479,6 @@ export class ElasticsearchQueryDocumentScanner {
 
     }
 
-/*
-    private getInputArgumentName(): TextToken {
-
-        let token = null;
-        let argumentName = this._stream.advanceUntilRegEx(/[\:|\=]/, true);
-
-        if(argumentName) {
-
-            token = textTokenFactory.createTextToken(
-                argumentName, 
-                this._stream.position - argumentName.length, 
-                TokenType.ArgumentName);
-
-            this._detailState = ScannerState.AfterArgumentName;
-            this._stream.advance();
-        }
-
-        return token;
-    }
-
-    private getInputArgumentValue(): TextToken {
-
-        let token = null;
-
-        if(this._stream.char !== ')') {
-
-            if(this._stream.char === '"') {
-                token = this.getInputArgumentStringValue();
-            } else {
-                token = this.getInputArgumentNumberValue();
-            }
-
-            this._stream.advanceUntilNonWhitespace();
-
-            if(this._stream.char === ',') {
-                this._stream.advance();
-            }
-
-        } else {
-            this._state = ScannerState.AfterInput;
-        }
-
-        return token;
-    }
-
-    private getInputArgumentStringValue(): TextToken {
-
-        let token = null;
-        let value = '';
-
-        this._stream.advance();
-
-        while(!this._stream.endOfStream) {
-
-            if(this._stream.char !== '"') {
-                value += this._stream.char;
-            } else {
-
-                token = textTokenFactory.createTextToken(
-                    value, 
-                    this._stream.position - value.length, 
-                    TokenType.ArgumentValue);
-
-                this._stream.advance();
-                this._detailState = ScannerState.WithinInput;
-
-                break;
-            }
-
-            this._stream.advance();
-        }
-
-        return token;
-
-    }
-
-    private getInputArgumentNumberValue(): TextToken {
-
-        let token = null;
-        let value = '';
-
-        while(!this._stream.endOfStream) {
-
-            if(this._stream.char !== ' ' && this._stream.char !== ',' && this._stream.char !== ')') {
-                value += this._stream.char;
-            } else {
-
-                token = textTokenFactory.createTextToken(
-                    value, 
-                    this._stream.position - value.length, 
-                    TokenType.ArgumentValue);
-
-                this._detailState = ScannerState.WithinInput;
-
-                break;
-            }
-
-            this._stream.advance();
-        }
-
-        return token;
-
-    }
-*/
-
     private getBodyTokenInBackward(): TextToken {
 
         let token = this.getBodyToken('}', '{');
@@ -649,7 +544,13 @@ export class ElasticsearchQueryDocumentScanner {
                 this._stream.position - body.length,
                 TokenType.Body);
 
-            this._state = ScannerState.WithinContent;
+            this._stream.advanceUntilNonWhitespace();
+
+            if(this._stream.char === '{') {
+                this._state = ScannerState.AfterCommand;
+            } else {
+                this._state = ScannerState.WithinContent;
+            }
         }
 
         return token;

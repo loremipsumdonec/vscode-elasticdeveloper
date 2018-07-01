@@ -13,6 +13,7 @@ This is a vscode extension that I have built to make it easier to work with Elas
 - Query
     - Autocomplete for Elasticsearch HTTP API
     - Run a single query
+        - Support for Bulk API, Multi Search API
     - Run multiple queries
     - Manage the same input in multiple queries
     - Save output as JSON
@@ -93,6 +94,9 @@ Queries can be created in a file with the extension *esquery* and a file can con
 This code lens action will run the active query.
 
 ![run query, code lens](images/query_run.gif)
+
+#### Run Bulk
+The extension has support for the Bulk API and will manage the conversion of multiple bodies to the NDJSON format, see the file populate_bulk.esquery in the demo project for an example.
 
 #### Run all queries
 This action will run all queries in a selected esquery file.

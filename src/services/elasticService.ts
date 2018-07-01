@@ -48,10 +48,15 @@ export class ElasticService {
     }
 
     public async execute(query:ElasticsearchQuery) : Promise<ElasticsearchResponse> {
-        return this.perform(query.command, query.body, query.method);
+
+        if(query.isBulk) {
+            return this.performBulk(query.command, query.bulk, query.method);
+        } else {
+            return this.perform(query.command, query.body, query.method);
+        }
     }
 
-    public async perform(url: string, body:string, method:string = 'GET') : Promise<ElasticsearchResponse> {
+    public async perform(url: string, body:string, method:string = 'GET', contentType:string = 'application/json') : Promise<ElasticsearchResponse> {
 
         let uri = this._host + url;
         let options: any = {
@@ -60,7 +65,7 @@ export class ElasticService {
             body: body,
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': contentType
             }
         };
 
@@ -115,6 +120,20 @@ export class ElasticService {
             });
 
         }); 
+    }
+
+    public async performBulk(url: string, bulk:string[], method:string = 'POST'): Promise<ElasticsearchResponse> {
+
+        let body = '';
+
+        LogManager.verbose('building NDJSON of a array with %s entries', bulk.length);
+
+        for(let index = 0; index < bulk.length; index++) {
+            body += bulk[index].replace(/[\r\n]+/g, '');
+            body += '\r\n';
+        }
+
+        return this.perform(url, body, method, 'application/x-ndjson');
     }
 
     public post(url: string, body) {
