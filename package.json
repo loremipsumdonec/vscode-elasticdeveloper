@@ -16,6 +16,10 @@
   "bugs": {
      "url": "https://github.com/Crasnam/vscode-elasticdeveloper/issues"
   },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
   "keywords": [
     "Elasticsearch",
     "Elastic",
