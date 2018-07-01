@@ -13,6 +13,9 @@
     "type": "git",
     "url": "https://github.com/Crasnam/vscode-elasticdeveloper.git"
   },
+  "bugs": {
+     "url": "https://github.com/Crasnam/vscode-elasticdeveloper/issues"
+  },
   "keywords": [
     "Elasticsearch",
     "Elastic",
