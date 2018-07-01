@@ -95,13 +95,13 @@ This code lens action will run the active query.
 
 ![run query, code lens](images/query_run.gif)
 
-#### Run Bulk
-The extension has support for the Bulk API and will manage the conversion of multiple bodies to the NDJSON format, see the file populate_bulk.esquery in the demo project for an example.
-
 #### Run all queries
 This action will run all queries in a selected esquery file.
 
 ![run query, code lens](images/query_runAll.gif)
+
+#### Run Bulk
+The extension has support for the Bulk API and will manage the conversion of multiple bodies to the NDJSON format, see the file populate_bulk.esquery in the demo project for an example.
 
 #### Autocomplete for Elasticsearch HTTP API
 ![run query, code lens](images/query_autoComplete.gif)
