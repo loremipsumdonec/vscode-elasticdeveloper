@@ -73,7 +73,7 @@
 			"name": "constant.language.json"
 		},
 		"command": {
-			"match": "\\b\\s+(?i:[\\w,/,\\?,\\&,\\=,\\*,\\_,\\-]+)\\b",
+			"match": "\\b\\s+(?i:[\\w,/,\\?,\\&,\\=,\\*,\\_,\\-,\\.]+)\\b",
 			"name": "constant.language.json"
 		},
 		"method": {
