@@ -13,7 +13,7 @@ This is a vscode extension that I have built to make it easier to work with Elas
 - Query
     - Autocomplete for Elasticsearch HTTP API
     - Run a single query
-        - Support for Bulk API, Multi Search API
+    - Support for Bulk API, Multi Search API
     - Run multiple queries
     - Manage the same input in multiple queries
     - Save output as JSON
