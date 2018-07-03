@@ -4,10 +4,9 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
 ## [Future]
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
 - Treeview of existing indices, aliases, templates etc from target environment
-
-## Unreleased
-- Color highlight for mustache syntax
-- Color highlight for query-string syntax
+- Rebuild syntax highlight
+    - Color highlight for mustache syntax
+    - Color highlight for query-string syntax
 
 ## [1.0.10] - 2018-07-01
 ### Fixed
