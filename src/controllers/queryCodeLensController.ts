@@ -51,8 +51,15 @@ export class QueryCodeLensController extends QueryController
         for(let query of document.queries) {
             
             let range = this.getRangeWithin(textDocument, query.textTokens[0]);
+
+            let codeLensTitle = 'run query';
+
+            if(query.isBulk) {
+                codeLensTitle = 'run bulk query (size: '+ query.bulk.length +')'
+            }
+
             let runQueryCodeLens = new vscode.CodeLens(range, {
-                title: 'run query',
+                title: codeLensTitle,
                 command: runQueryCommand,
                 arguments: [query, configuration]
             });
