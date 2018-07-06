@@ -141,7 +141,15 @@
         "key": "alt+enter",
         "when": "resourceLangId == 'esquery'"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "elasticdeveloper-explorer",
+          "name": "Elasticsearch"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

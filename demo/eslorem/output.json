@@ -1,94 +1,59 @@
 {
-    "responses": [],
-    "a_simple_search": {
-        "statusCode": 200,
-        "body": {
-            "took": 3,
-            "timed_out": false,
-            "_shards": {
-                "total": 1,
-                "successful": 1,
-                "skipped": 0,
-                "failed": 0
-            },
-            "hits": {
-                "total": 3,
-                "max_score": 2.1790159,
-                "hits": [
-                    {
-                        "_index": "lorem",
-                        "_type": "document",
-                        "_id": "1",
-                        "_score": 2.1790159,
-                        "_source": {
-                            "title": "Lorem ipsum donec",
-                            "preamble": "Vestibulum tempor faucibus sem, sit amet consequat mauris iaculis sit amet",
-                            "main": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sem eros, iaculis vel ipsum at, lobortis pretium massa. Nunc vel molestie augue. Praesent egestas ut tortor ut euismod. Nulla facilisi. Sed ullamcorper, ante eget tincidunt rutrum, libero velit scelerisque orci, non vulputate mi est eget velit. Mauris et imperdiet urna. Pellentesque lacinia ultricies rutrum. Proin erat neque, blandit nec est at, euismod bibendum odio. Aenean nibh erat, dignissim et facilisis vitae, feugiat rhoncus purus. Proin dui est, hendrerit gravida luctus et, porttitor dictum erat. Vestibulum id rutrum odio, quis posuere orci. Curabitur a diam id nulla vulputate mattis. Nam sit amet velit rhoncus, fermentum tellus non, consectetur libero. Proin massa lorem, suscipit in magna ac, porta semper lectus."
-                        }
-                    },
-                    {
-                        "_index": "lorem",
-                        "_type": "document",
-                        "_id": "5",
-                        "_score": 1.8786864,
-                        "_source": {
-                            "title": "Nunc vel molestie augue",
-                            "preamble": "Lorem sed nisi euismod, sed posuere magna faucibus",
-                            "main": "Nam mollis lorem sed nisi euismod, sed posuere magna faucibus. Donec eu imperdiet elit, ut volutpat eros. Aliquam justo enim"
-                        }
-                    },
-                    {
-                        "_index": "lorem",
-                        "_type": "document",
-                        "_id": "4",
-                        "_score": 1.1510174,
-                        "_source": {
-                            "title": "Sit amet",
-                            "preamble": "Pellentesque blandit vitae augue non accumsan. Ut massa quam, feugiat nec ante id, sodales mollis eros. Proin consectetur ut lorem in hendrerit. ",
-                            "main": "Hendrerit porttitor. Pellentesque cursus arcu vitae enim tincidunt, non consectetur erat semper. Integer nec lorem nec nulla aliquam pharetra non ut dolor. Maecenas in consectetur mi. Maecenas convallis odio quam, a tincidunt dolor rutrum vitae. Suspendisse potenti. Morbi congue pulvinar facilisis. Donec elementum sapien elementum metus rutrum, vitae pellentesque tellus egesta"
+    "statusCode": 200,
+    "body": {
+        "lorem": {
+            "mappings": {
+                "document": {
+                    "properties": {
+                        "main": {
+                            "type": "text"
+                        },
+                        "preamble": {
+                            "type": "text"
+                        },
+                        "title": {
+                            "type": "text"
                         }
                     }
-                ]
+                }
             }
-        },
-        "headers": {
-            "content-type": "application/json; charset=UTF-8",
-            "content-length": "2162"
-        },
-        "request": {
-            "uri": {
-                "protocol": "http:",
-                "slashes": true,
-                "auth": null,
-                "host": "localhost:9200",
-                "port": "9200",
-                "hostname": "localhost",
-                "hash": null,
-                "search": null,
-                "query": null,
-                "pathname": "/lorem/_search",
-                "path": "/lorem/_search",
-                "href": "http://localhost:9200/lorem/_search"
-            },
-            "method": "GET",
-            "headers": {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "content-length": 140
-            }
-        },
-        "message": "OK",
-        "completed": true,
-        "name": "a_simple_search",
-        "environment": {
-            "_textTokens": [],
-            "_version": {
-                "_major": "5",
-                "_minor": "6",
-                "_patch": "2"
-            },
-            "_host": "http://localhost:9200",
-            "_name": "dev 5.6.2"
         }
+    },
+    "headers": {
+        "content-type": "application/json; charset=UTF-8",
+        "content-length": "126"
+    },
+    "request": {
+        "uri": {
+            "protocol": "http:",
+            "slashes": true,
+            "auth": null,
+            "host": "localhost:9200",
+            "port": "9200",
+            "hostname": "localhost",
+            "hash": null,
+            "search": null,
+            "query": null,
+            "pathname": "/lorem/_mapping/document",
+            "path": "/lorem/_mapping/document",
+            "href": "http://localhost:9200/lorem/_mapping/document"
+        },
+        "method": "GET",
+        "headers": {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+    },
+    "message": "OK",
+    "completed": true,
+    "environment": {
+        "_textTokens": [],
+        "_version": {
+            "_major": "5",
+            "_minor": "6",
+            "_patch": "2"
+        },
+        "_host": "http://localhost:9200",
+        "_name": "dev 5.6.2"
     }
 }

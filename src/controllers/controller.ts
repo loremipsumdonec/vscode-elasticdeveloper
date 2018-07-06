@@ -81,6 +81,10 @@ export abstract class Controller {
     public register(context: vscode.ExtensionContext) {
         
         this._context = context;
+        this.initiate();
+    }
+
+    protected initiate() {
         this.registerCommands();
     }
 

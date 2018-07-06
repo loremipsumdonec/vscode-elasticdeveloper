@@ -1,6 +1,10 @@
 /**
     Create a new index with the name lorem
 */
+
+delete lorem
+delete donec
+
 PUT /lorem
 {
     "settings" : {
@@ -16,3 +20,28 @@ PUT /lorem
         }
     }
 }
+
+PUT /donec
+{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "mappings" : {
+        "document" : {
+            "properties" : {
+                "title" : { "type" : "text" },
+                "preamble": {"type": "text"},
+                "main": {"type": "text"}
+            }
+        }
+    }
+}
+
+POST /_aliases {
+    "actions": [
+        { "add": {"index": "lor*", "alias": "ipsum"} },
+        { "add": {"index": "donec", "alias": "ipsum"} }
+    ]
+}
+
+GET _cat/aliases

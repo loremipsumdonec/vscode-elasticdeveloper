@@ -13,12 +13,13 @@ import { Controller } from './controllers/controller';
 import { QueryCodeLensController} from './controllers/queryCodeLensController';
 import { EnvironmentCodeLensController } from './controllers/environmentCodeLensController';
 import { EnvironmentCommandController } from './controllers/environmentCommandController';
+import { EnvironmentTreeDataProviderController } from './feature/explorer/environmentTreeDataProviderController';
 
 import { IndexTemplateCodeLensController } from './controllers/indexTemplateCodeLensController';
 import { IndexTemplateCommandController } from './controllers/indexTemplateCommandController';
-import { IndexTemplateDocumentHighlightController } from './controllers/indexTemplateDocumentHighlightController';
 import { QueryCompletionItemController } from './controllers/queryCompletionItemController';
 import { QueryCommandController } from './controllers/queryCommandController';
+
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -37,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new QueryCompletionItemController());
     controllers.push(new EnvironmentCodeLensController());
     controllers.push(new EnvironmentCommandController());
+    controllers.push(new EnvironmentTreeDataProviderController());
     controllers.push(new IndexTemplateCodeLensController());
     controllers.push(new IndexTemplateCommandController());
 
