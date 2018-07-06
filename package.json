@@ -1,8 +1,8 @@
 {
   "name": "elasticdeveloper",
-  "displayName": "Elastic Developer",
-  "description": "Elasticsearch extension for VSCode",
-  "version": "1.0.11",
+  "displayName": "Elasticsearch Developer tool",
+  "description": "Create Elasticsearch Query DSL from vscode",
+  "version": "1.0.12",
   "license": "MIT",
   "preview": false,
   "publisher": "crasnam",
@@ -22,9 +22,7 @@
   ],
   "keywords": [
     "Elasticsearch",
-    "Elastic",
-    "es",
-    "Kibana"
+    "Elasticsearch dev tools"
   ],
   "activationEvents": [
     "onLanguage:esquery",
