@@ -8,7 +8,6 @@ import { ThemeIcon, Uri, env } from "vscode";
 import { Environment } from "../../../models/environment";
 import { EnvironmentTreeDataProviderController } from "../environmentTreeDataProviderController";
 import { EnvironmentDocument } from '../../../parsers/environmentDocument';
-import { stat } from 'fs';
 
 export interface IElasticTreeItem {
 
@@ -25,22 +24,23 @@ export interface ITreeNode {
     label:string;
     parent?: ITreeNode;
     treeDataProvider:EnvironmentTreeDataProviderController,
+    environment:Environment,
     isParent: boolean;
     iconPath?: string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
-    loadChildren(): ITreeNode[] | Promise<ITreeNode[]>;
+    contextValue: string;
+    refresh();
 }
 
 export interface IParentTreeNode extends ITreeNode {
     addChild(child:ITreeNode);
+    removeChildren(remove:ITreeNode[]);
+    clear();
+    getChildren(): ITreeNode[] | Promise<ITreeNode[]>;
 }
 
-export interface IEnvironmentTreeNode  {
+export interface IEnvironmentTreeNode extends ITreeNode {
     resourcePath: Uri;
     environment:Environment;
-}
-
-export interface IQueryTreeNode extends ITreeNode {
-    query:string;
 }
 
 export class TreeNode implements ITreeNode {
@@ -53,6 +53,11 @@ export class TreeNode implements ITreeNode {
     private _iconPath:string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
     
     constructor(id:string, label?:string, iconPath?:ThemeIcon) {
+        
+        if(!iconPath) {
+            iconPath = ThemeIcon.File;
+        }
+        
         this._id = id;
 
         if(label) {
@@ -108,12 +113,39 @@ export class TreeNode implements ITreeNode {
         this._treeDataProvider = value;
     }
 
+    public get environment():Environment {
+
+        let environment = null;
+
+        if(this.parent) {
+
+            let stack:any[] = [];
+            stack.push(this.parent);
+
+            while(stack.length > 0){
+                let current = stack.pop();
+
+                if(current.environment) {
+                    environment = current.environment;
+                } else {
+                    stack.push(current.parent);
+                }
+            }
+        }
+
+        return environment;
+    }
+
     public get isParent():boolean {
         return false;
     }
 
     public get iconPath():string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon {
         return this._iconPath;
+    }
+
+    public set iconPath(value:string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon) {
+        this._iconPath = value;
     }
 
     public get parent():ITreeNode {
@@ -124,8 +156,8 @@ export class TreeNode implements ITreeNode {
         this._parent = value;
     }
 
-    public loadChildren(): ITreeNode[] | Promise<ITreeNode[]> {
-        throw new Error("Method not implemented.");
+    public get contextValue():string {
+        return undefined;
     }
 
     public refresh() {
@@ -138,7 +170,13 @@ export class ParentTreeNode extends TreeNode implements IParentTreeNode {
     private _children:ITreeNode[] = [];
 
     constructor(id:string, label?:string, iconPath?:ThemeIcon) {
-        super(id, label, ThemeIcon.Folder)
+        super(id, label)
+
+        if(!iconPath) {
+            iconPath = ThemeIcon.Folder;
+        }
+
+        this.iconPath = iconPath;
     }
 
     public get isParent():boolean {
@@ -149,9 +187,18 @@ export class ParentTreeNode extends TreeNode implements IParentTreeNode {
         return this._children;
     }
 
+    public clear() {
+        this._children = [];
+    }
+    
     public addChild(child:ITreeNode) {
-        child.parent = this;
-        this._children.push(child);
+
+        let exists = this.children.find(n=> n.id === child.id);
+
+        if(!exists) {
+            child.parent = this;
+            this._children.push(child);
+        }
     }
 
     public removeChildren(remove:ITreeNode[]) {
@@ -171,10 +218,14 @@ export class ParentTreeNode extends TreeNode implements IParentTreeNode {
         this._children = children;
     }
 
-    public loadChildren(): ITreeNode[] | Promise<ITreeNode[]> {
+    public async getChildren(): Promise<ITreeNode[]> {
+        await this.loadChildren();
         return this._children;
     }
 
+    protected async loadChildren() {
+
+    }
 }
 
 export class ObjectTreeNode extends ParentTreeNode {
@@ -182,7 +233,7 @@ export class ObjectTreeNode extends ParentTreeNode {
     private _object:any;
 
     constructor(id:string, object:any, label?:string) {
-        super(id, label, ThemeIcon.Folder);
+        super(id, label);
         this._object = object;
     }
 
@@ -194,17 +245,15 @@ export class ObjectTreeNode extends ParentTreeNode {
         return this._object;
     }
 
-    public loadChildren(): ITreeNode[] | Promise<ITreeNode[]> {
+    protected async loadChildren() {
 
         let children:ITreeNode[] = [];
 
         for(let key in this.object) {
 
             let id = key + ': ' + this.object[key];
-            children.push(new TreeNode(id));
+            this.addChild(new TreeNode(id))
         }
-
-        return children;
     }
 }
 
@@ -214,7 +263,6 @@ export class EnvironmentsParentTreeNode extends ParentTreeNode {
         super('environments')
     
         this.treeDataProvider = treeDataProvider;
-
         let watcher = vscode.workspace.createFileSystemWatcher('**/*.esenv');
         watcher.onDidChange((e)=> {
             this.onEnvironmentFileChange(e);
@@ -222,10 +270,15 @@ export class EnvironmentsParentTreeNode extends ParentTreeNode {
 
         watcher.onDidCreate(this.onEnvironmentFileCreate);
         watcher.onDidDelete(this.onEnvironmentFileDelete);
-        
+
+        EnvironmentManager.subscribe((eventName) => {
+            if(eventName === 'environment.changed') {
+                this.refresh();
+            }
+        });
     }
 
-    public async loadChildren(): Promise<ITreeNode[]> {
+    protected async loadChildren() {
         
         let files = await vscode.workspace.findFiles('**/*.esenv');
         let notVisited:ITreeNode[] = [];
@@ -251,8 +304,6 @@ export class EnvironmentsParentTreeNode extends ParentTreeNode {
 
         this.removeChildren(notVisited);
         this.children.sort((a, b) => a.id.localeCompare(b.id));
-
-        return super.loadChildren();
     }
 
     private async onEnvironmentFileChange(fileUri:vscode.Uri) {
@@ -281,6 +332,21 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
         this._resourcePath = resourcePath;
     }
 
+    public get label():string {
+
+        let current = EnvironmentManager.get().environment;
+
+        if(current && current.id === this._environment.id) {
+            return super.label + ' (x)';
+        } else {
+            return super.label;
+        }
+    }
+
+    public set label(value:string) {
+        super.label = value;
+    }
+
     public set environment(environment:Environment) {
         this._environment = environment;
         this.label = environment.name;
@@ -298,17 +364,19 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
         return this._resourcePath;
     }
 
-    public loadChildren(): ITreeNode[] | Promise<ITreeNode[]> {
+    public get contextValue(): string {
+        return 'environment';
+    }
+
+    protected async loadChildren() {
 
         this.addChild(new IndicesQueryTreeNode());
         this.addChild(new AliasesQueryTreeNode());
-
-        return super.loadChildren();
     }
 
 }
 
-abstract class QueryTreeNode extends ParentTreeNode implements IQueryTreeNode {
+abstract class QueryTreeNode extends ParentTreeNode {
 
     private _query:string;
 
@@ -322,29 +390,6 @@ abstract class QueryTreeNode extends ParentTreeNode implements IQueryTreeNode {
         return true;
     }
     
-    protected get environment():Environment {
-
-        let environment = null;
-
-        if(this.parent) {
-
-            let stack:any[] = [];
-            stack.push(this.parent);
-
-            while(stack.length > 0){
-                let current = stack.pop();
-
-                if(current.environment) {
-                    environment = current.environment;
-                } else {
-                    stack.push(current.parent);
-                }
-            }
-        }
-
-        return environment;
-    }
-
     public get query():string {
         return this._query;
     }
@@ -353,13 +398,14 @@ abstract class QueryTreeNode extends ParentTreeNode implements IQueryTreeNode {
         this._query = value;
     }
 
-    public async loadChildren(): Promise<ITreeNode[]> {
+    protected async loadChildren() {
 
+        this.clear();
         let response = await this.executeQuery();
-        let children = this.getChildren(response);
+        let children = this.getChildrenInResponse(response);
         children.forEach(child => this.addChild(child));
 
-        return super.loadChildren();
+        this.children.sort((a, b) => a.label.localeCompare(b.label));
     }
 
     protected async executeQuery() : Promise<ElasticsearchResponse> {
@@ -391,7 +437,7 @@ abstract class QueryTreeNode extends ParentTreeNode implements IQueryTreeNode {
         return response;
     }
 
-    protected getChildren(response:ElasticsearchResponse):ITreeNode[] {
+    protected getChildrenInResponse(response:ElasticsearchResponse):ITreeNode[] {
         return [];
     }
 }
@@ -402,20 +448,41 @@ export class IndicesQueryTreeNode extends QueryTreeNode {
         super('indices','GET /_cat/indices');
     }
 
-    protected getChildren(response:ElasticsearchResponse): ITreeNode[] {
+    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
 
         let children:ITreeNode[] = [];
 
         if(response.completed) {
 
             for(let d of response.body) {
-                children.push(new IndexObjectTreeNode(d));
+                children.push(new IndexTreeNode(d));
             }
         }
 
         return children;
     }
 
+}
+
+export class IndexTreeNode extends ParentTreeNode {
+    
+    private _index:any;
+
+    constructor(index:any) {
+        super(index.index);
+    
+        this._index = index;
+    }
+
+    public get contextValue(): string {
+        return 'index';
+    }
+
+    protected async loadChildren() {
+
+        this.addChild(new IndicesMappingsQueryTreeNode('mappings', this._index))
+        this.addChild(new AliasesQueryTreeNode('GET /'+ this._index.index +'/_alias/*', true));
+    }
 }
 
 export class AliasesQueryTreeNode extends QueryTreeNode {
@@ -433,7 +500,7 @@ export class AliasesQueryTreeNode extends QueryTreeNode {
         
     }
 
-    protected getChildren(response:ElasticsearchResponse): ITreeNode[] {
+    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
 
         let children:ITreeNode[] = [];
 
@@ -485,7 +552,7 @@ export class IndicesMappingsQueryTreeNode extends QueryTreeNode {
         this._index = index;
     }
 
-    protected getChildren(response:ElasticsearchResponse): ITreeNode[] {
+    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
 
         let children:ITreeNode[] = [];
 
@@ -521,12 +588,14 @@ export class IndicesMappingsQueryTreeNode extends QueryTreeNode {
 
             if(properties[key].fields) {
                 let node = new ParentTreeNode(label);
+                node.iconPath = undefined;
                 node.parent = root;
 
                 this.buildMappingTree(node, properties[key].fields);
                 root.addChild(node);
             } else {
                 let node = new TreeNode(label);
+                node.iconPath = undefined;
                 node.parent = root;
 
                 root.addChild(node);
@@ -536,23 +605,4 @@ export class IndicesMappingsQueryTreeNode extends QueryTreeNode {
     }
 }
 
-export class IndexObjectTreeNode extends ParentTreeNode {
-    
-    private _index:any;
 
-    constructor(index:any) {
-        super(index.index);
-    
-        this._index = index;
-    }
-
-    public loadChildren(): ITreeNode[] | Promise<ITreeNode[]> {
-
-        this.addChild(new IndicesMappingsQueryTreeNode('mappings', this._index))
-        this.addChild(new AliasesQueryTreeNode('GET /'+ this._index.index +'/_alias/*', true));
-
-        return super.loadChildren();
-    }
-
-    protected get
-}

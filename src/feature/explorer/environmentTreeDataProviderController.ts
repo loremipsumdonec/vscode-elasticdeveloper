@@ -1,9 +1,9 @@
 'use strict'
 
 import * as vscode from 'vscode';
-import { ITreeNode, EnvironmentsParentTreeNode } from './models/interfaces';
+import * as constant from '../../constant'
+import { ITreeNode, EnvironmentsParentTreeNode, IParentTreeNode, ParentTreeNode } from './models/interfaces';
 import { EnvironmentController } from "../../controllers/environmentController";
-import { EnvironmentManager } from '../../managers/environmentManager';
 
 export class EnvironmentTreeDataProviderController  extends EnvironmentController 
     implements vscode.TreeDataProvider<ITreeNode> {
@@ -12,8 +12,9 @@ export class EnvironmentTreeDataProviderController  extends EnvironmentControlle
 
     public initiate() {
         this._onDidChangeTreeDataEmitter = new vscode.EventEmitter<ITreeNode>();
-
         vscode.window.registerTreeDataProvider('elasticdeveloper-explorer', this);
+
+        this.registerCommand(constant.ExplorerCommandRefreshNode, (input)=> { this.refresh(input) });
     }
 
     public get onDidChangeTreeData(): vscode.Event<ITreeNode> {
@@ -26,7 +27,8 @@ export class EnvironmentTreeDataProviderController  extends EnvironmentControlle
             label: element.label,
             tooltip: element.globalId,
             collapsibleState: element.isParent ? vscode.TreeItemCollapsibleState.Collapsed: vscode.TreeItemCollapsibleState.None,
-            iconPath:element.isParent ? vscode.ThemeIcon.Folder: vscode.ThemeIcon.File,
+            iconPath:element.iconPath,
+            contextValue: element.contextValue
         };
     }
     
@@ -34,9 +36,9 @@ export class EnvironmentTreeDataProviderController  extends EnvironmentControlle
         
         let children:ITreeNode[] = [];
 
-        if(treeNode) {
-            children = await this.loadChildren(treeNode);
-        } else {
+        if(treeNode instanceof ParentTreeNode) {
+            children = await treeNode.getChildren();
+        } else if(!treeNode) {
             children = this.loadRoot();
         }
 
@@ -47,20 +49,21 @@ export class EnvironmentTreeDataProviderController  extends EnvironmentControlle
         return null;
     }
 
-    public refresh(node:ITreeNode) {
-        this._onDidChangeTreeDataEmitter.fire(node);
+    public refresh(node?:ITreeNode) {
+
+        if(node) {
+            this._onDidChangeTreeDataEmitter.fire(node);
+        } else {
+            this._onDidChangeTreeDataEmitter.fire(null);
+        }
+
     }
 
     private loadRoot(): ITreeNode[] {
         let children:ITreeNode[] = [];
 
-        //children.push(new EnvironmentObjectTreeNode(this));
         children.push(new EnvironmentsParentTreeNode(this));
 
         return children;
     }
-
-    private async loadChildren(treeNode: ITreeNode):Promise<ITreeNode[]> {
-        return await treeNode.loadChildren();
-    } 
 }

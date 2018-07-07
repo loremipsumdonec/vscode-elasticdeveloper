@@ -33,6 +33,16 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "configuration": {
+      "title": "Elastic Developer",
+      "properties": {
+        "elasticdeveloper.configuration.feature.explorer.enabled": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Toggle Elasticsearch explorer feature, prototype version"
+        }
+      }
+    },
     "commands": [
       {
         "command": "elasticdeveloper.query.runAll",
@@ -51,8 +61,28 @@
         "title": "Ping environment"
       },
       {
+        "command": "elasticdeveloper.environment.ping.fromExplorer",
+        "title": "Ping environment"
+      },
+      {
         "command": "elasticdeveloper.environment.setAsTarget",
         "title": "Set as target environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.setAsTarget.fromExplorer",
+        "title": "Set as target environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.openFile.fromExplorer",
+        "title": "Open file"
+      },
+      {
+        "command": "elasticdeveloper.index.delete.fromExplorer",
+        "title": "Delete"
+      },
+      {
+        "command": "elasticdeveloper.explorer.refreshNode.fromExplorer",
+        "title": "Refresh"
       }
     ],
     "menus": {
@@ -81,7 +111,28 @@
       "editor/title/context": [],
       "editor/title": [],
       "editor/context": [],
-      "commandPalette": []
+      "commandPalette": [],
+      "view/item/context": [
+        {
+          "command": "elasticdeveloper.explorer.refreshNode.fromExplorer"
+        },
+        {
+          "command": "elasticdeveloper.environment.ping.fromExplorer",
+          "when": "viewItem == environment"
+        },
+        {
+          "command": "elasticdeveloper.environment.setAsTarget.fromExplorer",
+          "when": "viewItem == environment"
+        },
+        {
+          "command": "elasticdeveloper.environment.openFile.fromExplorer",
+          "when": "viewItem == environment"
+        },
+        {
+          "command": "elasticdeveloper.index.delete.fromExplorer",
+          "when": "viewItem == index"
+        }
+      ]
     },
     "languages": [
       {
@@ -146,7 +197,7 @@
       "explorer": [
         {
           "id": "elasticdeveloper-explorer",
-          "name": "Elasticsearch"
+          "name": "Elasticsearch Explorer"
         }
       ]
     }

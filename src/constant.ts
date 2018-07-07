@@ -28,11 +28,30 @@ export const IndexTemplateCodeLensCommandRetract = 'indexTemplate.retract.fromCo
 export const IndexTemplateCommandRetract = 'indexTemplate.retract';
 
 /**
+ * Index
+ */
+export const IndexExplorerCommandDelete = 'index.delete.fromExplorer';
+
+/**
  * Environment
  */
 export const EnvironmentLanguageId = 'esenv';
 export const EnvironmentDocumentSelector = EnvironmentLanguageId;
 export const EnvironmentCodeLensCommandPing = 'environment.ping.fromCodeLens';
+export const EnvironmentExplorerCommandPing = 'environment.ping.fromExplorer';
 export const EnvironmentCommandPing = 'environment.ping';
 export const EnvironmentCodeLensCommandSetAsTarget = 'environment.setAsTarget.fromCodeLens';
+export const EnvironmentExplorerCommandSetAsTarget = 'environment.setAsTarget.fromExplorer';
 export const EnvironmentCommandSetAsTarget = 'environment.setAsTarget';
+export const EnvironmentExplorerCommandOpenFile = 'environment.openFile.fromExplorer';
+
+/**
+ * Configuration
+ */
+export const ConfigurationFeatureExplorerEnabled = Name + '.configuration.feature.explorer.enabled';
+
+/**
+ * ExplorerCommandRefreshNode
+ */
+
+ export const ExplorerCommandRefreshNode = 'explorer.refreshNode.fromExplorer';
