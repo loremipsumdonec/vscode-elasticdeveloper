@@ -1,12 +1,17 @@
 # Change Log
-All notable changes to the "elasticdeveloper" extension will be documented in this file.
+All notable changes to the "Elasticsearch Developer tool" extension will be documented in this file.
 
 ## [Future]
-- Treeview of existing indices, aliases, templates etc from target environment
 - Better Autocomplete support, include existing indicies, aliases, etc from target environment
 - Rebuild syntax highlight
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
+
+## [1.1.0] - 2018-07-09
+### Added
+- Added the Explorer view
+- Compare deployed index templates with files in the workspace
+- Create file from deployed index template
 
 ## [1.0.13] - 2018-07-08
 ### Fixed

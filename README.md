@@ -50,7 +50,9 @@ This action will set the selected environment as target and preceding queries wi
 ![set as target](images/env_setAsTarget.gif)
 
 ### Explore
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque cursus est quis nibh consequat, in elementum erat pellentesque. Pellentesque sollicitudin, lorem quis mollis dictum, lorem mauris malesuada urna, id facilisis sapien ipsum ut tellus. Suspendisse venenatis rutrum enim, vel vehicula lectus congue vel.
+With the explorer view it possible to navigate environments and view existing index, mappings, aliases, scripts and index templates. It's also possible to retreive index settings and statistics.
+
+![explore environment](images/explorer_intro.gif)
 
 ### Index template
 Index template can be created in files with extension *esind*. The deployed index template will use the filename as name.
@@ -85,6 +87,14 @@ This action will deploy the index template to the target environment.
 This action will delete the index template from the target environment, this will not delete any existing indices created from the index template.
 
 ![deploy](images/indexTemplate_retract.gif)
+
+#### Compare
+Compare action will compare the deployed index template with the index template file that exists in the workspace.
+![explore index template compare](images/explorer_indexTemplate_compare.gif)
+
+#### Create file
+Create file action will create a file from the deployed index template. This file can then be saved in the workspace.
+![explore index template compare](images/explorer_indexTemplate_createFile.gif)
 
 ### Query
 Queries can be created in a file with the extension *esquery* and a file can contain more than one query. 
