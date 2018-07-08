@@ -1,4 +1,4 @@
-# Elastic Developer
+# Elasticsearch Developer tool
 
 This is a vscode extension that I have built to make it easier to work with Elasticsearch queries. This is also my first vscode extension and I took the opportunity to refresh my memory with some typescript. There is probably some undocumented "features".
 
@@ -11,6 +11,7 @@ This is a vscode extension that I have built to make it easier to work with Elas
     - View deployed indices, aliases, templates and scripts in a environment
     - View index mappings, aliases, statistics and settings
     - Compare deployed index templates with files in the workspace
+    - Create file from deployed index template
 - Index template
     - Deploy an index template to the target environment
     - Retract the index template from the target environment
