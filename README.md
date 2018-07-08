@@ -90,10 +90,12 @@ This action will delete the index template from the target environment, this wil
 
 #### Compare
 Compare action will compare the deployed index template with the index template file that exists in the workspace.
+
 ![explore index template compare](images/explorer_indexTemplate_compare.gif)
 
 #### Create file
 Create file action will create a file from the deployed index template. This file can then be saved in the workspace.
+
 ![explore index template compare](images/explorer_indexTemplate_createFile.gif)
 
 ### Query
