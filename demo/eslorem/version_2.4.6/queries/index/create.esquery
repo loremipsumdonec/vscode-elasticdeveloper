@@ -10,9 +10,9 @@ PUT /donec
     "mappings" : {
         "document" : {
             "properties" : {
-                "title" : { "type" : "text" },
-                "preamble": {"type": "text"},
-                "main": {"type": "text"}
+                "title" : { "type" : "string" },
+                "preamble": {"type": "string"},
+                "main": {"type": "string"}
             }
         }
     }

@@ -5,16 +5,19 @@ import * as constant from '../constant'
 
 import { EnvironmentController } from "./environmentController";
 import { EnvironmentDocument } from '../parsers/environmentDocument';
-import { Environment } from '../models/environment';
+import { IEnvironmentTreeNode } from '../feature/explorer/models/interfaces';
 
 export class EnvironmentCommandController extends EnvironmentController  {
     
     public registerCommands() {
         this.registerCommand(constant.EnvironmentCommandPing, (input)=> { this.pingWithUri(input) });
+        this.registerCommand(constant.EnvironmentExplorerCommandPing, (input)=> { this.pingWithNode(input) });
         this.registerCommand(constant.EnvironmentCommandSetAsTarget, (input)=> { this.setAsTargetWithUri(input) });
+        this.registerCommand(constant.EnvironmentExplorerCommandSetAsTarget, (input)=> { this.setAsTargetWithNode(input) });
+        this.registerCommand(constant.EnvironmentExplorerCommandOpenFile, (input)=> { this.openFileWithNode(input) });
     }
 
-    private async pingWithUri(input:any) {
+    public async pingWithUri(input:any) {
 
         let uri = this.getActiveDocumentUri(input, constant.EnvironmentLanguageId);
 
@@ -32,7 +35,11 @@ export class EnvironmentCommandController extends EnvironmentController  {
 
     }
 
-    private async setAsTargetWithUri(input:any) {
+    public async pingWithNode(input:IEnvironmentTreeNode) {
+        this.ping(input.environment);
+    }
+
+    public async setAsTargetWithUri(input:any) {
 
         let uri = this.getActiveDocumentUri(input, constant.EnvironmentLanguageId);
 
@@ -48,5 +55,15 @@ export class EnvironmentCommandController extends EnvironmentController  {
             
         }
         
+    }
+
+    public async setAsTargetWithNode(input:IEnvironmentTreeNode) {
+        await this.setAsTarget(input.environment);
+        input.parent.refresh();
+    }
+
+    public async openFileWithNode(input:IEnvironmentTreeNode) {
+        let textDocument:vscode.TextDocument  = await vscode.workspace.openTextDocument(input.resourcePath);
+        vscode.window.showTextDocument(textDocument);
     }
 }

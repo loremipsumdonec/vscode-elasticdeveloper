@@ -1,5 +1,6 @@
 'use strict'
 
+import * as vscode from "vscode";
 import * as textTokenFactory from "../models/textToken";
 import { TextToken } from "../models/textToken";
 
@@ -34,6 +35,15 @@ export class EnvironmentDocument {
         if(environment) {
             this._environments.push(environment);
         }
+    }
+
+    public static async get(fileUri:vscode.Uri): Promise<EnvironmentDocument> {
+        
+        let textDocument = await vscode.workspace.openTextDocument(fileUri);
+        let text = textDocument.getText();
+        let document = EnvironmentDocument.parse(text);
+    
+        return document;
     }
 
     public static parse(text:string): EnvironmentDocument {

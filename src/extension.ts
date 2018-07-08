@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import * as constant from './constant';
 import * as FileSystemLoaderServiceSpecificationManager from './managers/fileSystemLoaderServiceSpecificationManagerDecorator';
 import * as WorkspaceEnvironmentManager from './managers/workspaceEnvironmentManagerDecorator';
 import * as HostEnvironmentManager from './managers/hostEnvironmentManagerDecorator';
@@ -13,14 +14,18 @@ import { Controller } from './controllers/controller';
 import { QueryCodeLensController} from './controllers/queryCodeLensController';
 import { EnvironmentCodeLensController } from './controllers/environmentCodeLensController';
 import { EnvironmentCommandController } from './controllers/environmentCommandController';
-
+import { EnvironmentTreeDataProviderController } from './feature/explorer/environmentTreeDataProviderController';
 import { IndexTemplateCodeLensController } from './controllers/indexTemplateCodeLensController';
 import { IndexTemplateCommandController } from './controllers/indexTemplateCommandController';
-import { IndexTemplateDocumentHighlightController } from './controllers/indexTemplateDocumentHighlightController';
 import { QueryCompletionItemController } from './controllers/queryCompletionItemController';
 import { QueryCommandController } from './controllers/queryCommandController';
+import { IndexCommandController } from './controllers/indexCommandController';
+import { ScriptCommandController } from './controllers/scriptCommandController';
 
 export function activate(context: vscode.ExtensionContext) {
+
+    let configuration = vscode.workspace.getConfiguration();
+    let explorerFeatureEnabled = configuration.get(constant.ConfigurationFeatureExplorerEnabled);
 
     LogManager.verbose('elasticdeveloper extension activated');
     LogManager.verbose('elasticdeveloper decorating EnvironmentManager');
@@ -37,8 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new QueryCompletionItemController());
     controllers.push(new EnvironmentCodeLensController());
     controllers.push(new EnvironmentCommandController());
+    controllers.push(new EnvironmentTreeDataProviderController());
     controllers.push(new IndexTemplateCodeLensController());
     controllers.push(new IndexTemplateCommandController());
+    controllers.push(new IndexCommandController());
+    controllers.push(new ScriptCommandController());
 
     LogManager.verbose('elasticdeveloper register controllers');
 

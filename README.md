@@ -1,4 +1,4 @@
-# Elastic Developer
+# Elasticsearch Developer tool
 
 This is a vscode extension that I have built to make it easier to work with Elasticsearch queries. This is also my first vscode extension and I took the opportunity to refresh my memory with some typescript. There is probably some undocumented "features".
 
@@ -7,6 +7,11 @@ This is a vscode extension that I have built to make it easier to work with Elas
     - Mutiple environments
     - Ping an environment
     - Change target environment
+- Explore
+    - View deployed indices, aliases, templates and scripts in a environment
+    - View index mappings, aliases, statistics and settings
+    - Compare deployed index templates with files in the workspace
+    - Create file from deployed index template
 - Index template
     - Deploy an index template to the target environment
     - Retract the index template from the target environment
@@ -44,6 +49,11 @@ This action will set the selected environment as target and preceding queries wi
 
 ![set as target](images/env_setAsTarget.gif)
 
+### Explore
+With the explorer view it possible to navigate environments and view existing index, mappings, aliases, scripts and index templates. It's also possible to retreive index settings and statistics.
+
+![explore environment](images/explorer_intro.gif)
+
 ### Index template
 Index template can be created in files with extension *esind*. The deployed index template will use the filename as name.
 
@@ -77,6 +87,14 @@ This action will deploy the index template to the target environment.
 This action will delete the index template from the target environment, this will not delete any existing indices created from the index template.
 
 ![deploy](images/indexTemplate_retract.gif)
+
+#### Compare
+Compare action will compare the deployed index template with the index template file that exists in the workspace.
+![explore index template compare](images/explorer_indexTemplate_compare.gif)
+
+#### Create file
+Create file action will create a file from the deployed index template. This file can then be saved in the workspace.
+![explore index template compare](images/explorer_indexTemplate_createFile.gif)
 
 ### Query
 Queries can be created in a file with the extension *esquery* and a file can contain more than one query. 

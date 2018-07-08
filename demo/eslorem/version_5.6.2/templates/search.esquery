@@ -1,0 +1,13 @@
+
+POST _scripts/search
+{
+    "script": {
+        "lang": "mustache",
+        "source": {
+                "from": 0, "size": "{{limit}}",
+                "query": {
+                    "match_all": {}
+                }
+        }
+    }
+}

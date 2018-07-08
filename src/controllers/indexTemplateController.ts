@@ -6,6 +6,7 @@ import * as constant from '../constant';
 import { Controller } from './controller';
 import { IndexTemplate } from '../models/indexTemplate';
 import { ElasticsearchQuery } from '../models/elasticsearchQuery';
+import { Environment } from '../models/environment';
 
 export class IndexTemplateController extends Controller {
 
@@ -23,12 +24,12 @@ export class IndexTemplateController extends Controller {
         }
     }
 
-    public async retract(indexTemplate:IndexTemplate) {
+    public async retract(indexTemplate:IndexTemplate, environment?: Environment) {
 
         if(indexTemplate && indexTemplate.hasName) {
 
             let query = ElasticsearchQuery.parse('DELETE /_template/' + indexTemplate.name);
-            let response = await this.executeQuery(query);
+            let response = await this.executeQuery(query, environment);
 
             if(response.completed) {
                 this.info(false, 'retracted index template %s', indexTemplate.name);

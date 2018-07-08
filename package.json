@@ -2,7 +2,7 @@
   "name": "elasticdeveloper",
   "displayName": "Elasticsearch Developer tool",
   "description": "Create Elasticsearch Query DSL from vscode",
-  "version": "1.0.13",
+  "version": "1.1.0",
   "license": "MIT",
   "preview": false,
   "publisher": "crasnam",
@@ -31,6 +31,16 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "configuration": {
+      "title": "Elastic Developer",
+      "properties": {
+        "elasticdeveloper.configuration.feature.explorer.enabled": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Toggle Elasticsearch explorer feature, prototype version"
+        }
+      }
+    },
     "commands": [
       {
         "command": "elasticdeveloper.query.runAll",
@@ -45,41 +55,128 @@
         "title": "Retract index template"
       },
       {
+        "command": "elasticdeveloper.indexTemplate.retract.fromExplorer",
+        "title": "Retract"
+      },
+      {
+        "command": "elasticdeveloper.indexTemplate.compare.fromExplorer",
+        "title": "Compare"
+      },
+      {
+        "command": "elasticdeveloper.indexTemplate.createFile.fromExplorer",
+        "title": "Create file"
+      },
+      {
+        "command": "elasticdeveloper.script.retract.fromExplorer",
+        "title": "Retract"
+      },
+      {
         "command": "elasticdeveloper.environment.ping",
+        "title": "Ping environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.ping.fromExplorer",
         "title": "Ping environment"
       },
       {
         "command": "elasticdeveloper.environment.setAsTarget",
         "title": "Set as target environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.setAsTarget.fromExplorer",
+        "title": "Set as target environment"
+      },
+      {
+        "command": "elasticdeveloper.environment.openFile.fromExplorer",
+        "title": "Open file"
+      },
+      {
+        "command": "elasticdeveloper.index.delete.fromExplorer",
+        "title": "Delete"
+      },
+      {
+        "command": "elasticdeveloper.explorer.refreshNode.fromExplorer",
+        "title": "Refresh"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "elasticdeveloper.environment.setAsTarget",
-          "when": "resourceExtname == .esenv"
+          "when": "resourceExtname == .esenv",
+          "group": "2_workspace"
         },
         {
           "command": "elasticdeveloper.environment.ping",
-          "when": "resourceExtname == .esenv"
+          "when": "resourceExtname == .esenv",
+          "group": "2_workspace"
         },
         {
           "command": "elasticdeveloper.query.runAll",
-          "when": "resourceExtname == .esquery"
+          "when": "resourceExtname == .esquery",
+          "group": "2_workspace"
         },
         {
           "command": "elasticdeveloper.indexTemplate.deploy",
-          "when": "resourceExtname == .esind"
+          "when": "resourceExtname == .esind",
+          "group": "7_modification"
         },
         {
           "command": "elasticdeveloper.indexTemplate.retract",
-          "when": "resourceExtname == .esind"
+          "when": "resourceExtname == .esind",
+          "group": "7_modification"
         }
       ],
       "editor/title/context": [],
       "editor/title": [],
       "editor/context": [],
-      "commandPalette": []
+      "commandPalette": [],
+      "view/item/context": [
+        {
+          "command": "elasticdeveloper.explorer.refreshNode.fromExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "elasticdeveloper.environment.ping.fromExplorer",
+          "when": "viewItem == environment",
+          "group": "2_workspace"
+        },
+        {
+          "command": "elasticdeveloper.environment.setAsTarget.fromExplorer",
+          "when": "viewItem == environment",
+          "group": "2_workspace"
+        },
+        {
+          "command": "elasticdeveloper.environment.openFile.fromExplorer",
+          "when": "viewItem == environment",
+          "group": "navigation"
+        },
+        {
+          "command": "elasticdeveloper.index.delete.fromExplorer",
+          "when": "viewItem == index",
+          "group": "7_modification"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.retract.fromExplorer",
+          "when": "viewItem == indexTemplate",
+          "group": "7_modification"
+        },
+        {
+          "command": "elasticdeveloper.script.retract.fromExplorer",
+          "when": "viewItem == script",
+          "group": "7_modification"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.compare.fromExplorer",
+          "when": "viewItem == indexTemplate",
+          "group": "3_compare"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.createFile.fromExplorer",
+          "when": "viewItem == indexTemplate",
+          "group": "7_modification"
+        }
+      ]
     },
     "languages": [
       {
@@ -139,7 +236,15 @@
         "key": "alt+enter",
         "when": "resourceLangId == 'esquery'"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "elasticdeveloper-explorer",
+          "name": "Elasticsearch Explorer"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

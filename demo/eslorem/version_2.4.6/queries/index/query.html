@@ -1,0 +1,21 @@
+<html>
+    <body>
+        <h1>Results</h1>
+        <h4>Query performed in {{a_simple_search.body.took}} ms</h4>
+
+        {{#each a_simple_search.body.hits.hits}}
+            <div>
+                <p>
+                    <span><strong>score=</strong>{{_score}}</span>,
+                    <span><strong>id=</strong>{{_id}}</span>
+                </p>
+                <p>
+                    {{#each _source}}
+                        <span><strong>{{@key}}=</strong>{{.}}</span>
+                    {{/each}}
+                </p>
+            </div>
+            <hr/>
+        {{/each}}
+    </body>
+</html>

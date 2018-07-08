@@ -35,6 +35,14 @@ export class Environment extends Entity {
         return environment;
     }
 
+    public get id():string {
+        return this.name;
+    }
+
+    public get hasName(): boolean {
+        return (this._name && this._name.length > 0);
+    }
+
     public get name():string {
         return this._name;
     }
