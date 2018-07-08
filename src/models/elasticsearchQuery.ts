@@ -137,11 +137,11 @@ export class ElasticsearchQuery extends Entity {
             if(stream.char === '}') {
 
                 let source = JSON.stringify(
-                    this._body.substring(s, stream.position + 1)
+                    inputValue.substring(s, stream.position + 1)
                 );
 
-                let first = this._body.substring(0, s);
-                let last = this._body.substring(stream.position + 1);
+                let first = inputValue.substring(0, s);
+                let last = inputValue.substring(stream.position + 1);
 
                 output = first + source + last;
             }

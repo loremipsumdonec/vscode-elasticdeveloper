@@ -8,19 +8,26 @@ All notable changes to the "elasticdeveloper" extension will be documented in th
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
-## [1.0.12] - 2018-07-07
+## [1.0.13] - 2018-07-08
 ### Fixed
+- Search templates using Mustache syntax. 
+    - bug was created when implemented support for Bulk API
+
+## [1.0.12] - 2018-07-07
+### Changed
 - Changed display name to Elasticsearch Developer tool
 
 ## [1.0.11] - 2018-07-03
-### Fixed
-- Added code lens title for bulk
+### Added
+- Added code lens title for bulk query
 
 ## [1.0.10] - 2018-07-01
-### Fixed
-- I guess it's time to remove the preview. :)
+### Added
 - Added support for Bulk API, Multi Search API
 - Upgrade vscode
+### Changed
+- I guess it's time to remove the preview. :)
+### Fixed
 - Fixed problem with keybindings
 
 ## [1.0.8-preview] - 2018-04-12
