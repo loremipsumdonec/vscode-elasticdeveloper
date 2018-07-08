@@ -457,6 +457,7 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
             this.addChild(new IndicesQueryTreeNode());
             this.addChild(new AliasesQueryTreeNode());
             this.addChild(new TemplatesQueryTreeNode());
+            this.addChild(new ScriptsQueryTreeNode());
         }
         
     }
@@ -549,6 +550,70 @@ export class TemplatesQueryTreeNode extends QueryTreeNode {
             }
         }
 
+        return children;
+    }
+
+}
+
+export class ScriptsQueryTreeNode extends QueryTreeNode {
+
+    constructor() {
+        super('scripts','GET /_cluster/state/metadata');
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
+
+        if(response.completed && response.body.metadata && response.body.metadata.stored_scripts) {
+
+            let keys = Object.keys(response.body.metadata.stored_scripts);
+
+            for(let scriptId of keys) {
+
+                if(scriptId.indexOf('#') === -1) {
+
+                    try {
+                        children.push(new ScriptQueryTreeNode(scriptId));
+                    }catch(ex) {
+                        console.log(ex);
+                    }
+                }
+
+                
+            }
+        }
+
+        return children;
+    }
+
+}
+
+export class ScriptQueryTreeNode extends QueryTreeNode {
+
+    constructor(id:string) {
+        super(id, 'GET /_scripts/' + id);
+    }
+
+    public get isParent() {
+        return false;
+    }
+
+    public get iconPath():ThemeIcon {
+        return ThemeIcon.File;
+    }
+
+    public set iconPath(value:ThemeIcon) {
+        super.iconPath = value;
+    }
+
+    public get contextValue():string {
+        return 'script';
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
         return children;
     }
 
@@ -697,33 +762,6 @@ export class IndexMappingsQueryTreeNode extends QueryTreeNode {
         }
 
         return children;
-    }
-
-    private buildMappingTree(root:ParentTreeNode, properties:any) {
-
-        let keys = Object.keys(properties);
-
-        for(let key of keys) {
-
-            let type = properties[key].type;
-            let label = key + ': ' + type;
-
-            if(properties[key].fields) {
-                let node = new ParentTreeNode(label);
-                node.iconPath = undefined;
-                node.parent = root;
-
-                this.buildMappingTree(node, properties[key].fields);
-                root.addChild(node);
-            } else {
-                let node = new TreeNode(label);
-                node.iconPath = undefined;
-                node.parent = root;
-
-                root.addChild(node);
-            }
-        }
-
     }
 }
 

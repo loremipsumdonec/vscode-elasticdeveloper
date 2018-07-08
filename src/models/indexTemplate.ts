@@ -144,6 +144,7 @@ export class IndexTemplate extends Entity {
         }
 
         return {
+            order: this.order,
             template: this.template,
             index_patterns: index_patterns,
             version: this.version,

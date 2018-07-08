@@ -20,6 +20,7 @@ import { IndexTemplateCommandController } from './controllers/indexTemplateComma
 import { QueryCompletionItemController } from './controllers/queryCompletionItemController';
 import { QueryCommandController } from './controllers/queryCommandController';
 import { IndexCommandController } from './controllers/indexCommandController';
+import { ScriptCommandController } from './controllers/scriptCommandController';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -41,14 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new QueryCompletionItemController());
     controllers.push(new EnvironmentCodeLensController());
     controllers.push(new EnvironmentCommandController());
-    
-    if(explorerFeatureEnabled) {
-        controllers.push(new EnvironmentTreeDataProviderController());
-    }
-
+    controllers.push(new EnvironmentTreeDataProviderController());
     controllers.push(new IndexTemplateCodeLensController());
     controllers.push(new IndexTemplateCommandController());
     controllers.push(new IndexCommandController());
+    controllers.push(new ScriptCommandController());
 
     LogManager.verbose('elasticdeveloper register controllers');
 

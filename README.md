@@ -7,6 +7,10 @@ This is a vscode extension that I have built to make it easier to work with Elas
     - Mutiple environments
     - Ping an environment
     - Change target environment
+- Explore
+    - View deployed indices, aliases, templates and scripts in a environment
+    - View index mappings, aliases, statistics and settings
+    - Compare deployed index templates with files in the workspace
 - Index template
     - Deploy an index template to the target environment
     - Retract the index template from the target environment
@@ -43,6 +47,9 @@ This action will check that the environment is reachable.
 This action will set the selected environment as target and preceding queries will use this environment.
 
 ![set as target](images/env_setAsTarget.gif)
+
+### Explore
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque cursus est quis nibh consequat, in elementum erat pellentesque. Pellentesque sollicitudin, lorem quis mollis dictum, lorem mauris malesuada urna, id facilisis sapien ipsum ut tellus. Suspendisse venenatis rutrum enim, vel vehicula lectus congue vel.
 
 ### Index template
 Index template can be created in files with extension *esind*. The deployed index template will use the filename as name.

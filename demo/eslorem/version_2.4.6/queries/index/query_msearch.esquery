@@ -1,0 +1,32 @@
+
+{
+    "output": "../../../output.json",
+    "params": {
+        "firstQuery": "ipsum",
+        "secondQuery": "donec"
+    }
+}
+
+GET _msearch 
+{ 
+    "index": "lorem" 
+}
+{ 
+    "query": {  "multi_match": {
+            "query": "{{firstQuery}}",
+            "fields": ["title", "preamble"]
+        }
+    }
+}
+{
+    "index": "lorem"
+}
+{
+    "query": {
+        "multi_match": {
+            "query": "{{secondQuery}}",
+            "fields": ["title", "preamble"]
+        }
+    }
+}
+

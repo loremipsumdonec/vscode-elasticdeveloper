@@ -1,0 +1,10 @@
+
+POST /_search/template/search
+{
+    "template": {
+        "from": 0, "size": "{{limit}}",
+            "query": {
+                "match_all": {}
+            }
+    }
+}

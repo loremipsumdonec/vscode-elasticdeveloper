@@ -27,6 +27,21 @@ export const IndexTemplateCommandDeploy = 'indexTemplate.deploy';
 export const IndexTemplateCodeLensCommandRetract = 'indexTemplate.retract.fromCodeLens';
 export const IndexTemplateExplorerCommandRetract = 'indexTemplate.retract.fromExplorer';
 export const IndexTemplateCommandRetract = 'indexTemplate.retract';
+export const IndexTemplateExplorerCommandCompare = 'indexTemplate.compare.fromExplorer';
+export const IndexTemplateExplorerCommandCreateFile = 'indexTemplate.createFile.fromExplorer'
+
+/**
+ * Script
+ */
+export const ScriptLanguageId = 'esscr';
+export const ScriptDocumentSelector = ScriptLanguageId;
+export const ScriptCodeLensCommandDeploy = 'script.deploy.fromCodeLens';
+export const ScriptCommandDeploy = 'script.deploy';
+export const ScriptCodeLensCommandRetract = 'script.retract.fromCodeLens';
+export const ScriptExplorerCommandRetract = 'script.retract.fromExplorer';
+export const ScriptCommandRetract = 'script.retract';
+export const ScriptExplorerCommandCompare = 'script.compare.fromExplorer';
+export const ScriptExplorerCommandCreateFile = 'script.createFile.fromExplorer'
 
 /**
  * Index
