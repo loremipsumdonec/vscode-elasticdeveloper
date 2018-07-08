@@ -2,11 +2,19 @@
 All notable changes to the "elasticdeveloper" extension will be documented in this file.
 
 ## [Future]
-- Better Autocomplete support, include existing indicies, aliases, etc from target environment
 - Treeview of existing indices, aliases, templates etc from target environment
+- Better Autocomplete support, include existing indicies, aliases, etc from target environment
 - Rebuild syntax highlight
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
+
+## [1.0.12] - 2018-07-07
+### Fixed
+- Changed display name to Elasticsearch Developer tool
+
+## [1.0.11] - 2018-07-03
+### Fixed
+- Added code lens title for bulk
 
 ## [1.0.10] - 2018-07-01
 ### Fixed
