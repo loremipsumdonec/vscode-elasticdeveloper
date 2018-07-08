@@ -42,19 +42,13 @@ export abstract class Controller {
 
             if(environment) {
 
-                try {
-                    response = await ElasticService.execute(query, environment);
-                }catch(ex) {
-                    response = ex;
-                    response.environment = environment;
-                }
+                response = await executeQuery(query, environment);
                 
                 if(query.hasName) {
                     this.info(false, 'executed query %s %s %s on host %s', query.name, query.method, query.command, environment);
                 } else {
                     this.info(false, 'executed query %s %s on host %s', query.method, query.command, environment);
                 }
-                
         
             } else {
     
@@ -315,4 +309,18 @@ export abstract class Controller {
 
         return range;
     }
+}
+
+export async function executeQuery(query:ElasticsearchQuery, environment:Environment): Promise<ElasticsearchResponse> {
+
+    let response:ElasticsearchResponse = null;
+
+    try {
+        response = await ElasticService.execute(query, environment);
+    }catch(ex) {
+        response = ex;
+        response.environment = environment;
+    }
+
+    return response;
 }

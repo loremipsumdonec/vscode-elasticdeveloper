@@ -55,6 +55,10 @@
         "title": "Retract index template"
       },
       {
+        "command": "elasticdeveloper.indexTemplate.retract.fromExplorer",
+        "title": "Retract"
+      },
+      {
         "command": "elasticdeveloper.environment.ping",
         "title": "Ping environment"
       },
@@ -129,6 +133,10 @@
         {
           "command": "elasticdeveloper.index.delete.fromExplorer",
           "when": "viewItem == index"
+        },
+        {
+          "command": "elasticdeveloper.indexTemplate.retract.fromExplorer",
+          "when": "viewItem == indexTemplate"
         }
       ]
     },

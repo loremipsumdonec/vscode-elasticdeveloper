@@ -5,12 +5,15 @@ import * as constant from '../constant'
 
 import { IndexTemplateController } from './indexTemplateController';
 import { IndexTemplateDocument } from '../parsers/indexTemplateDocument';
+import { ITreeNode } from '../feature/explorer/models/interfaces';
+import { IndexTemplate } from '../models/indexTemplate';
 
 export class IndexTemplateCommandController extends IndexTemplateController  {
     
     public registerCommands() {
         this.registerCommand(constant.IndexTemplateCommandDeploy, (input)=> { this.deployWithUri(input) });
         this.registerCommand(constant.IndexTemplateCommandRetract, (input)=> { this.retractWithUri(input) });
+        this.registerCommand(constant.IndexTemplateExplorerCommandRetract, (input)=> { this.retractWithNode(input) });
     }
 
     private async deployWithUri(input:any) {
@@ -53,5 +56,15 @@ export class IndexTemplateCommandController extends IndexTemplateController  {
             
         }
         
+    }
+
+    private async retractWithNode(input:ITreeNode) {
+
+        let indexTemplate = new IndexTemplate();
+        indexTemplate.name = input.label;
+
+        await this.retract(indexTemplate);
+        input.parent.refresh();
+
     }
 }

@@ -8,6 +8,9 @@ import { TokenType } from "../parsers/elasticsearchQueryDocumentScanner";
 import { Entity } from './entity';
 import { PropertyToken } from './propertyToken';
 import { TextStream } from '../parsers/textStream';
+import { ElasticsearchResponse } from './elasticSearchResponse';
+import { Environment } from './environment';
+import { ElasticService } from '../services/elasticService';
 
 export class ElasticsearchQuery extends Entity {
 
@@ -199,4 +202,18 @@ export class ElasticsearchQuery extends Entity {
 
 export function createPingQuery(): ElasticsearchQuery {
     return ElasticsearchQuery.parse('GET /');
+}
+
+export async function executeQuery(query:ElasticsearchQuery, environment:Environment): Promise<ElasticsearchResponse> {
+
+    let response:ElasticsearchResponse = null;
+
+    try {
+        response = await ElasticService.execute(query, environment);
+    }catch(ex) {
+        response = ex;
+        response.environment = environment;
+    }
+
+    return response;
 }

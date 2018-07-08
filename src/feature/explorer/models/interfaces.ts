@@ -1,13 +1,16 @@
 import * as vscode from 'vscode';
+import * as ElasticsearchQueryManager from '../../../models/elasticSearchQuery';
 
 import { ElasticsearchResponse } from "../../../models/elasticSearchResponse";
 import { EnvironmentManager } from "../../../managers/environmentManager";
 import { ElasticService } from "../../../services/elasticService";
 import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
+
 import { ThemeIcon, Uri, env } from "vscode";
 import { Environment } from "../../../models/environment";
 import { EnvironmentTreeDataProviderController } from "../environmentTreeDataProviderController";
 import { EnvironmentDocument } from '../../../parsers/environmentDocument';
+import { isObject, isArray } from 'util';
 
 export interface IElasticTreeItem {
 
@@ -29,6 +32,7 @@ export interface ITreeNode {
     iconPath?: string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
     contextValue: string;
     refresh();
+    prepare();
 }
 
 export interface IParentTreeNode extends ITreeNode {
@@ -160,6 +164,10 @@ export class TreeNode implements ITreeNode {
         return undefined;
     }
 
+    public async prepare() {
+
+    }
+
     public refresh() {
         this.treeDataProvider.refresh(this);
     }
@@ -249,10 +257,44 @@ export class ObjectTreeNode extends ParentTreeNode {
 
         let children:ITreeNode[] = [];
 
-        for(let key in this.object) {
+        if(isArray(this.object)) {
 
-            let id = key + ': ' + this.object[key];
-            this.addChild(new TreeNode(id))
+            for(let key in this.object) {
+
+                let value = this.object[key];
+    
+                if(isObject(value)) {
+                    let child = new ObjectTreeNode(key, value);
+                    child.iconPath = null;
+                    this.addChild(child);
+                } else {
+                    let id = key + ': ' + value;
+
+                    let child = new TreeNode(id,value);
+                    child.iconPath = null;
+                    this.addChild(child);
+                }
+            }
+
+        } else {
+
+            for(let key in this.object) {
+
+                let value = this.object[key];
+    
+                if(isObject(value)) {
+                    let child = new ObjectTreeNode(key, value);
+                    child.iconPath = null;
+                    this.addChild(child);
+                } else {
+                    let id = key + ': ' + value;
+                    
+                    let child = new TreeNode(id);
+                    child.iconPath = null;
+                    this.addChild(child);
+                }
+            }
+
         }
     }
 }
@@ -322,6 +364,7 @@ export class EnvironmentsParentTreeNode extends ParentTreeNode {
 
 export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentTreeNode {
 
+    private _online:boolean = undefined;
     private _environment:Environment;
     private _resourcePath:Uri;
 
@@ -332,14 +375,27 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
         this._resourcePath = resourcePath;
     }
 
+    public set online(value:boolean) {
+        this._online = value;
+    }
+
+    public get online(): boolean {
+        return this._online;
+    }
+
     public get label():string {
 
         let current = EnvironmentManager.get().environment;
+        let post =  '';
+
+        if(!this.online) {
+            post = ' (offline)';
+        }
 
         if(current && current.id === this._environment.id) {
-            return super.label + ' (x)';
+            return super.label + ' (x)' + post;
         } else {
-            return super.label;
+            return super.label + post;;
         }
     }
 
@@ -347,9 +403,28 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
         super.label = value;
     }
 
+    public get iconPath():string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon {
+        if(this.online) {
+            return ThemeIcon.Folder;
+        } else {
+            return ThemeIcon.File;
+        }
+    }
+
+    public set iconPath(value:string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon) {
+        super.iconPath = value;
+    }
+
+    public get isParent(): boolean {
+        return this.online;
+    }
+
     public set environment(environment:Environment) {
+        
         this._environment = environment;
+        this._online = undefined;
         this.label = environment.name;
+
     }
 
     public get environment(): Environment {
@@ -368,10 +443,22 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
         return 'environment';
     }
 
+    public async prepare() {
+
+        let query = ElasticsearchQueryManager.createPingQuery();
+        let response = await ElasticsearchQueryManager.executeQuery(query, this._environment);
+
+        this.online = response.completed;
+    }
+
     protected async loadChildren() {
 
-        this.addChild(new IndicesQueryTreeNode());
-        this.addChild(new AliasesQueryTreeNode());
+        if(this.online) {
+            this.addChild(new IndicesQueryTreeNode());
+            this.addChild(new AliasesQueryTreeNode());
+            this.addChild(new TemplatesQueryTreeNode());
+        }
+        
     }
 
 }
@@ -402,7 +489,7 @@ abstract class QueryTreeNode extends ParentTreeNode {
 
         this.clear();
         let response = await this.executeQuery();
-        let children = this.getChildrenInResponse(response);
+        let children = await this.getChildrenInResponse(response);
         children.forEach(child => this.addChild(child));
 
         this.children.sort((a, b) => a.label.localeCompare(b.label));
@@ -410,34 +497,13 @@ abstract class QueryTreeNode extends ParentTreeNode {
 
     protected async executeQuery() : Promise<ElasticsearchResponse> {
 
-        let response: ElasticsearchResponse = null;
         let query:ElasticsearchQuery = ElasticsearchQuery.parse(this._query);
-
-        try{
-
-            if(this.environment) {
-
-                try {
-                    response = await ElasticService.execute(query, this.environment);
-                }catch(ex) {
-                    response = ex;
-                    response.environment = this.environment;
-                }                
-        
-            }
-
-        }catch(ex) {
-
-            response = {
-                message: ex.message,
-                completed: false 
-            };
-        }
+        let response = await ElasticsearchQueryManager.executeQuery(query, this.environment);
 
         return response;
     }
 
-    protected getChildrenInResponse(response:ElasticsearchResponse):ITreeNode[] {
+    protected async getChildrenInResponse(response:ElasticsearchResponse):Promise<ITreeNode[]> {
         return [];
     }
 }
@@ -448,7 +514,7 @@ export class IndicesQueryTreeNode extends QueryTreeNode {
         super('indices','GET /_cat/indices');
     }
 
-    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
 
         let children:ITreeNode[] = [];
 
@@ -456,6 +522,30 @@ export class IndicesQueryTreeNode extends QueryTreeNode {
 
             for(let d of response.body) {
                 children.push(new IndexTreeNode(d));
+            }
+        }
+
+        return children;
+    }
+
+}
+
+export class TemplatesQueryTreeNode extends QueryTreeNode {
+
+    constructor() {
+        super('templates','GET /_template');
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
+
+        if(response.completed) {
+
+            let keys = Object.keys(response.body);
+
+            for(let indexTemplateName of keys) {
+                children.push(new IndexTemplateQueryTreeNode(indexTemplateName, indexTemplateName));
             }
         }
 
@@ -480,9 +570,45 @@ export class IndexTreeNode extends ParentTreeNode {
 
     protected async loadChildren() {
 
-        this.addChild(new IndicesMappingsQueryTreeNode('mappings', this._index))
+        this.addChild(new IndexMappingsQueryTreeNode('mappings', this._index.index))
         this.addChild(new AliasesQueryTreeNode('GET /'+ this._index.index +'/_alias/*', true));
+        this.addChild(new IndexSettingsQueryTreeNode('settings', this._index.index))
+        this.addChild(new IndexStatsQueryTreeNode('statistics', this._index.index))
     }
+}
+
+export class IndexTemplateQueryTreeNode extends QueryTreeNode {
+
+    private _indexTemplateName:string
+
+    constructor(id:string, indexTemplateName:string) {
+        super(id, 'GET /_template/' + indexTemplateName);
+
+        this._indexTemplateName = indexTemplateName;
+    }
+
+    public get contextValue():string {
+        return 'indexTemplate';
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
+
+        if(response.completed) {
+
+            if(response.body[this._indexTemplateName]) {
+
+                let objectNode = new ObjectTreeNode('template', response.body[this._indexTemplateName]);
+                let nodes = await objectNode.getChildren();
+                nodes.forEach(child => children.push(child));
+            }
+
+        }
+
+        return children;
+    }
+
 }
 
 export class AliasesQueryTreeNode extends QueryTreeNode {
@@ -500,7 +626,7 @@ export class AliasesQueryTreeNode extends QueryTreeNode {
         
     }
 
-    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
 
         let children:ITreeNode[] = [];
 
@@ -542,32 +668,28 @@ export class AliasesQueryTreeNode extends QueryTreeNode {
 
 }
 
-export class IndicesMappingsQueryTreeNode extends QueryTreeNode {
+export class IndexMappingsQueryTreeNode extends QueryTreeNode {
 
-    private _index:any;
+    private _indexName:string
 
-    constructor(id:string, index:any) {
-        super(id,'GET /' + index.index + '/_mapping');
+    constructor(id:string, indexName:string) {
+        super(id, 'GET /' + indexName + '/_mapping');
 
-        this._index = index;
+        this._indexName = indexName;
     }
 
-    protected getChildrenInResponse(response:ElasticsearchResponse): ITreeNode[] {
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
 
         let children:ITreeNode[] = [];
 
         if(response.completed) {
 
-            if(response.body[this._index.index] &&  response.body[this._index.index].mappings) {
+            if(response.body[this._indexName] &&  response.body[this._indexName].mappings) {
 
-                let keys = Object.keys(response.body[this._index.index].mappings);
+                let keys = Object.keys(response.body[this._indexName].mappings);
                 for(let key of keys) {
 
-                    let node = new ParentTreeNode(key);
-                    node.parent = this;
-                    let properties = response.body[this._index.index].mappings[key].properties;
-                    
-                    this.buildMappingTree(node, properties);
+                    let node = new ObjectTreeNode(key, response.body[this._indexName].mappings[key]);
                     children.push(node);
                 }
             }
@@ -605,4 +727,63 @@ export class IndicesMappingsQueryTreeNode extends QueryTreeNode {
     }
 }
 
+export class IndexSettingsQueryTreeNode extends QueryTreeNode {
+
+    private _indexName:string
+
+    constructor(id:string, indexName:string) {
+        super(id,'GET /' + indexName + '/_settings');
+
+        this._indexName = indexName;
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
+
+        if(response.completed) {
+
+            if(response.body[this._indexName] && response.body[this._indexName].settings) {
+
+                var root = new ObjectTreeNode('settings', response.body[this._indexName].settings.index);
+                let settings = await root.getChildren();
+                settings.forEach(child => children.push(child));
+            }
+
+        }
+
+        return children;
+    }
+
+}
+
+export class IndexStatsQueryTreeNode extends QueryTreeNode {
+
+    private _indexName:string
+
+    constructor(id:string, indexName:string) {
+        super(id,'GET /' + indexName + '/_stats');
+
+        this._indexName = indexName;
+    }
+
+    protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
+
+        let children:ITreeNode[] = [];
+
+        if(response.completed) {
+
+            if(response.body.indices[this._indexName]) {
+
+                var root = new ObjectTreeNode('stats', response.body.indices[this._indexName]);
+                let nodes = await root.getChildren();
+                nodes.forEach(child => children.push(child));
+            }
+
+        }
+
+        return children;
+    }
+
+}
 

@@ -21,7 +21,10 @@ export class EnvironmentTreeDataProviderController  extends EnvironmentControlle
         return this._onDidChangeTreeDataEmitter.event;
     }
     
-    public getTreeItem(element: ITreeNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    public async getTreeItem(element: ITreeNode): Promise<vscode.TreeItem> {
+
+        await element.prepare();
+
         return {
             id: element.globalId,
             label: element.label,

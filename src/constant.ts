@@ -25,6 +25,7 @@ export const IndexTemplateDocumentSelector = IndexTemplateLanguageId;
 export const IndexTemplateCodeLensCommandDeploy = 'indexTemplate.deploy.fromCodeLens';
 export const IndexTemplateCommandDeploy = 'indexTemplate.deploy';
 export const IndexTemplateCodeLensCommandRetract = 'indexTemplate.retract.fromCodeLens';
+export const IndexTemplateExplorerCommandRetract = 'indexTemplate.retract.fromExplorer';
 export const IndexTemplateCommandRetract = 'indexTemplate.retract';
 
 /**
