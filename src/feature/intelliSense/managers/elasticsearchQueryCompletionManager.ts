@@ -40,12 +40,6 @@ export class ElasticsearchQueryCompletionManager {
                 break;
         }
 
-        /*let queryBodySnippet = new vscode.CompletionItem('body', vscode.CompletionItemKind.Snippet);
-        queryBodySnippet.insertText = new vscode.SnippetString('\n\t"query": {$0\n\t}\n');
-
-        completionItems.push(queryBodySnippet);
-        */
-
         return completionItems;
     }
 
