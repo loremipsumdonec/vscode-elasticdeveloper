@@ -112,19 +112,39 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
  
+    private getCompletionItemLabel(node:Node, triggerCharacter:string):string {
+
+        let label:string;
+
+        if(triggerCharacter === '"') {
+            label = node.label;
+        } else {
+            label = '"'+ node.label +'"';
+        }
+
+        let matches = label.match(/\{(\w+)\}/g);
+
+        if(matches) {
+
+            let index = 1;
+
+            for(let m of matches) {
+                let key = m.substring(1, m.length - 1);
+                label = label.replace(m, '${' + index + ':' + key + '}');
+                index++;
+            }
+        }
+
+        return label;
+    }
+
     private createCompletionItems(nodes:Node[], triggerCharacter:string): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
 
         for(let node of nodes) {
             let item = new vscode.CompletionItem(node.label, node.data.kind);
-            let label:string;
-
-            if(triggerCharacter === '"') {
-                label = node.label;
-            } else {
-                label = '"'+ node.label +'"';
-            }
+            let label:string =  this.getCompletionItemLabel(node, triggerCharacter);
 
             switch(item.kind) {
                 case vscode.CompletionItemKind.Class:
@@ -138,9 +158,10 @@ export class ElasticsearchQueryCompletionManager {
                     break;
                 case vscode.CompletionItemKind.Field:
                     if(node.data.defaultValue) {
-                        item.insertText = new vscode.SnippetString(label +': "${1:' + node.data.defaultValue + '}"$0');
+                        let defaultValue = node.data.defaultValue.replace('{','').replace('}', '');
+                        item.insertText = new vscode.SnippetString(label +': "${2:' + defaultValue + '}"$0');
                     } else {
-                        item.insertText = new vscode.SnippetString(label +': "${1}"$0');
+                        item.insertText = new vscode.SnippetString(label +': "${2}"$0');
                     }
                     break;
                 case vscode.CompletionItemKind.Value:
