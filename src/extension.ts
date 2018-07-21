@@ -17,7 +17,7 @@ import { EnvironmentCommandController } from './controllers/environmentCommandCo
 import { EnvironmentTreeDataProviderController } from './feature/explorer/environmentTreeDataProviderController';
 import { IndexTemplateCodeLensController } from './controllers/indexTemplateCodeLensController';
 import { IndexTemplateCommandController } from './controllers/indexTemplateCommandController';
-import { QueryCompletionItemController } from './controllers/queryCompletionItemController';
+import { QueryCompletionItemController } from './feature/intelliSense/controllers/queryCompletionItemController';
 import { QueryCommandController } from './controllers/queryCommandController';
 import { IndexCommandController } from './controllers/indexCommandController';
 import { ScriptCommandController } from './controllers/scriptCommandController';
@@ -25,17 +25,15 @@ import { ScriptCommandController } from './controllers/scriptCommandController';
 export function activate(context: vscode.ExtensionContext) {
 
     let configuration = vscode.workspace.getConfiguration();
-    let explorerFeatureEnabled = configuration.get(constant.ConfigurationFeatureExplorerEnabled);
-
+    
     LogManager.verbose('elasticdeveloper extension activated');
     LogManager.verbose('elasticdeveloper decorating EnvironmentManager');
 
     EnvironmentManager.decorateWith(WorkspaceEnvironmentManager.decorate(context));
     EnvironmentManager.decorateWith(HostEnvironmentManager.decorate());
     
-    ServiceSpecificationManager.decorateWith(FileSystemLoaderServiceSpecificationManager.decorate());
-    
     LogManager.verbose('elasticdeveloper loading controllers');
+    
     let controllers: Controller[] = [];
     controllers.push(new QueryCodeLensController());
     controllers.push(new QueryCommandController());

@@ -110,6 +110,24 @@ export class EntityDocumentScanner {
 
     }
 
+    public scanUntilPosition(position:number): TextToken {
+
+        let token = null;
+
+        while(this.isNotEndOfStream) {
+            token = this.scan();
+
+            if(this._stream.position >= position) {
+                break;
+            } else {
+                token = null;
+            }
+        }
+
+        return token;
+
+    }
+
     public scanUntil(state:ScannerState, detailState:ScannerState = ScannerState.Unknown):TextToken  {
 
         let token = null;
@@ -200,8 +218,6 @@ export class EntityDocumentScanner {
 
             } else {
 
-                /* **/
-
                 let value = this._stream.advanceToTheClosest([/\}/, /\"/]);
 
                 if(value !== '}') {
@@ -234,7 +250,7 @@ export class EntityDocumentScanner {
                     this._state = ScannerState.WithinEntity
     
                 } else if(this._steps.length > 0) {
-                
+                    
                     let closingToken = this._steps.pop();
     
                     token = propertyTokenFactory.createPropertyToken(
@@ -242,7 +258,13 @@ export class EntityDocumentScanner {
                         closingToken.offset,
                         TokenType.Property
                     );
-    
+
+                    if(this.isInsideArray()) {
+                        token.path = this.getPropertyPath();
+                    } else {
+                        token.path = this.getPropertyPath(closingToken.text);
+                    }
+                    
                     token.propertyValueToken = this.getPropertyValueToken();
                     this._state = ScannerState.WithinEntity
     
@@ -257,7 +279,7 @@ export class EntityDocumentScanner {
         return token;
     }
 
-    private getPropertyPath(propertyName = ''):string {
+    public getPropertyPath(propertyName = ''):string {
 
         let path = '';
 
@@ -280,7 +302,13 @@ export class EntityDocumentScanner {
             }
 
             if(propertyName) {
-                path = path = path + '.' + propertyName;
+
+                if(propertyName.startsWith('[')) {
+                    path = path = path + propertyName;
+                } else {
+                    path = path = path + '.' + propertyName;
+                }
+
             }
 
         } else {

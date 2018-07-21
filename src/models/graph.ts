@@ -3,109 +3,156 @@
 export class Graph {
 
     private _nodes:Node[] = [];
-    private _links:Link[] = [];
+    private _edges:Edge[] = [];
+    private _pendingEdges:Edge[] = [];
 
-    public get nodes():Node[] {
+    public clear() {
+        this._nodes = [];
+        this._edges = [];
+        this._pendingEdges = [];
+    }
+
+    public addNode(nodeId:string, label?:string, data?:any) {
+
+        if(this.hasNotNodeWithId(nodeId)) {
+            this._nodes.push(
+                {
+                    id: nodeId,
+                    label:label,
+                    data:data,
+                    incoming:0
+                }
+            );
+
+            try{
+
+                let pendingEdges = this._pendingEdges.filter(e=> e.sourceId == nodeId || e.targetId == nodeId);
+
+                for(let edge of pendingEdges) {
+                    if(this.hasNodeWithId(edge.sourceId) && this.hasNodeWithId(edge.targetId)) {
+                        this._edges.push(edge);
+                        this._pendingEdges = this._pendingEdges.filter(e=> e.id !== edge.id);
+                    }
+                }
+
+            }catch(ex) {
+                console.log(ex);
+            }
+
+            
+        }
+
+    }
+
+    public getNodes():Node[] {
         return this._nodes;
     }
 
-    public get links():Link[] {
-        return this._links;
+    public getRootNodes():Node[] {
+        return this._nodes.filter(n=> n.incoming === 0);
     }
 
-    public hasNode(nodeId:string): boolean {
+    public getOutgoingNodes(nodeId:string):Node[] {
+        let nodes:Node[] = [];
 
-        let index = this._nodes.findIndex(n=> n.id === nodeId);
-        return index > -1;
+        let edges = this.getEdgesWithSourceId(nodeId);
+
+        for(let edge of edges) {
+            
+            let node = this.getNodeWithId(edge.targetId);
+            
+            if(node) {
+                nodes.push(node);
+            }
+        }
+
+        return nodes;
     }
 
-    public hasLink(linkId:string): boolean {
-
-        let index = this._links.findIndex(l=> l.id === linkId);
-        return index > -1;
+    public hasNotNodeWithId(nodeId:string): boolean {
+        return !this.hasNodeWithId(nodeId);
     }
 
-    public getNode(nodeId:string): Node {
+    public hasNodeWithId(nodeId:string):boolean {
+        return this.getNodeWithId(nodeId) != null;
+    }
+
+    public getNodeWithId(nodeId:string): Node {
         return this._nodes.find(n=> n.id === nodeId);
     }
 
-    public getLeafs(nodeId:string): any {
+    public addEdge(sourceId:string, targetId:string, edgeId?:string, kind?:string, weight?:number, directed?:boolean, data?:any) {
+     
+        if(sourceId && targetId) {
 
-        let items:any[] = [];
-        let queue:string[] =  [];
-        let links =  this._links.filter(l=> l.sourceId === nodeId);
+            if(edgeId == null) {
 
-        for(let link of links) {
-            queue.push(link.targetId);
-        }
-
-        while(queue.length > 0) {
-
-            let id = queue.pop();
-            let links =  this._links.filter(l=> l.sourceId === id);
-            let node = this._nodes.find(n=> n.id === id);
-            
-            if(node.item) {
-                items.push(node.item);
-            }
-            
-            for(let link of links) {
-                queue.push(link.targetId);
-            }
-            
-        }
-
-        console.log(items);
-        return items;
-    }
-
-    public addNode(nodeId:string, item:any) {
-
-        let node = this._nodes.find(n=> n.id === nodeId);
-
-        if(node && !node.item) {
-            node.item = item;
-        } else if(!node) {
-            this._nodes.push({
-                id: nodeId,
-                item:item
-            });
-        }
-
-    }
-
-    public addLink(sourceNodeId:string, targetNodeId:string) {
-
-        let linkId = sourceNodeId +'_'+ targetNodeId;
-        
-        if(!this.hasLink(linkId)) {
-
-            let source:Node = this.getNode(sourceNodeId);
-            let target:Node = this.getNode(targetNodeId);
-
-            if(source && target) {
-                let link:Link = {
-                    id:linkId,  
-                    sourceId:sourceNodeId,
-                    targetId:targetNodeId
+                if(kind) {
+                    edgeId = sourceId + '_' + targetId + '_' + kind;
+                } else {
+                    edgeId = sourceId + '_' + targetId;
                 }
-
-                this._links.push(link);
+            }
+    
+            if(this.hasNotEdgeWithId(edgeId)) {
+    
+                let edge = {
+                    id:edgeId,
+                    sourceId:sourceId,
+                    targetId:targetId,
+                    directed:true,
+                    kind:kind,
+                    weight:weight,
+                    data:data
+                };
+    
+                if(this.hasNodeWithId(sourceId) && this.hasNodeWithId(targetId)) {
+                    let target = this.getNodeWithId(targetId);
+                    target.incoming++;
+                    this._edges.push(edge);
+                } else {
+                    this._pendingEdges.push(edge);
+                }
             }
 
         }
-        
+
     }
 
+    public hasNotEdgeWithId(edgeId:string): boolean {
+        return !this.getEdgeWithId(edgeId);
+    }
+
+    public hasEdgeWithId(edgeId:string):boolean {
+        return this.getEdgeWithId(edgeId) != null;
+    }
+
+    public getEdgeWithId(edgeId:string): Edge {
+        return this._edges.find(e=> e.id === edgeId);
+    }
+
+    public getEdgesWithSourceId(sourceId:string): Edge[] {
+        return this._edges.filter(e=> e.sourceId === sourceId);
+    }
+
+    public getEdgesWithTargetId(targetId:string): Edge[] {
+        return this._edges.filter(e=> e.targetId === targetId);
+    }
 }
 
 export interface Node {
     id:string;
-    item:any;
+    label:string;
+    data?:any;
+    incoming:number;
 }
 
-export interface Link {
+export interface Edge {
     id?:string;
+    directed:boolean;
     sourceId:string;
     targetId:string;
+    kind:string;
+    weight:number;
+    data?:any;
 }

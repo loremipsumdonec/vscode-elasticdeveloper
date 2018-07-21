@@ -22,6 +22,7 @@ export class ElasticsearchQuery extends Entity {
     private _body:string;
     private _bulk:string[] = [];
     private _hasInput:boolean = false;
+    private _hasValidBody = undefined;
 
     public static parse(queryAsString:string, body?:any):ElasticsearchQuery {
 
@@ -99,6 +100,16 @@ export class ElasticsearchQuery extends Entity {
         return (this._body && this._body.length > 0);
     }
 
+    public get hasValidBody(): boolean {
+
+        if(this._hasValidBody == null) {
+            let exists = this.textTokens.find(t=> t.type === TokenType.Body && !t.isValid);
+            this._hasValidBody = exists == null;
+        }
+
+        return this._hasValidBody;
+    }
+
     public get body():string {
         return this._body;
     }
@@ -116,6 +127,7 @@ export class ElasticsearchQuery extends Entity {
         }
 
         this._bulk.push(value);
+        this._hasValidBody = undefined;
     }
 
     public get bulk():string[] {
@@ -197,6 +209,21 @@ export class ElasticsearchQuery extends Entity {
         }
 
         return tokenType;
+    }
+
+    public tokenAt(offset:number): TextToken {
+     
+        let token:TextToken = null;
+
+        for(let textToken of this.textTokens) {
+
+            if(textToken.offset <= offset && offset <= textToken.offsetEnd) {
+                token = textToken;
+                break;
+            }
+        }
+
+        return token;
     }
 }
 

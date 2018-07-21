@@ -504,11 +504,7 @@ export class ElasticsearchQueryDocumentScanner {
     private getBodyToken(openingChar='{', closingChar='}'): TextToken {
 
         let token = null;
-        
-        let hasFoundStartBody:boolean = false;
-        let hasFoundEndBody:boolean = false;
         let startTagsTicks = 0;
-
         let body = '';
 
         while(!this._stream.endOfStream) {
@@ -537,12 +533,12 @@ export class ElasticsearchQueryDocumentScanner {
             this._stream.advance();
         }
 
-        if(this._state === ScannerState.AfterBody) {
+        token = textTokenFactory.createTextToken(
+            body, 
+            this._stream.position - body.length,
+            TokenType.Body);
 
-            token = textTokenFactory.createTextToken(
-                body, 
-                this._stream.position - body.length,
-                TokenType.Body);
+        if(this._state === ScannerState.AfterBody) {
 
             this._stream.advanceUntilNonWhitespace();
 
@@ -551,6 +547,9 @@ export class ElasticsearchQueryDocumentScanner {
             } else {
                 this._state = ScannerState.WithinContent;
             }
+        } else {
+            token.isValid = false;
+            this._state = ScannerState.WithinContent;
         }
 
         return token;

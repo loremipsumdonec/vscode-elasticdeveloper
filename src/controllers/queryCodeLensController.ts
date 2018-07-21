@@ -58,6 +58,8 @@ export class QueryCodeLensController extends QueryController
                 codeLensTitle = 'run bulk query (size: '+ query.bulk.length +')'
             }
 
+            codeLensTitle += '(hasValidBody = '+ query.hasValidBody +')';
+
             let runQueryCodeLens = new vscode.CodeLens(range, {
                 title: codeLensTitle,
                 command: runQueryCommand,

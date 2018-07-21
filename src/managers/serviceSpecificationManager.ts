@@ -2,9 +2,6 @@
 
 import * as urlhelper from '../helpers/url';
 import { SpecificationItem } from '../models/specificationItem';
-import { Graph } from '../models/graph';
-import { doesNotThrow } from 'assert';
-import { stat } from 'fs';
 
 var _serviceSpecificationManager:ServiceSpecificationManager;
 

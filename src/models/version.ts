@@ -103,6 +103,14 @@ export class Version {
     }
 
     public toString():string {
-        return this.major +'.'+ this.minor +'.'+ this.patch;
+
+        if(this.minor == null) {
+            return this.major.toString();
+        } else if(this.patch == null) {
+            return this.major +'.'+ this.minor;
+        } else {
+            return this.major +'.'+ this.minor +'.'+ this.patch;
+        }
+        
     }
 }

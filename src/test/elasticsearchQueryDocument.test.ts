@@ -68,7 +68,6 @@ suite("ElasticsearchQueryDocument", () => {
 
         let expectedBodies = 5;
         let query = 'GET /lorem/command()';
-        let body = '{ "params": { "query": "hello world" }}';
 
         for(let index = 0; index < expectedBodies; index++) {
             query += '\r\n' + '{ "params": { "query": "hello ' + index+ '" }}';
@@ -78,6 +77,6 @@ suite("ElasticsearchQueryDocument", () => {
         assert.equal(document.queries.length, 1);
         assert.equal(document.queries[0].isBulk, true);
         assert.equal(document.queries[0].bulk.length, expectedBodies);
-    });
+    });   
 
 });

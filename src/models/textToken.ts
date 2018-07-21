@@ -7,6 +7,15 @@ export class TextToken {
     private _index: number = 0;
     private _path:string;
     private _text:string;
+    private _isValid:boolean = true;
+
+    public get isValid():boolean {
+        return this._isValid;
+    }
+
+    public set isValid(value:boolean) {
+        this._isValid = value;
+    }
 
     public get type():number {
         return this._type;
@@ -25,7 +34,12 @@ export class TextToken {
     }
 
     public get offsetEnd():number {
-        return this._offset + this._text.length;
+
+        if(this.hasText) {
+            return this._offset + this._text.length;
+        }
+
+        return 0;
     }
 
     public get index():number {

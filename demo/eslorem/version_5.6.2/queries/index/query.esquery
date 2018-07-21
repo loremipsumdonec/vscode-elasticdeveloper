@@ -13,3 +13,13 @@ GET /lorem/_search(name="a_simple_search") {
         }
     }
 }
+
+GET /l {
+    "query": {
+        "bool": {
+            "match": {
+
+            }
+        }
+    }
+}
