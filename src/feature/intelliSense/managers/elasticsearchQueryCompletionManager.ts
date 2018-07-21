@@ -79,6 +79,7 @@ export class ElasticsearchQueryCompletionManager {
                 for(let index = 0; index < steps.length; index++) {
     
                     let nodeId = steps[index]
+                    let nextNodeId = steps[index + 1];
     
                     if(!node) {
                         node = this._bodyGraph.getNodeWithId(nodeId);
@@ -91,11 +92,17 @@ export class ElasticsearchQueryCompletionManager {
                         if(index == steps.length - 1) {
                             completionItems = this.createCompletionItems(children, triggerCharacter);
                         } else {
-                            node = children.find(n=> n.label === steps[index + 1]);
+                            node = children.find(n=> n.label === nextNodeId);
     
                             if(!node) {
-                                console.warn('Could not find a children node with label %s', steps[index + 1])
-                                break;
+                                node = children.find(n=> n.data.isDynamicNode);
+
+                                if(node) {
+                                    steps[index + 1] = node.id;
+                                } else {
+                                    console.warn('Could not find a children node with label %s', nextNodeId)
+                                    break;
+                                }
                             }
                         }
                     }
@@ -132,7 +139,7 @@ export class ElasticsearchQueryCompletionManager {
                     break;
                 case vscode.CompletionItemKind.Field:
                     if(node.data.defaultValue) {
-                        let defaultValue = node.data.defaultValue.replace('{','').replace('}', '');
+                        let defaultValue = node.data.defaultValue.toString().replace('{','').replace('}', '');
                         item.insertText = new vscode.SnippetString(label +': "${2:' + defaultValue + '}"$0');
                     } else {
                         item.insertText = new vscode.SnippetString(label +': "${2}"$0');
@@ -177,7 +184,6 @@ export class ElasticsearchQueryCompletionManager {
 
         return label;
     }
-
 
     private initBodyGraph() {
 
@@ -237,6 +243,11 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         this.buildBodyGraph(source);
+        let nodes = this._bodyGraph.getNodes();
+
+        for(let node of nodes) {
+            node.data.isDynamicNode = node.label.endsWith('}');
+        }
     }
 
     private buildBodyGraph(source:any, path?:string) {
