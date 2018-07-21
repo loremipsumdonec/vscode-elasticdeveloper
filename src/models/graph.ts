@@ -15,30 +15,32 @@ export class Graph {
     public addNode(nodeId:string, label?:string, data?:any) {
 
         if(this.hasNotNodeWithId(nodeId)) {
-            this._nodes.push(
-                {
-                    id: nodeId,
-                    label:label,
-                    data:data,
-                    incoming:0
-                }
-            );
 
-            try{
-
-                let pendingEdges = this._pendingEdges.filter(e=> e.sourceId == nodeId || e.targetId == nodeId);
-
-                for(let edge of pendingEdges) {
-                    if(this.hasNodeWithId(edge.sourceId) && this.hasNodeWithId(edge.targetId)) {
-                        this._edges.push(edge);
-                        this._pendingEdges = this._pendingEdges.filter(e=> e.id !== edge.id);
-                    }
-                }
-
-            }catch(ex) {
-                console.log(ex);
+            let node = {
+                id: nodeId,
+                label:label,
+                data:data,
+                incoming:0
             }
 
+            this._nodes.push(node);
+
+            let pendingEdges = this._pendingEdges.filter(e=> e.sourceId == nodeId || e.targetId == nodeId);
+
+            for(let edge of pendingEdges) {
+                if(this.hasNodeWithId(edge.sourceId) && this.hasNodeWithId(edge.targetId)) {
+                    
+                    this._edges.push(edge);
+                    this._pendingEdges = this._pendingEdges.filter(e=> e.id !== edge.id);
+                    
+                    if(nodeId !== edge.targetId) {
+                        let target = this.getNodeWithId(edge.targetId);
+                        target.incoming++;
+                    } else {
+                        node.incoming++;
+                    }
+                }
+            }
             
         }
 
