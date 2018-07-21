@@ -111,32 +111,6 @@ export class ElasticsearchQueryCompletionManager {
 
         return completionItems;
     }
- 
-    private getCompletionItemLabel(node:Node, triggerCharacter:string):string {
-
-        let label:string;
-
-        if(triggerCharacter === '"') {
-            label = node.label;
-        } else {
-            label = '"'+ node.label +'"';
-        }
-
-        let matches = label.match(/\{(\w+)\}/g);
-
-        if(matches) {
-
-            let index = 1;
-
-            for(let m of matches) {
-                let key = m.substring(1, m.length - 1);
-                label = label.replace(m, '${' + index + ':' + key + '}');
-                index++;
-            }
-        }
-
-        return label;
-    }
 
     private createCompletionItems(nodes:Node[], triggerCharacter:string): vscode.CompletionItem[] {
 
@@ -177,6 +151,33 @@ export class ElasticsearchQueryCompletionManager {
 
         return completionItems;
     }
+
+    private getCompletionItemLabel(node:Node, triggerCharacter:string):string {
+
+        let label:string;
+
+        if(triggerCharacter === '"') {
+            label = node.label;
+        } else {
+            label = '"'+ node.label +'"';
+        }
+
+        let matches = label.match(/\{(\w+)\}/g);
+
+        if(matches) {
+
+            let index = 1;
+
+            for(let m of matches) {
+                let key = m.substring(1, m.length - 1);
+                label = label.replace(m, '${' + index + ':' + key + '}');
+                index++;
+            }
+        }
+
+        return label;
+    }
+
 
     private initBodyGraph() {
 
