@@ -353,6 +353,18 @@ export class ElasticsearchQueryCompletionManager {
 
             this._restApiEndpointGraph.addNode(endpointId, endpointId, { kind: 'endpoint' });
             
+            if(endpoint.url && endpoint.url.params) {
+                let parameterNames = Object.keys(endpoint.url.params);
+
+                for(let name of parameterNames) {
+                    let parameter = endpoint.url.params[name];
+                    let parameterId = endpointId + ':' + name;
+                    this._restApiEndpointGraph.addNode(parameterId, name, { kind: 'parameter', description: parameter.description });
+                    this._restApiEndpointGraph.addEdge(endpointId, parameterId);
+                }
+
+            }
+
             if(endpoint.methods) {
 
                 for(let method of endpoint.methods) {
