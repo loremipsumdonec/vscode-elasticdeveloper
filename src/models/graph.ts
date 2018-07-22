@@ -1,15 +1,36 @@
 'use strict'
 
+import * as vscode from 'vscode';
+
 export class Graph {
+    
+    private _onNodeAddedEventEmitter: vscode.EventEmitter<Node>;
+    private _onNodeUpdatedEventEmitter: vscode.EventEmitter<Node>;
+    private _onEdgeAddedEventEmitter: vscode.EventEmitter<Edge>;
 
     private _nodes:Node[] = [];
     private _edges:Edge[] = [];
     private _pendingEdges:Edge[] = [];
 
+    constructor() {
+        this._onNodeAddedEventEmitter = new vscode.EventEmitter<Node>();
+        this._onNodeUpdatedEventEmitter = new vscode.EventEmitter<Node>();
+        this._onEdgeAddedEventEmitter = new vscode.EventEmitter<Edge>();
+    }
+
     public clear() {
+
         this._nodes = [];
         this._edges = [];
         this._pendingEdges = [];
+    }
+
+    public get onNodeAdded(): vscode.Event<Node> {
+        return this._onNodeAddedEventEmitter.event;
+    }
+
+    public get onNodeUpdated(): vscode.Event<Node> {
+        return this._onNodeUpdatedEventEmitter.event;
     }
 
     public addNode(nodeId:string, label?:string, data?:any) {
@@ -24,6 +45,7 @@ export class Graph {
             }
 
             this._nodes.push(node);
+            this._onNodeAddedEventEmitter.fire(node);
 
             let pendingEdges = this._pendingEdges.filter(e=> e.sourceId == nodeId || e.targetId == nodeId);
 
@@ -31,13 +53,16 @@ export class Graph {
                 if(this.hasNodeWithId(edge.sourceId) && this.hasNodeWithId(edge.targetId)) {
                     
                     this._edges.push(edge);
+                    this._onEdgeAddedEventEmitter.fire(edge);
                     this._pendingEdges = this._pendingEdges.filter(e=> e.id !== edge.id);
                     
                     if(nodeId !== edge.targetId) {
                         let target = this.getNodeWithId(edge.targetId);
                         target.incoming++;
+                        this._onNodeUpdatedEventEmitter.fire(target);
                     } else {
                         node.incoming++;
+                        this._onNodeUpdatedEventEmitter.fire(node);
                     }
                 }
             }
@@ -83,6 +108,10 @@ export class Graph {
         return this._nodes.find(n=> n.id === nodeId);
     }
 
+    public get onEdgeAdded(): vscode.Event<Edge> {
+        return this._onEdgeAddedEventEmitter.event;
+    }
+
     public addEdge(sourceId:string, targetId:string, edgeId?:string, kind?:string, weight?:number, directed?:boolean, data?:any) {
      
         if(sourceId && targetId) {
@@ -112,6 +141,7 @@ export class Graph {
                     let target = this.getNodeWithId(targetId);
                     target.incoming++;
                     this._edges.push(edge);
+                    this._onEdgeAddedEventEmitter.fire(edge);
                 } else {
                     this._pendingEdges.push(edge);
                 }
@@ -127,6 +157,10 @@ export class Graph {
 
     public hasEdgeWithId(edgeId:string):boolean {
         return this.getEdgeWithId(edgeId) != null;
+    }
+
+    public getEdges():Edge[] {
+        return this._edges;
     }
 
     public getEdgeWithId(edgeId:string): Edge {

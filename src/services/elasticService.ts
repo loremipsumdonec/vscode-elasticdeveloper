@@ -1,11 +1,9 @@
 'use strict'
 
-import * as vscode from 'vscode';
 import * as request from 'request'
 
 import { ElasticsearchQuery } from '../models/elasticSearchQuery';
 import { ElasticsearchResponse } from '../models/elasticSearchResponse';
-import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocument';
 import { Environment } from '../models/environment';
 import { LogManager } from '../managers/logManager';
 

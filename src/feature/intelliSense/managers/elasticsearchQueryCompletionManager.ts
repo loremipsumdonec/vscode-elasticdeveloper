@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as constant from '../../../constant';
+import * as urlhelper from '../../../helpers/url';
 import * as fs from 'fs';
 import * as path from 'path'
 
@@ -13,12 +14,14 @@ import { EnvironmentManager } from '../../../managers/environmentManager';
 import { Version } from '../../../models/version';
 import { isObject, isArray } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
+import { GephiStreamService } from '../../gephi/services/gephiStreamService';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
 export class ElasticsearchQueryCompletionManager {
     
     private _bodyGraph:Graph;
+    private _restApiEndpointGraph:Graph;
     private _versionNumber:string
 
     constructor(versionNumber?:string) {
@@ -33,18 +36,66 @@ export class ElasticsearchQueryCompletionManager {
 
         switch(token.type) {
             case TokenType.Command:
-                this.getCompletionItemsForQueryCommand(query);
+                completionItems = this.getCompletionItemsForQueryCommand(query);
                 break;
             case TokenType.Body:
-            completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
+                completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
                 break;
         }
 
         return completionItems;
     }
 
-    public getCompletionItemsForQueryCommand(query:ElasticsearchQuery) {
-        console.log('getCompletionItemsForQueryCommand');
+    public getCompletionItemsForQueryCommand(query:ElasticsearchQuery): vscode.CompletionItem[] {
+
+        let completionItems:vscode.CompletionItem[] = [];
+
+        if(query.hasCommand) {
+            this.initRestApiEndpointGraphFromFiles();
+
+            let node:Node = null;
+            let steps:string[] = [];
+            steps.push(query.method);
+            urlhelper.getSteps(query.command.toLowerCase())
+                .forEach(s=> { 
+                    if(s) {
+                        steps.push(s)
+                    }});
+
+            for(let index = 0; index < steps.length; index++) {
+
+                let nodeId = steps[index]
+                let nextNodeId = steps[index + 1];
+
+                if(!node) {
+                    node = this._restApiEndpointGraph.getNodeWithId(nodeId);
+                } 
+                
+                if(node) {
+
+                    let children = this._restApiEndpointGraph.getOutgoingNodes(node.id);
+
+                    if(index == steps.length - 1) {
+                        completionItems = this.createCompletionItems(children, '');
+                    } else {
+                        node = children.find(n=> n.label === nextNodeId);
+
+                        if(!node) {
+                            node = children.find(n=> n.data.isDynamicNode);
+
+                            if(node) {
+                                steps[index + 1] = node.label;
+                            } else {
+                                console.warn('Could not find a children node with label %s', nextNodeId)
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return completionItems;
     }
 
     public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string): vscode.CompletionItem[] {
@@ -179,54 +230,15 @@ export class ElasticsearchQueryCompletionManager {
         return label;
     }
 
-    private initBodyGraph() {
-
-        this._bodyGraph = new Graph();
-        this._bodyGraph.addNode('query', 'query');
-        this._bodyGraph.addNode('query.match', 'match');
-        this._bodyGraph.addNode('query.match_phrase', 'match_phrase');
-        this._bodyGraph.addNode('query.match_phrase_prefix', 'match_phrase_prefix');
-        this._bodyGraph.addNode('query.multi_match', 'multi_match');
-        this._bodyGraph.addNode('query.bool', 'bool');
-
-        this._bodyGraph.addNode('query.match.field', '{field}');
-        this._bodyGraph.addNode('query.match_phrase.field', '{field}');
-        this._bodyGraph.addNode('query.match_phrase.field.query', 'query');
-        this._bodyGraph.addNode('query.match_phrase.field.analyzer', 'analyzer');
-        this._bodyGraph.addNode('query.match_phrase.field.slop', 'slop');
-
-        this._bodyGraph.addNode('query.bool.must', 'must');
-        this._bodyGraph.addNode('query.bool.should', 'should');
-        this._bodyGraph.addNode('query.bool.filter', 'filter');
-        this._bodyGraph.addNode('query.bool.must_not', 'must_not');
-
-        this._bodyGraph.addEdge('query','query.match');
-        this._bodyGraph.addEdge('query','query.match_phrase');
-        this._bodyGraph.addEdge('query','query.match_phrase_prefix');
-        this._bodyGraph.addEdge('query','query.multi_match');
-        this._bodyGraph.addEdge('query','query.bool');
-
-        this._bodyGraph.addEdge('query.match', 'query.match.field');
-        this._bodyGraph.addEdge('query.match_phrase','query.match_phrase.field');
-        this._bodyGraph.addEdge('query.match_phrase.field', 'query.match_phrase.field.query');
-        this._bodyGraph.addEdge('query.match_phrase.field', 'query.match_phrase.field.analyzer');
-        this._bodyGraph.addEdge('query.match_phrase.field', 'query.match_phrase.field.slop');
-
-        this._bodyGraph.addEdge('query.bool','query.match');
-        this._bodyGraph.addEdge('query.bool','query.match_phrase');
-        this._bodyGraph.addEdge('query.bool','query.match_phrase_prefix');
-        this._bodyGraph.addEdge('query.bool','query.multi_match');
-
-    }
-
     private initBodyGraphFromFiles() {
+
+        let gephiService = new GephiStreamService();
 
         this._bodyGraph = new Graph();
         let file:string = this.getQueryDslFile();
 
         const fileContent = fs.readFileSync(file, 'UTF-8');
         let source = JSON.parse(fileContent);
-
         let keys = Object.keys(source);
 
         for(let key of keys) {
@@ -237,11 +249,13 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         this.buildBodyGraph(source);
-        let nodes = this._bodyGraph.getNodes();
 
+        let nodes = this._bodyGraph.getNodes();
         for(let node of nodes) {
             node.data.isDynamicNode = node.label.endsWith('}');
         }
+
+        gephiService.syncGraph(this._bodyGraph);
     }
 
     private buildBodyGraph(source:any, path?:string) {
@@ -323,6 +337,68 @@ export class ElasticsearchQueryCompletionManager {
         }
     }
 
+    private initRestApiEndpointGraphFromFiles() {
+
+        let gephiService = new GephiStreamService();
+        this._restApiEndpointGraph = new Graph();
+
+        let files = this.getRestApiSpecificationFiles();
+        
+        for(let file of files) {
+
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let endpointId = Object.keys(source)[0];
+            let endpoint = source[endpointId];
+
+            this._restApiEndpointGraph.addNode(endpointId, endpointId, { kind: 'endpoint' });
+            
+            if(endpoint.methods) {
+
+                for(let method of endpoint.methods) {
+
+                    this._restApiEndpointGraph.addNode(method, method, { kind: 'method' });
+
+                    for(let path of endpoint.url.paths) {
+                        let steps:string[] = path.split('/').splice(1);
+                        let previousStepId:string = null;
+
+                        for(let index = 0; index < steps.length; index++) {
+                            let step = steps[index];
+                            let stepId = method + ':' + step;
+
+                            if(previousStepId) {
+                                stepId = previousStepId + '.'+ step;
+                            }
+
+                            this._restApiEndpointGraph.addNode(stepId, step, { kind: 'step' });
+
+                            if(previousStepId) {
+                                this._restApiEndpointGraph.addEdge(previousStepId, stepId);
+                            }
+
+                            if(index == 0) {
+                                this._restApiEndpointGraph.addEdge(method, stepId);
+                            } else if(index == steps.length - 1) {
+                                this._restApiEndpointGraph.addEdge(stepId, endpointId);
+                            }
+
+                            previousStepId = stepId;
+                        }
+                    }
+                }
+            }
+        }
+
+        let nodes = this._restApiEndpointGraph.getNodes();
+
+        for(let node of nodes) {
+            node.data.isDynamicNode = node.label.endsWith('}');
+        }
+
+        gephiService.syncGraph(this._restApiEndpointGraph);
+    }
+
     private getVersionNumber() {
 
         let versionNumber:string = null;
@@ -361,6 +437,28 @@ export class ElasticsearchQueryCompletionManager {
         let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'query-dsl', 'query.json');
 
         return folderPath;
+    }
+
+    private getRestApiSpecificationFiles():string[] {
+
+        let specificationFiles:string[] = [];
+
+        let extension = vscode.extensions.getExtension(constant.ExtensionId);
+        let versionNumber = this.getVersionNumber();
+        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
+        let files = fs.readdirSync(folderPath);
+
+        for(let file of files) {
+            const extension = path.extname(file);
+
+            if(extension === '.json') {
+                specificationFiles.push( 
+                    path.join(folderPath, file)
+                );
+            }
+        }
+
+        return specificationFiles;
     }
 
     public static get(): ElasticsearchQueryCompletionManager {
