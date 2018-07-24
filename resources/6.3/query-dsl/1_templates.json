@@ -1,25 +1,35 @@
 {
-    "script_languages": {
-        "__is_template": true,
-        "painless": { "__is_value": true }
-    },
-    "script": {
-        "__is_template": true,
-        "id": "",
-        "source": "",
-        "lang": {
-            "__is_field":true,
-            "__children_of": "script_languages"
+    "__templates": {
+        "script_languages": {
+            "__is_template": true,
+            "painless": { "__is_value": true }
         },
-        "params": {
-            "{parameter}": "{value}"
+        "script": {
+            "__is_template": true,
+            "id": "",
+            "source": {
+                "__children_of": "query"
+            },
+            "lang": {
+                "__is_field":true,
+                "__children_of": "script_languages"
+            },
+            "params": {
+                "{parameter}": "{value}"
+            }
         }
     },
-    "script_fields": {
-        "__is_template": true,
-        "{name}": {
-            "script": {
-                "__children_of": "script"
+	"__global": {
+		"from": 0,
+		"size": 10,
+		"sort": [ { "{field}": {"order": "asc"} }],
+		"_source": [""],
+        "stored_fields": ["{field}"],
+        "script_fields": {
+            "{name}": {
+                "script": {
+                    "__children_of": "script"
+                }
             }
         }
     }

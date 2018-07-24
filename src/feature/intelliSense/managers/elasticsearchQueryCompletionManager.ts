@@ -99,7 +99,7 @@ export class ElasticsearchQueryCompletionManager {
             this.initBodyGraphFromFiles();
 
             if(token.path) {
-
+                console.log(token.path);
                 let steps = token.path.replace(/\[\w+\]/, '.[0]').split('.');
                 let nodes = this.getNodesWithSteps(steps, this._bodyGraph, n => n.label);
                 completionItems = this.createCompletionItems(nodes, triggerCharacter);
@@ -255,6 +255,7 @@ export class ElasticsearchQueryCompletionManager {
         let gephiService = new GephiStreamService();
 
         this._bodyGraph = new Graph();
+        let childrensOf:any[] = [];
         let files:string[] = this.getQueryDslFiles();
 
         for(let file of files) {
@@ -265,13 +266,28 @@ export class ElasticsearchQueryCompletionManager {
     
             for(let key of keys) {
                 if(key.startsWith('__')) {
-                    this.buildBodyGraph(source[key]);
+                    this.buildBodyGraphNonRec(source[key]).forEach(c=> childrensOf.push(c));
                     delete source[key];
                 }
             }
     
-            console.log('building graph with file %s', file);
-            this.buildBodyGraph(source);
+            this.buildBodyGraphNonRec(source).forEach(c=> childrensOf.push(c));
+        }
+
+        while(childrensOf.length > 0) {
+            let context = childrensOf.pop();
+            let childrenOf = context.source;
+            let path = context.path;
+
+            if(isArray(childrenOf)) {
+
+            } else {
+                let children = this._bodyGraph.getOutgoingNodes(context.source);
+
+                for(let child of children) {
+                    this._bodyGraph.addEdge(path, child.id);
+                }
+            }
         }
 
         let nodes = this._bodyGraph.getNodes();
@@ -279,7 +295,89 @@ export class ElasticsearchQueryCompletionManager {
             node.data.isDynamicNode = node.label.endsWith('}');
         }
 
-        //gephiService.syncGraph(this._bodyGraph);
+        gephiService.syncGraph(this._bodyGraph);
+    }
+
+    private buildBodyGraphNonRec(source): any[] {
+
+        let keys = Object.keys(source);
+        let stack:any[] = [];
+        let post:any[] = [];
+
+        stack.push( { 
+            source: source, 
+            path: null });
+
+        while(stack.length > 0) {
+            let context = stack.pop();
+            let source = context.source;
+            let path = context.path;
+
+            let keys = Object.keys(source);
+
+            for(let key of keys) {
+                let current = source[key];
+
+                if(!key.startsWith('__')) {
+
+                    let nodeId = path + '.' + key;
+                    
+                    if(path == null) {
+                        nodeId = key;
+                    }
+
+                    if(isArray(current)) {
+                        
+                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Enum;
+
+                        if(current.length > 0) {
+                            if(isObject(current[0])) {
+                                kind = vscode.CompletionItemKind.Reference;
+                                let arrayObjectNodeId = nodeId +'.[0]';
+
+                                this._bodyGraph.addNode(arrayObjectNodeId, '[0]', { id: '[0]', kind: vscode.CompletionItemKind.Struct });
+                                this._bodyGraph.addEdge(nodeId, arrayObjectNodeId);
+
+                                stack.push({ source:current[0], path: arrayObjectNodeId});
+                            }
+                        }
+                        
+                        this._bodyGraph.addNode(nodeId, key, { kind: kind});
+                        this._bodyGraph.addEdge(path, nodeId);
+
+                    } else if(isObject(current)) {
+
+                        let isTemplate = false;
+                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Class;
+
+                        if(current.__is_template) {
+                            isTemplate = true;
+                        }
+
+                        if(current.__is_field) {
+                            kind = vscode.CompletionItemKind.Field;
+                        } else if(current.__is_value) {
+                            kind = vscode.CompletionItemKind.Value;
+                        }
+
+                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: kind, isTemplate:isTemplate });
+                        this._bodyGraph.addEdge(path, nodeId);
+
+                        stack.push({ source:current, path: nodeId});
+
+                    } else {
+
+                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: vscode.CompletionItemKind.Field, defaultValue: current });
+                        this._bodyGraph.addEdge(path, nodeId);
+                    }
+
+                } else if(key === '__children_of') {
+                    post.push({source: current, path});                    
+                }
+            }
+        }
+
+        return post;
     }
 
     private buildBodyGraph(source:any, path?:string) {

@@ -45,7 +45,6 @@
 			"turkish": {"__is_value": true}, 
 			"thai": {"__is_value": true}
 		},
-		
 		"match_options": {
 			"__is_template": true,
 			"operator": "and",
@@ -97,6 +96,7 @@
 			"none": { "__is_value": true}
 		}
 	},
+
     "query": {
         "bool": {
 			"must": {
