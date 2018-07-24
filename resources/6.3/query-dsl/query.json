@@ -45,21 +45,7 @@
 			"turkish": {"__is_value": true}, 
 			"thai": {"__is_value": true}
 		},
-		"script_languages": {
-			"__is_template": true,
-			"painless": { "__is_value": true }
-		},
-		"script": {
-			"__is_template": true,
-			"source": "",
-			"lang": {
-				"__is_field":true,
-				"__children_of": "script_languages"
-			},
-			"params": {
-				"{parameter}": "{value}"
-			}
-		},
+		
 		"match_options": {
 			"__is_template": true,
 			"operator": "and",

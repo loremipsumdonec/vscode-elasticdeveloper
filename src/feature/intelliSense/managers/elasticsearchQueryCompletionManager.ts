@@ -96,13 +96,12 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         if(token) {
-            console.log('Found body token att offset %s with path %s and token type %s', offset, token.path, token.type);
             this.initBodyGraphFromFiles();
 
             if(token.path) {
 
                 let steps = token.path.replace(/\[\w+\]/, '.[0]').split('.');
-                let nodes = this.getNodesWithSteps(steps, this._bodyGraph);
+                let nodes = this.getNodesWithSteps(steps, this._bodyGraph, n => n.label);
                 completionItems = this.createCompletionItems(nodes, triggerCharacter);
     
             } else {
@@ -116,14 +115,14 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
-    public getNodesWithSteps(steps:string[], graph:Graph):Node[] {
+    public getNodesWithSteps(steps:string[], graph:Graph, getNodeId: (node:Node) => string):Node[] {
 
         let children:Node[];
         
         if(steps.length > 0 && steps[0].length > 0){
             
             let roots = graph.getRootNodes();
-            let node = roots.find(n=> n.id === steps[0]);
+            let node = roots.find(n=> getNodeId.call(n, n) === steps[0]);
 
             if(!node) {
                 node = roots.find(n=> n.data.isDynamicNode);
@@ -137,18 +136,19 @@ export class ElasticsearchQueryCompletionManager {
                 children = graph.getOutgoingNodes(node.id);
                 
                 if(isNotLastStep) {
-                    node = children.find(n=> n.id === nextNodeId);
+                    node = children.find(n => getNodeId.call(n, n) === nextNodeId);
     
                     if(!node) {
                         node = children.find(n=> n.data.isDynamicNode);
     
-                        if(node) {
-                            steps[index + 1] = node.id;
-                        } else {
-                            console.warn('Could not find a children node with label %s', nextNodeId)
+                        if(!node) {
+                            console.warn('Could not find a children node with id %s', nextNodeId)
+                            children = [];
                             break;
                         }
                     }
+
+                    steps[index + 1] = node.id;
                 }
             }
 
@@ -170,6 +170,8 @@ export class ElasticsearchQueryCompletionManager {
             }
 
             let item = new vscode.CompletionItem(label, node.data.kind);
+            item.filterText = label.replace('{','').replace('}', '');
+
             let snippet:string =  this.getCompletionItemSnippet(node, triggerCharacter);            
 
             switch(item.kind) {
@@ -245,34 +247,39 @@ export class ElasticsearchQueryCompletionManager {
 
     private initBodyGraphFromFiles() {
 
+        /*
         if(this._bodyGraph) {
             return;
-        }
+        }*/
 
         let gephiService = new GephiStreamService();
 
         this._bodyGraph = new Graph();
-        let file:string = this.getQueryDslFile();
+        let files:string[] = this.getQueryDslFiles();
 
-        const fileContent = fs.readFileSync(file, 'UTF-8');
-        let source = JSON.parse(fileContent);
-        let keys = Object.keys(source);
+        for(let file of files) {
 
-        for(let key of keys) {
-            if(key.startsWith('__')) {
-                this.buildBodyGraph(source[key]);
-                delete source[key];
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let keys = Object.keys(source);
+    
+            for(let key of keys) {
+                if(key.startsWith('__')) {
+                    this.buildBodyGraph(source[key]);
+                    delete source[key];
+                }
             }
+    
+            console.log('building graph with file %s', file);
+            this.buildBodyGraph(source);
         }
-
-        this.buildBodyGraph(source);
 
         let nodes = this._bodyGraph.getNodes();
         for(let node of nodes) {
             node.data.isDynamicNode = node.label.endsWith('}');
         }
 
-        gephiService.syncGraph(this._bodyGraph);
+        //gephiService.syncGraph(this._bodyGraph);
     }
 
     private buildBodyGraph(source:any, path?:string) {
@@ -480,13 +487,26 @@ export class ElasticsearchQueryCompletionManager {
         return versionNumber;
     }
 
-    private getQueryDslFile():string {
+    private getQueryDslFiles():string[]  {
+
+        let specificationFiles:string[] = [];
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'query-dsl', 'query.json');
+        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'query-dsl');
+        let files = fs.readdirSync(folderPath);
 
-        return folderPath;
+        for(let file of files) {
+            const extension = path.extname(file);
+
+            if(extension === '.json') {
+                specificationFiles.push( 
+                    path.join(folderPath, file)
+                );
+            }
+        }
+
+        return specificationFiles;
     }
 
     private getRestApiSpecificationFiles():string[] {

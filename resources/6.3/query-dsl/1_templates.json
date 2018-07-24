@@ -1,0 +1,26 @@
+{
+    "script_languages": {
+        "__is_template": true,
+        "painless": { "__is_value": true }
+    },
+    "script": {
+        "__is_template": true,
+        "id": "",
+        "source": "",
+        "lang": {
+            "__is_field":true,
+            "__children_of": "script_languages"
+        },
+        "params": {
+            "{parameter}": "{value}"
+        }
+    },
+    "script_fields": {
+        "__is_template": true,
+        "{name}": {
+            "script": {
+                "__children_of": "script"
+            }
+        }
+    }
+}
