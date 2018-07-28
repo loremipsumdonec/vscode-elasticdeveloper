@@ -8,7 +8,6 @@ import * as HostEnvironmentManager from './managers/hostEnvironmentManagerDecora
 
 import { LogManager } from './managers/logManager';
 import { EnvironmentManager } from './managers/environmentManager';
-import { ServiceSpecificationManager } from './managers/serviceSpecificationManager';
 
 import { Controller } from './controllers/controller';
 import { QueryCodeLensController} from './controllers/queryCodeLensController';
@@ -21,6 +20,7 @@ import { QueryCompletionItemController } from './feature/intelliSense/controller
 import { QueryCommandController } from './controllers/queryCommandController';
 import { IndexCommandController } from './controllers/indexCommandController';
 import { ScriptCommandController } from './controllers/scriptCommandController';
+import { IntellisenseCommandController } from './feature/intelliSense/controllers/intellisenseCommandController';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
     EnvironmentManager.decorateWith(HostEnvironmentManager.decorate());
     
     LogManager.verbose('elasticdeveloper loading controllers');
-    
+
     let controllers: Controller[] = [];
     controllers.push(new QueryCodeLensController());
     controllers.push(new QueryCommandController());
@@ -45,6 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new IndexTemplateCommandController());
     controllers.push(new IndexCommandController());
     controllers.push(new ScriptCommandController());
+    controllers.push(new IntellisenseCommandController());
 
     LogManager.verbose('elasticdeveloper register controllers');
 

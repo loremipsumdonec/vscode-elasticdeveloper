@@ -1,7 +1,6 @@
 {
 	"__templates": {
 		"analyzers": {
-			"__is_template": true,
 			"{analyzer}": {"__is_value": true},
 			"standard": {"__is_value": true},
 			"simple": {"__is_value": true},
@@ -45,15 +44,7 @@
 			"turkish": {"__is_value": true}, 
 			"thai": {"__is_value": true}
 		},
-		"match_options": {
-			"__is_template": true,
-			"operator": "and",
-			"boost": 1.0,
-			"minimum_should_match": 1,
-			"__children_of": ["default_match", "fuzziness"]
-		},
 		"default_match": {
-			"__is_template": true,
 			"query": "this is a simple test",
 			"zero_terms_query": "",
 			"analyzer": {
@@ -62,7 +53,6 @@
 			}
 		},
 		"fuzziness": {
-			"__is_template": true,
 			"cutoff_frequency": 0.001,
 			"max_expansions": 10,
 			"lenient": true,
@@ -71,8 +61,13 @@
 			"fuzziness": 1.0,
 			"prefix_length": 1
 		},
+		"match_options": {
+			"operator": "and",
+			"boost": 1.0,
+			"minimum_should_match": 1,
+			"__children_of": ["default_match", "fuzziness"]
+		},
 		"decay_function_options": {
-			"__is_template": true,
 			"multi_value_mode": {
 				"__is_field":true,
 				"min": { "__is_value": true},
@@ -88,7 +83,6 @@
 			}
 		},
 		"score_modes": {
-			"__is_template": true,
 			"min": { "__is_value": true},
 			"max": { "__is_value": true},
 			"sum": { "__is_value": true},

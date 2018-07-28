@@ -1,11 +1,9 @@
 {
     "__templates": {
         "script_languages": {
-            "__is_template": true,
             "painless": { "__is_value": true }
         },
         "script": {
-            "__is_template": true,
             "id": "",
             "source": {
                 "__children_of": "query"

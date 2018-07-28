@@ -97,6 +97,14 @@
       {
         "command": "elasticdeveloper.explorer.refreshNode.fromExplorer",
         "title": "Refresh"
+      },
+      {
+        "command": "elasticdeveloper.intelliSense.streamGraph",
+        "title": "Stream intelliSense graph to Gephi"
+      },
+      {
+        "command": "elasticdeveloper.intelliSense.openEndpointDocumentation.fromEditorContext",
+        "title": "Open endpoint documentation"
       }
     ],
     "menus": {
@@ -129,7 +137,13 @@
       ],
       "editor/title/context": [],
       "editor/title": [],
-      "editor/context": [],
+      "editor/context": [
+        {
+          "command": "elasticdeveloper.intelliSense.openEndpointDocumentation.fromEditorContext",
+          "when": "resourceExtname == .esquery",
+          "group": "navigation"
+        }
+      ],
       "commandPalette": [],
       "view/item/context": [
         {

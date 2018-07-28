@@ -15,6 +15,7 @@ import { Version } from '../../../models/version';
 import { isObject, isArray } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
 import { GephiStreamService } from '../../gephi/services/gephiStreamService';
+import { IEndpoint } from '../models/IEndpoint';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
@@ -28,18 +29,63 @@ interface IRestApiEndpoints {
 
 export class ElasticsearchQueryCompletionManager {
     
-    private _bodyGraph:Graph;
-    private _restApiEndpointGraph:IRestApiEndpoints;
+    private _endpoints:any;
+    private _graphs:any;
     private _versionNumber:string
 
     constructor(versionNumber?:string) {
+        this._graphs = {};
+        this._endpoints = {};
         this._versionNumber = versionNumber;
+    }
+
+    public get graphs():any {
+        return this._graphs;
+    }
+
+    public getEndpointWithId(endpointId:string): IEndpoint {
+        return this._endpoints[endpointId];
+    }
+
+    public getEndpointWith(method:string, command:string): IEndpoint {
+
+        let endpoint:IEndpoint;
+        let endpointId = this.getEndpointIdWith(method, command);
+        endpoint = this.getEndpointWithId(endpointId);
+
+        return endpoint;
+
+    }
+
+    public getEndpointIdWith(method:string, command:string): string {
+
+        let endpointId:string;
+
+        if(method && command) {
+
+            command = command.toLowerCase();
+            let graph = this.getGraphWithMethod(method);
+            let steps = command.split('/').splice(1);
+
+            let nodes = this.getNodesWithSteps(steps, null, graph, n=> n.label);
+            let endpointNode = nodes.find(n=> n.data.kind === 'endpoint');
+    
+            if(endpointNode) {
+                endpointId = endpointNode.id
+            }
+        }
+
+        return endpointId;
+
+    }
+
+    public getEndpointIdWithQuery(query:ElasticsearchQuery):string {
+        return this.getEndpointIdWith(query.method, query.command);
     }
 
     public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
-
         let token = query.tokenAt(offset);
 
         switch(token.type) {
@@ -59,23 +105,82 @@ export class ElasticsearchQueryCompletionManager {
         let completionItems:vscode.CompletionItem[] = [];
 
         if(query.hasCommand) {
-            this.initRestApiEndpointGraphFromFiles();
 
-            let graph = this._restApiEndpointGraph[query.method.toLowerCase()];
-            let endpoints = graph.getNodes().filter(n=> n.data.kind === 'endpoint');
-            let nodes:Node[] = [];
+            let command = query.command.toLowerCase();
+            let graph = this.getGraphWithMethod(query.method);
+            let steps = command.split('/').splice(1);
+            steps.pop();
+            let roots:any[] = [];
+            let visited:string[] = [];
 
-            for(let endpoint of endpoints) {
-                let edges = graph.getEdgesWithTargetId(endpoint.id);
+            if(steps.length > 0) {
+                let nodes = this.getNodesWithSteps(steps, null, graph, n=> n.label);
 
-                for(let edge of edges) {
-                    let node = graph.getNodeWithId(edge.sourceId);
-                    nodes.push(node);
+                for(let node of nodes) {
+                    roots.push({ current:node, path: node.label, depth: 0 });
+                }
+
+            } else {
+                let nodes = graph.getRootNodes();
+                console.log(nodes);
+                for(let node of nodes) {
+                    roots.push({ current:node, path: node.label, depth: 0 });
                 }
             }
 
-            completionItems = this.createCompletionItems(nodes, '"');
-       
+            while(roots.length > 0) {
+
+                let context = roots.pop();
+
+                if(!visited.find(s => s === context.current.id)) {
+                    
+                    visited.push(context.current.id);
+                    let edges = graph.getEdgesWithSourceId(context.current.id);
+                
+                    for(let edge of edges) {
+                        let target = graph.getNodeWithId(edge.targetId);
+                        let label = context.path;
+
+                        if(target.data.kind === 'endpoint') {
+                          
+                            completionItems = completionItems.filter(c=> c.label !== label);
+                            
+                            let item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Method);
+                            let snippet = this.createTextSnippet(label);
+                            item.insertText = new vscode.SnippetString(snippet);
+                            item.filterText = label.replace('{','').replace('}', '');
+
+                            completionItems.push(item);
+    
+                        } else if(target.data.kind === 'step') {
+    
+                            if(context.depth === 0) {
+
+                                let exists = completionItems.find(c=> c.label === label);
+                                let children = graph.getEdgesWithSourceId(target.id);
+
+                                if(!exists && children.length > 1) {
+                                    
+                                    let item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Folder);
+                                    let snippet = this.createTextSnippet(label);
+                                    item.insertText = new vscode.SnippetString(snippet);
+                                    item.filterText = label.replace('{','').replace('}', '');
+                                    
+                                    completionItems.push(item);
+                                }
+                            }
+    
+                            roots.push({
+                                current: target,
+                                path: context.path + '/' + target.label,
+                                depth: context.depth + 1
+                            });
+                        }
+                    }
+
+                }
+
+            }
         }
 
         return completionItems;
@@ -84,10 +189,8 @@ export class ElasticsearchQueryCompletionManager {
     public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
-
         let bodyToken = query.tokenAt(offset);
         let offsetInBody = offset - bodyToken.offset;
-
         let entityDocumentScanner = new EntityDocumentScanner(bodyToken.text.substr(0, offsetInBody));
         let token = entityDocumentScanner.scanUntilPosition(offsetInBody) as PropertyToken;
         
@@ -96,18 +199,23 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         if(token) {
-            this.initBodyGraphFromFiles();
 
-            if(token.path) {
-                console.log(token.path);
-                let steps = token.path.replace(/\[\w+\]/, '.[0]').split('.');
-                let nodes = this.getNodesWithSteps(steps, this._bodyGraph, n => n.label);
-                completionItems = this.createCompletionItems(nodes, triggerCharacter);
-    
-            } else {
-                let children = this._bodyGraph.getRootNodes();
-                children = children.filter(n=> !n.data.isTemplate);
-                completionItems = this.createCompletionItems(children, triggerCharacter);
+            let graph = this.getGraphWithEndpointId(query.endpointId);
+
+            if(graph) {
+
+                if(token.path) {
+                    let steps = token.path.replace(/\[\w+\]/, '.[0]').split('.');
+                    let root = graph.getNodeWithId(steps[0]);
+                    let nodes = this.getNodesWithSteps(steps, root, graph, n => n.label);
+                    completionItems = this.createCompletionItems(nodes, triggerCharacter);
+        
+                } else {
+                    let children = graph.getRootNodes();
+                    children = children.filter(n=> !n.data.isTemplate);
+                    completionItems = this.createCompletionItems(children, triggerCharacter);
+                }
+
             }
 
         }
@@ -115,41 +223,220 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
-    public getNodesWithSteps(steps:string[], graph:Graph, getNodeId: (node:Node) => string):Node[] {
+    protected getGraphWithMethod(method:string): Graph {
+        let key = 'method_' + method.toLowerCase();
 
-        let children:Node[];
+        if(!this._graphs[key]) {
+            this.loadEndpointGraphs();
+        }
+
+        return this._graphs[key];
+    }
+
+    protected getGraphWithEndpointId(endpointId:string): Graph {
+
+        endpointId = endpointId.replace('.', '_');
+
+        if(!this._graphs[endpointId]) {
+            this.loadGraphWithEndpointId(endpointId);
+        }
+
+        return this._graphs[endpointId];
+    }
+
+    protected loadEndpointGraphs() {
+
+        let files = this.getRestApiSpecificationFiles();
+        
+        for(let file of files) {
+
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let endpointId = Object.keys(source)[0];
+            let endpoint:IEndpoint = source[endpointId];
+            endpointId = 'endpoint_' + endpointId;
+            this._endpoints[endpointId] = endpoint;
+
+            if(endpoint.methods) {
+
+                for(let method of endpoint.methods) {
+
+                    let key = 'method_' + method.toLowerCase();
+
+                    if(!this._graphs[key]) {
+                        this._graphs[key] = new Graph();
+                    }
+
+                    let graph = this._graphs[key];
+
+                    graph.addNode(endpointId, endpointId, { kind: 'endpoint' });
+
+                    if(endpoint.url && endpoint.url.params) {
+                        let parameterNames = Object.keys(endpoint.url.params);
+        
+                        for(let name of parameterNames) {
+                            let parameter = endpoint.url.params[name];
+                            let parameterId = endpointId + '/' + name;
+                            graph.addNode(parameterId, name, { kind: 'parameter' });
+                            graph.addEdge(endpointId, parameterId);
+                        }
+        
+                    }
+
+                    for(let path of endpoint.url.paths) {
+                        let steps:string[] = path.split('/').splice(1);
+                        let previousStepId:string = null;
+
+                        for(let index = 0; index < steps.length; index++) {
+                            let step = steps[index];
+                            let stepId = step;
+                            
+                            if(stepId.length == 0 && steps.length == 1) {
+                                stepId = '/';
+                                step = '/';
+                            }
+
+                            if(previousStepId) {
+                                stepId = previousStepId + '/'+ step;
+                            }
+
+                            graph.addNode(stepId, step, { kind: 'step' });
+
+                            if(index == steps.length - 1) {
+                                graph.addEdge(stepId, endpointId);
+                            }
+
+                            if(previousStepId) {
+                                graph.addEdge(previousStepId, stepId);
+                            }
+
+                            previousStepId = stepId;
+                        }
+                    }
+                }
+            }
+        }
+
+        let keys = Object.keys(this._graphs);
+
+        for(let key of keys) {
+
+            if(key.startsWith('method_')) {
+
+                let graph = this._graphs[key] as Graph;
+                let nodes = graph.getNodes();
+    
+                for(let node of nodes) {
+                    node.data.isDynamicNode = node.label.endsWith('}');
+                }
+
+            }
+        }
+    }
+
+    protected loadGraphWithEndpointId(endpointId:string) {
+
+        let gephiService = new GephiStreamService();
+        let graph = new Graph();
+        let files:string[] = this.getEndpointDslFiles(endpointId);
+
+        for(let file of files) {
+
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let keys = Object.keys(source);
+    
+            for(let key of keys) {
+                if(key.startsWith('__')) {
+                    this.loadDslGraph(source[key], graph);
+                    delete source[key];
+                }
+            }
+    
+            this.loadDslGraph(source, graph);
+        }
+
+        let nodes = graph.getNodes();
+
+        for(let node of nodes) {
+            node.data.isDynamicNode = node.label.endsWith('}');
+        }
+
+        this._graphs[endpointId] = graph;
+    }
+
+    protected getChildrenNodesWithParentNodeId(node:Node, graph:Graph):Node[] {
+
+        let edges = graph.getEdgesWithSourceId(node.id);
+        let children:Node[] = [];
+
+        while(edges.length > 0) {
+            let edge = edges.pop();
+
+            if(edge.kind === 'children_of') {
+                let childrenOfEdges = graph.getEdgesWithSourceId(edge.targetId);
+                childrenOfEdges.forEach(e => edges.push(e));
+            } else {
+                let child = graph.getNodeWithId(edge.targetId);
+                children.push(child);
+            }
+        }
+
+        return children;
+    }
+
+    public getNodesWithSteps(steps:string[], root:Node, graph:Graph, findNode: (node:Node) => string):Node[] {
+
+        let children:Node[] = [];
         
         if(steps.length > 0 && steps[0].length > 0){
             
-            let roots = graph.getRootNodes();
-            let node = roots.find(n=> getNodeId.call(n, n) === steps[0]);
+            if(!root) {
+                let roots = graph.getRootNodes();
+                root = roots.find(n=> findNode.call(n, n) === steps[0]);
 
-            if(!node) {
-                node = roots.find(n=> n.data.isDynamicNode);
+                if(!root) {
+                    root = roots.find(n=> n.data.isDynamicNode);
+                }
+
             }
 
-            for(let index = 0; index < steps.length; index++) {
+            let node = root;
+
+            if(node) {
+
+                for(let index = 0; index < steps.length; index++) {
         
-                let nextNodeId = steps[index + 1];
-                let isNotLastStep:boolean = index < steps.length - 1; 
-                
-                children = graph.getOutgoingNodes(node.id);
-                
-                if(isNotLastStep) {
-                    node = children.find(n => getNodeId.call(n, n) === nextNodeId);
-    
-                    if(!node) {
-                        node = children.find(n=> n.data.isDynamicNode);
-    
-                        if(!node) {
+                    let nextNodeId = steps[index + 1];
+                    let isNotLastStep:boolean = index < steps.length - 1; 
+                    
+                    children = this.getChildrenNodesWithParentNodeId(node, graph);
+
+                    if(isNotLastStep) {
+                        node = children.find(n => findNode.call(n, n) === nextNodeId);
+        
+                        if(!node && nextNodeId.length > 0) {
+                            node = children.find(n=> n.data.isDynamicNode);
+        
+                            if(!node) {
+                                console.warn('Could not find a children node with id %s', nextNodeId);
+                                console.log(steps);
+                                children = [];
+                                break;
+                            }
+                        } else if(!node) {
                             console.warn('Could not find a children node with id %s', nextNodeId)
+                            console.log(steps);
                             children = [];
                             break;
                         }
+    
+                        steps[index + 1] = node.id;
                     }
-
-                    steps[index + 1] = node.id;
                 }
+
+            } else {
+                console.log('failed find root node with %s', steps[0]);
             }
 
         }
@@ -209,6 +496,28 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
+    private createTextSnippet(text:string):string {
+
+        if(text && text.length > 0){
+
+            let matches = text.match(/\{(\w+)\}/g);
+
+            if(matches) {
+    
+                let index = 1;
+    
+                for(let m of matches) {
+                    let key = m.substring(1, m.length - 1);
+                    text = text.replace(m, '${' + index + ':' + key + '}');
+                    index++;
+                }
+            }
+
+        }
+
+        return text;
+    }
+
     private getCompletionItemSnippet(node:Node, triggerCharacter:string):string {
 
         let label:string = node.data.label;
@@ -245,65 +554,9 @@ export class ElasticsearchQueryCompletionManager {
         return label;
     }
 
-    private initBodyGraphFromFiles() {
+    private loadDslGraph(source, graph:Graph) {
 
-        /*
-        if(this._bodyGraph) {
-            return;
-        }*/
-
-        let gephiService = new GephiStreamService();
-
-        this._bodyGraph = new Graph();
-        let childrensOf:any[] = [];
-        let files:string[] = this.getQueryDslFiles();
-
-        for(let file of files) {
-
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let keys = Object.keys(source);
-    
-            for(let key of keys) {
-                if(key.startsWith('__')) {
-                    this.buildBodyGraphNonRec(source[key]).forEach(c=> childrensOf.push(c));
-                    delete source[key];
-                }
-            }
-    
-            this.buildBodyGraphNonRec(source).forEach(c=> childrensOf.push(c));
-        }
-
-        while(childrensOf.length > 0) {
-            let context = childrensOf.pop();
-            let childrenOf = context.source;
-            let path = context.path;
-
-            if(isArray(childrenOf)) {
-
-            } else {
-                let children = this._bodyGraph.getOutgoingNodes(context.source);
-
-                for(let child of children) {
-                    this._bodyGraph.addEdge(path, child.id);
-                }
-            }
-        }
-
-        let nodes = this._bodyGraph.getNodes();
-        for(let node of nodes) {
-            node.data.isDynamicNode = node.label.endsWith('}');
-        }
-
-        gephiService.syncGraph(this._bodyGraph);
-    }
-
-    private buildBodyGraphNonRec(source): any[] {
-
-        let keys = Object.keys(source);
         let stack:any[] = [];
-        let post:any[] = [];
-
         stack.push( { 
             source: source, 
             path: null });
@@ -335,15 +588,15 @@ export class ElasticsearchQueryCompletionManager {
                                 kind = vscode.CompletionItemKind.Reference;
                                 let arrayObjectNodeId = nodeId +'.[0]';
 
-                                this._bodyGraph.addNode(arrayObjectNodeId, '[0]', { id: '[0]', kind: vscode.CompletionItemKind.Struct });
-                                this._bodyGraph.addEdge(nodeId, arrayObjectNodeId);
+                                graph.addNode(arrayObjectNodeId, '[0]', { id: '[0]', kind: vscode.CompletionItemKind.Struct });
+                                graph.addEdge(nodeId, arrayObjectNodeId);
 
                                 stack.push({ source:current[0], path: arrayObjectNodeId});
                             }
                         }
                         
-                        this._bodyGraph.addNode(nodeId, key, { kind: kind});
-                        this._bodyGraph.addEdge(path, nodeId);
+                        graph.addNode(nodeId, key, { kind: kind});
+                        graph.addEdge(path, nodeId);
 
                     } else if(isObject(current)) {
 
@@ -360,198 +613,31 @@ export class ElasticsearchQueryCompletionManager {
                             kind = vscode.CompletionItemKind.Value;
                         }
 
-                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: kind, isTemplate:isTemplate });
-                        this._bodyGraph.addEdge(path, nodeId);
+                        graph.addNode(nodeId, key, { id: key, kind: kind, isTemplate:isTemplate });
+                        graph.addEdge(path, nodeId);
 
                         stack.push({ source:current, path: nodeId});
 
                     } else {
 
-                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: vscode.CompletionItemKind.Field, defaultValue: current });
-                        this._bodyGraph.addEdge(path, nodeId);
+                        graph.addNode(nodeId, key, { id: key, kind: vscode.CompletionItemKind.Field, defaultValue: current });
+                        graph.addEdge(path, nodeId);
                     }
 
                 } else if(key === '__children_of') {
-                    post.push({source: current, path});                    
-                }
-            }
-        }
-
-        return post;
-    }
-
-    private buildBodyGraph(source:any, path?:string) {
-
-        if(isObject(source)) {
-            
-            let keys = Object.keys(source);
-
-            for(let key of keys) {
-                let current = source[key];
-
-                if(!key.startsWith('__')) {
-
-                    let nodeId = path + '.' + key;
-                    
-                    if(path == null) {
-                        nodeId = key;
-                    }
                     
                     if(isArray(current)) {
-                        
-                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Enum;
 
-                        if(current.length > 0) {
-                            if(isObject(current[0])) {
-                                kind = vscode.CompletionItemKind.Reference;
-                                let arrayObjectNodeId = nodeId +'.[0]';
-
-                                this._bodyGraph.addNode(arrayObjectNodeId, '[0]', { id: '[0]', kind: vscode.CompletionItemKind.Struct });
-                                this._bodyGraph.addEdge(nodeId, arrayObjectNodeId);
-                                this.buildBodyGraph(current[0], arrayObjectNodeId);
-                            }
+                        for(let c of current) {
+                            graph.addEdge(path, c, null, 'children_of');
                         }
-                        
-                        this._bodyGraph.addNode(nodeId, key, { kind: kind});
-                        this._bodyGraph.addEdge(path, nodeId);
-
-                    } else if(isObject(current)) {
-
-                        let isTemplate = false;
-                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Class;
-
-                        if(current.__is_template) {
-                            isTemplate = true;
-                        }
-
-                        if(current.__is_field) {
-                            kind = vscode.CompletionItemKind.Field;
-                        } else if(current.__is_value) {
-                            kind = vscode.CompletionItemKind.Value;
-                        }
-
-                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: kind, isTemplate:isTemplate });
-
-                        this._bodyGraph.addEdge(path, nodeId);
-                        this.buildBodyGraph(current, nodeId);
-
+        
                     } else {
-
-                        this._bodyGraph.addNode(nodeId, key, { id: key, kind: vscode.CompletionItemKind.Field, defaultValue: current });
-                        this._bodyGraph.addEdge(path, nodeId);
-                    }
-
-                } else if(key === '__children_of') {
-                    let childrenOf = current;
-
-                    if(isArray(childrenOf)) {
-
-                    } else {
-
-                        let children = this._bodyGraph.getOutgoingNodes(childrenOf);
-
-                        for(let child of children) {
-                            this._bodyGraph.addEdge(path, child.id);
-                        }
+                        graph.addEdge(path, current, null, 'children_of');
                     }
                 }
             }
         }
-    }
-
-    private initRestApiEndpointGraphFromFiles() {
-
-        if(this._restApiEndpointGraph) {
-           return; 
-        }
-
-        let gephiService = new GephiStreamService();
-        this._restApiEndpointGraph = {
-            get: new Graph,
-            delete: new Graph,
-            put: new Graph,
-            head: new Graph,
-            post: new Graph
-        };
-
-        let files = this.getRestApiSpecificationFiles();
-        
-        for(let file of files) {
-
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let endpointId = Object.keys(source)[0];
-            let endpoint = source[endpointId];
-
-            if(endpoint.methods) {
-
-                for(let method of endpoint.methods) {
-
-                    method = method.toLowerCase();
-                    let graph = this._restApiEndpointGraph[method];
-
-                    graph.addNode(endpointId, endpointId, { kind: 'endpoint' });
-
-                    if(endpoint.url && endpoint.url.params) {
-                        let parameterNames = Object.keys(endpoint.url.params);
-        
-                        for(let name of parameterNames) {
-                            let parameter = endpoint.url.params[name];
-                            let parameterId = name;
-                            graph.addNode(parameterId, name, { kind: 'parameter', description: parameter.description });
-                            graph.addEdge(endpointId, parameterId);
-                        }
-        
-                    }
-
-                    for(let path of endpoint.url.paths) {
-                        let steps:string[] = path.split('/').splice(1);
-                        let previousStepId:string = null;
-
-                        for(let index = 0; index < steps.length; index++) {
-                            let step = steps[index];
-                            let stepId = step;
-                            
-                            if(stepId.length == 0 && steps.length == 1) {
-                                stepId = '/';
-                                step = '/';
-                            }
-
-                            if(previousStepId) {
-                                stepId = previousStepId + '/'+ step;
-                            }
-
-                            if(index == steps.length - 1) {
-                                graph.addNode(stepId, step, { label: stepId, kind: vscode.CompletionItemKind.Method });
-                                graph.addEdge(stepId, endpointId);
-                            } else {
-                                graph.addNode(stepId, step, { label: stepId, kind: 'step' });
-                            }
-
-                            if(previousStepId) {
-                                graph.addEdge(previousStepId, stepId);
-                            }
-
-                            previousStepId = stepId;
-                        }
-                    }
-                }
-            }
-        }
-
-        let keys = Object.keys(this._restApiEndpointGraph);
-
-        for(let key of keys) {
-            let graph = this._restApiEndpointGraph[key] as Graph;
-
-            let nodes = graph.getNodes();
-
-            for(let node of nodes) {
-                node.data.isDynamicNode = node.label.endsWith('}');
-            }
-        }
-
-        gephiService.syncGraph(this._restApiEndpointGraph.get);
     }
 
     private getVersionNumber() {
@@ -585,48 +671,40 @@ export class ElasticsearchQueryCompletionManager {
         return versionNumber;
     }
 
-    private getQueryDslFiles():string[]  {
-
-        let specificationFiles:string[] = [];
+    private getEndpointDslFiles(endpoint:string) {
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'query-dsl');
-        let files = fs.readdirSync(folderPath);
+        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpoint);
 
-        for(let file of files) {
-            const extension = path.extname(file);
-
-            if(extension === '.json') {
-                specificationFiles.push( 
-                    path.join(folderPath, file)
-                );
-            }
-        }
-
-        return specificationFiles;
+        return this.getFilesWithFolderPath(folderPath);
     }
 
     private getRestApiSpecificationFiles():string[] {
 
-        let specificationFiles:string[] = [];
-
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
         let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
+        
+        return this.getFilesWithFolderPath(folderPath);
+    }
+
+    private getFilesWithFolderPath(folderPath:string, filterWithExtension:string = '.json') {
+
+        let jsonFiles:string[] = [];
         let files = fs.readdirSync(folderPath);
 
         for(let file of files) {
             const extension = path.extname(file);
 
-            if(extension === '.json') {
-                specificationFiles.push( 
+            if(extension === filterWithExtension) {
+                jsonFiles.push( 
                     path.join(folderPath, file)
                 );
             }
         }
 
-        return specificationFiles;
+        return jsonFiles;
     }
 
     public static get(): ElasticsearchQueryCompletionManager {

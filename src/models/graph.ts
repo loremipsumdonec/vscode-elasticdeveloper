@@ -105,7 +105,11 @@ export class Graph {
     }
 
     public getNodeWithId(nodeId:string): Node {
-        return this._nodes.find(n=> n.id === nodeId);
+        return this.findNode(n=> n.id === nodeId);
+    }
+
+    public findNode(getNodeId: (node:Node) => boolean) {
+        return this._nodes.find(getNodeId);
     }
 
     public get onEdgeAdded(): vscode.Event<Edge> {

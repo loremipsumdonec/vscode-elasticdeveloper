@@ -8,6 +8,7 @@ import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 import { Configuration } from '../models/configuration';
 import { ElasticsearchQueryDocumentScanner, ScannerState, TokenType } from './elasticsearchQueryDocumentScanner';
 import { LogManager } from '../managers/logManager';
+import { ElasticsearchQueryCompletionManager } from '../feature/intelliSense/managers/elasticsearchQueryCompletionManager';
 
 export class ElasticsearchQueryDocument {
 
@@ -106,6 +107,17 @@ export class ElasticsearchQueryDocument {
                 token = scanner.scan();
             }
 
+            if(document.hasQueries) {
+
+                let manager:ElasticsearchQueryCompletionManager = ElasticsearchQueryCompletionManager.get();
+
+                for(let query of document.queries) {
+                    if(query.hasCommand) {
+                        query.endpointId = manager.getEndpointIdWithQuery(query);
+                    }
+                }
+            }
+
         }catch(ex) {
             LogManager.error(false, 'failed parse ElasticSearchQueryDocument %s', ex.message);
         }
@@ -140,11 +152,7 @@ export class ElasticsearchQueryDocument {
 
             for(let name in configuration.params) {
                 let key = '{{' + name + '}}';
-
-                /** 
-                 *  don’t know why I need two of these in some cases.. ¯\_(ツ)_/¯. 
-                 *  It's always fun with more
-                 */
+                
                 bodyToken.text = bodyToken.text.replace(key, configuration.params[name]);
                 bodyToken.text = bodyToken.text.replace(key, configuration.params[name]);
             }

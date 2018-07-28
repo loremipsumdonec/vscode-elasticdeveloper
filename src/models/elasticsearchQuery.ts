@@ -1,6 +1,5 @@
 'use strict'
 
-import * as vscode from 'vscode';
 import * as urlhelper from '../helpers/url';
 import { TextToken } from "./textToken";
 import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocument';
@@ -19,6 +18,7 @@ export class ElasticsearchQuery extends Entity {
     private _name:string;
     private _method:string;
     private _command:string;
+    private _endpointId:string;
     private _body:string;
     private _bulk:string[] = [];
     private _hasInput:boolean = false;
@@ -81,6 +81,18 @@ export class ElasticsearchQuery extends Entity {
 
         this._command = value;
         this._commandSteps = null;
+    }
+
+    public get hasEndpointId(): boolean {
+        return (this._endpointId && this._endpointId.length > 0);
+    }
+
+    public get endpointId():string {
+        return this._endpointId;
+    }
+
+    public set endpointId(value:string) {
+        this._endpointId = value;
     }
 
     public get steps():string[] {

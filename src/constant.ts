@@ -69,5 +69,14 @@ export const ConfigurationFeatureExplorerEnabled = Name + '.configuration.featur
 /**
  * ExplorerCommandRefreshNode
  */
-
  export const ExplorerCommandRefreshNode = 'explorer.refreshNode.fromExplorer';
+
+ /**
+  * IntelliSense
+  */
+ export const IntelliSenseCommandStreamGraph = 'intelliSense.streamGraph';
+ export const IntelliSenseCodeLensCommandOpenEndpointDocumentation = 'intelliSense.openEndpointDocumentation.fromCodeLens';
+
+ /**
+  * Endpoint
+  */
