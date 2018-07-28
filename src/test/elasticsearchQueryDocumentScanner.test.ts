@@ -40,6 +40,34 @@ suite("ElasticsearchQueryDocumentScanner", () => {
         assert.equal(scanner.offset, 18);
     });
 
+    test("scanUntilAfterQueryString_queryWithQueryString_expectedQueryStringName", () => {
+
+        let queryAsString = 'GET /lorem/command?helloQueryString=world\n\r{}';
+        let scanner = new ElasticsearchQueryDocumentScanner(queryAsString);
+        let token = scanner.scanUntil(ScannerState.AfterQueryString);
+        
+        assert.equal(token.text, 'helloQueryString');
+    }); 
+
+    test("scanUntilAfterQueryString_queryWithQueryString_expectedQueryStringValue", () => {
+
+        let queryAsString = 'GET /lorem/command?helloQueryString=world\n\r{}';
+        let scanner = new ElasticsearchQueryDocumentScanner(queryAsString);
+        let token = scanner.scanUntil(ScannerState.AfterQueryString) as PropertyToken;
+        
+        assert.equal(token.propertyValueToken.text, 'world');
+    }); 
+
+    test("scanUntilAfterQueryString_queryWithTwoQueryStringParameters_expectedQueryStringNameAndValue", () => {
+
+        let queryAsString = 'GET /lorem/command?helloQueryString=world&lorem=ipsum\n\r{}';
+        let scanner = new ElasticsearchQueryDocumentScanner(queryAsString);
+        let token = scanner.scanUntil(ScannerState.AfterQueryString) as PropertyToken;;
+        
+        assert.equal(token.text, 'lorem');
+        assert.equal(token.propertyValueToken.text, 'ipsum');
+    }); 
+
     test("scanUntilAfterArgumentName_queryWitArgumentUsingEqualChar_expectedArgumentName", () => {
 
         let queryAsString = 'GET /lorem/command(helloUsingEqual=5)\n\r{}';
@@ -57,7 +85,6 @@ suite("ElasticsearchQueryDocumentScanner", () => {
         
         assert.equal(token.text, 'helloUsingColon');
     });
-
 
     test("scanUntilAfterArgumentName_queryWitArgumentUsingColonCharAndNumberValue_expectedArgumentValue", () => {
 

@@ -21,6 +21,10 @@ export enum ScannerState {
     WithinConfiguration,
     AfterMethod,
     AfterCommand,
+    WithinQueryString,
+    AfterQueryStringName,
+    BeforeQueryStringValue,
+    AfterQueryString,
     WithinInput,
     AfterArgumentName,
     BeforeArgumentValue,
@@ -171,6 +175,8 @@ export class ElasticsearchQueryDocumentScanner {
         if(this._state == ScannerState.AfterCommand) {
             if(this._stream.char === '(') {
                 this._state = ScannerState.WithinInput;
+            } else if(this._stream.char === '?') {
+                this._state = ScannerState.WithinQueryString
             }
         }
 
@@ -194,6 +200,9 @@ export class ElasticsearchQueryDocumentScanner {
                 break;
             case ScannerState.AfterMethod:
                 token = this.getCommandToken();
+                break;
+            case ScannerState.WithinQueryString:
+                token = this.getQueryStringToken();
                 break;
             case ScannerState.WithinInput:
                 token = this.getArgumentToken();
@@ -337,7 +346,7 @@ export class ElasticsearchQueryDocumentScanner {
     private getCommandToken(): TextToken {
 
         let token = null;
-        let command = this._stream.advanceUntilRegEx(/[^\(|\{|\n|\s]+/);
+        let command = this._stream.advanceUntilRegEx(/[^\?|\(|\{|\n|\s]+/);
 
         if(command) {
 
@@ -353,7 +362,7 @@ export class ElasticsearchQueryDocumentScanner {
 
             this._stream.advanceUntilNonWhitespace();
 
-            if(this._stream.char === '(' || this._stream.char === '{') {
+            if(this._stream.char === '?' || this._stream.char === '(' || this._stream.char === '{') {
                 this._state = ScannerState.AfterCommand;
             } else if(this._stream.position > token.offsetEnd) {
                 this._state = ScannerState.WithinContent;
@@ -364,6 +373,37 @@ export class ElasticsearchQueryDocumentScanner {
 
         return token;
 
+    }
+
+    private getQueryStringToken():PropertyToken {
+
+        let token = null;
+
+        if(this.isNotEndOfStream) {
+
+            if(this._stream.char === '?' || this._stream.char === '&') {
+                this._stream.advance();
+                let argumentName = this._stream.advanceUntilRegEx(/[\=]/, true);
+    
+                token = propertyTokenFactory.createPropertyToken(
+                    argumentName, 
+                    this._stream.position - argumentName.length,
+                    TokenType.Argument
+                );
+    
+                token.propertyValueToken = this.getQueryStringValueToken();
+                this._stream.advanceUntilNonWhitespace();
+            }
+    
+            if(this._stream.char == '(' || this._stream.char == '{') {
+                this._state = ScannerState.AfterQueryString
+            } else {
+                this._state = ScannerState.WithinQueryString
+            }
+
+        }
+
+        return token;
     }
 
     private getArgumentToken(): PropertyToken {
@@ -403,6 +443,22 @@ export class ElasticsearchQueryDocumentScanner {
 
         } else {
             this._state = ScannerState.WithinInput;
+        }
+
+        return token;
+    }
+
+    private getQueryStringValueToken(): TextToken {
+
+        let token = null;
+        this._stream.advanceUntilNonWhitespace(1);
+        let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
+
+        if(value) {
+            token = textTokenFactory.createTextToken(
+                value, 
+                this._stream.position - value.length, 
+                TokenType.ArgumentValue);
         }
 
         return token;
