@@ -23,6 +23,7 @@ export class ElasticsearchQuery extends Entity {
     private _bulk:string[] = [];
     private _hasInput:boolean = false;
     private _hasValidBody = undefined;
+    private _options = {};
 
     public static parse(queryAsString:string, body?:any):ElasticsearchQuery {
 
@@ -81,6 +82,30 @@ export class ElasticsearchQuery extends Entity {
 
         this._command = value;
         this._commandSteps = null;
+    }
+
+    public getUrl():string {
+        let url = this._command;
+
+        let keys = Object.keys(this._options);
+
+        for(let index = 0; index < keys.length; index++) {
+            let key = keys[index];
+            let value = this._options[key];
+            let keyValue = key + '="' + value + '"';
+
+            if(!value) {
+                keyValue = key;
+            }
+
+            if(index === 0) {
+                url += '?' + keyValue;
+            } else {
+                url += '&' + keyValue;
+            }
+        }
+
+        return url;
     }
 
     public get hasEndpointId(): boolean {
@@ -186,6 +211,15 @@ export class ElasticsearchQuery extends Entity {
             this.method = textToken.text;
         } else if(textToken.type === TokenType.Command) {
             this.command = textToken.text;
+        } else if(textToken.type === TokenType.QueryString) {
+            let propertyToken = textToken as PropertyToken;
+
+            if(propertyToken.text && propertyToken.propertyValueToken) {
+                this._options[propertyToken.text] = propertyToken.propertyValueToken.text;
+            } else if(propertyToken.text) {
+                this._options[propertyToken.text] = null;
+            }
+
         } else if(textToken.type === TokenType.Argument) {
             this._hasInput = true;
             let propertyToken = textToken as PropertyToken;
@@ -193,7 +227,7 @@ export class ElasticsearchQuery extends Entity {
             if(propertyToken.text && propertyToken.propertyValueToken) {
                 this[propertyToken.text] = propertyToken.propertyValueToken.text;
             }
-
+            
         } else if(textToken.type === TokenType.Body) {
             this.addBody(textToken.text);
         }

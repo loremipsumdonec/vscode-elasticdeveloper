@@ -59,6 +59,7 @@ export class QueryCodeLensController extends QueryController
         queryCodeLensProviders.push(this.createRunQueryCodeLens);
         queryCodeLensProviders.push(this.createHasNameCodeLens);
         queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
+        queryCodeLensProviders.push(this.createShowUrlCodeLens);
 
         for(let query of document.queries) {
             
@@ -122,6 +123,19 @@ export class QueryCodeLensController extends QueryController
                 
             return new vscode.CodeLens(range, {
                 title: query.name,
+                command: ''
+            });
+        }
+
+    }
+
+    private createShowUrlCodeLens(query:ElasticsearchQuery, configuration:any, range:vscode.Range): vscode.CodeLens {
+
+        if(query.hasCommand) {
+                
+            let url = query.getUrl();
+            return new vscode.CodeLens(range, {
+                title: url,
                 command: ''
             });
         }

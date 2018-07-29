@@ -84,6 +84,8 @@ export class ElasticsearchQueryDocument {
                         document.addQuery(currentQuery);
                     } else if(token.type === TokenType.Command) {
                         currentQuery.addTextToken(token);
+                    } else if(token.type === TokenType.QueryString) {
+                        currentQuery.addTextToken(token);
                     } else if(token.type === TokenType.Argument) {
                         currentQuery.addTextToken(token);
                     } else if(token.type === TokenType.Body) {

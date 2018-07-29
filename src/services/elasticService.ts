@@ -47,10 +47,12 @@ export class ElasticService {
 
     public async execute(query:ElasticsearchQuery) : Promise<ElasticsearchResponse> {
 
+        let url = query.getUrl();
+
         if(query.isBulk) {
-            return this.performBulk(query.command, query.bulk, query.method);
+            return this.performBulk(url, query.bulk, query.method);
         } else {
-            return this.perform(query.command, query.body, query.method);
+            return this.perform(url, query.body, query.method);
         }
     }
 

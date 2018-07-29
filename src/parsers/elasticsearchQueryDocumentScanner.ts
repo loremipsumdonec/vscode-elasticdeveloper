@@ -39,6 +39,8 @@ export enum TokenType {
     Command,
     Method,
     Input,
+    QueryString,
+    QueryStringValue,
     Argument,
     ArgumentValue,
     Body,
@@ -383,12 +385,12 @@ export class ElasticsearchQueryDocumentScanner {
 
             if(this._stream.char === '?' || this._stream.char === '&') {
                 this._stream.advance();
-                let argumentName = this._stream.advanceUntilRegEx(/[\=]/, true);
+                let argumentName = this._stream.advanceUntilRegEx(/[\=|\&|\(|\{|\n]/, true);
     
                 token = propertyTokenFactory.createPropertyToken(
                     argumentName, 
                     this._stream.position - argumentName.length,
-                    TokenType.Argument
+                    TokenType.QueryString
                 );
     
                 token.propertyValueToken = this.getQueryStringValueToken();
@@ -452,13 +454,26 @@ export class ElasticsearchQueryDocumentScanner {
 
         let token = null;
         this._stream.advanceUntilNonWhitespace(1);
-        let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
 
-        if(value) {
-            token = textTokenFactory.createTextToken(
-                value, 
-                this._stream.position - value.length, 
-                TokenType.ArgumentValue);
+        if(this._stream.char === '"') {
+            token = this.getArgumentStringValueToken();
+
+            if(token) {
+                token.type = TokenType.QueryStringValue;
+            }
+
+        } else {
+
+            let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
+
+                if(value) {
+                    value = value.trim();
+
+                    token = textTokenFactory.createTextToken(
+                        value, 
+                        this._stream.position - value.length, 
+                        TokenType.QueryStringValue);
+                }
         }
 
         return token;

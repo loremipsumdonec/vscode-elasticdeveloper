@@ -58,6 +58,15 @@ suite("ElasticsearchQueryDocumentScanner", () => {
         assert.equal(token.propertyValueToken.text, 'world');
     }); 
 
+    test("scanUntilAfterQueryString_queryWithQueryStringValueWithQuotes_expectedQueryStringValue", () => {
+
+        let queryAsString = 'GET /lorem/command?helloQueryString="world again"\n\r{}';
+        let scanner = new ElasticsearchQueryDocumentScanner(queryAsString);
+        let token = scanner.scanUntil(ScannerState.AfterQueryString) as PropertyToken;
+        
+        assert.equal(token.propertyValueToken.text, 'world again');
+    }); 
+
     test("scanUntilAfterQueryString_queryWithTwoQueryStringParameters_expectedQueryStringNameAndValue", () => {
 
         let queryAsString = 'GET /lorem/command?helloQueryString=world&lorem=ipsum\n\r{}';
