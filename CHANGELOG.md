@@ -7,6 +7,13 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## [1.2.0] - XXXX-XX-XX
+### Added
+- Open REST API endpoint documentation
+### Fixed
+- Better autocomplete support for REST API
+    - Has support for query strings
+
 ## [1.1.0] - 2018-07-09
 ### Added
 - Added the Explorer view
