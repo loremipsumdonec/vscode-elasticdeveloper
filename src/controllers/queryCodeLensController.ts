@@ -57,10 +57,11 @@ export class QueryCodeLensController extends QueryController
 
         let queryCodeLensProviders:((query:ElasticsearchQuery, configuration:any, range:vscode.Range) => vscode.CodeLens)[] = []
         queryCodeLensProviders.push(this.createRunQueryCodeLens);
+        /*
         queryCodeLensProviders.push(this.createHasNameCodeLens);
         queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
         queryCodeLensProviders.push(this.createShowUrlCodeLens);
-        queryCodeLensProviders.push(this.createHasBodyCodeLens);
+        queryCodeLensProviders.push(this.createHasBodyCodeLens);*/
 
         for(let query of document.queries) {
             
