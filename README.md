@@ -129,8 +129,8 @@ The extension has support for the Bulk API and will manage the conversion of mul
 ![Autocomplete, REST API](images/query_autoComplete.gif)
 
 #### Open REST API endpoint documentation
-
-When a query has a valid endpoint a new code lens will be added. Clicking on this will open the documentation.
+![Open endpoint documentation, REST API](images/open_endpoint_doc.gif)
+When a query has a valid endpoint a new code lens will be added and clicking on this will open the endpoint documentation.
 
 ### Named query 
 A named query give you the possiblity to easier identify queries when using the "Run all queries" action and using HTML transformations. The name should be JSON firendly because the name will be added as a property on the response object.
