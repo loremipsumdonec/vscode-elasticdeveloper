@@ -112,6 +112,10 @@ export class Graph {
         return this._nodes.find(getNodeId);
     }
 
+    public findNodes(getNode: (node:Node) => boolean) {
+        return this._nodes.filter(getNode);
+    }
+
     public get onEdgeAdded(): vscode.Event<Edge> {
         return this._onEdgeAddedEventEmitter.event;
     }

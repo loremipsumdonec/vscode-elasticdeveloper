@@ -87,10 +87,13 @@ export class ElasticsearchQueryCompletionManager {
 
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
-
+        
         switch(token.type) {
             case TokenType.Command:
                 completionItems = this.getCompletionItemsForQueryCommand(query);
+                break;
+            case TokenType.QueryString:
+                completionItems = this.getCompletionItemsForQueryString(query, token as PropertyToken, offset);
                 break;
             case TokenType.Body:
                 completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
@@ -122,7 +125,7 @@ export class ElasticsearchQueryCompletionManager {
 
             } else {
                 let nodes = graph.getRootNodes();
-                console.log(nodes);
+
                 for(let node of nodes) {
                     roots.push({ current:node, path: node.label, depth: 0 });
                 }
@@ -178,6 +181,74 @@ export class ElasticsearchQueryCompletionManager {
                         }
                     }
 
+                }
+
+            }
+        }
+
+        return completionItems;
+    }
+
+    public getCompletionItemsForQueryString(query:ElasticsearchQuery, token:PropertyToken, offset:number): vscode.CompletionItem[]  {
+
+        let completionItems:vscode.CompletionItem[] = [];
+        
+        if(query.hasEndpointId) {
+            let graph = this.getGraphWithMethod(query.method);
+
+            if(token.propertyValueToken && token.propertyValueToken.isInRange(offset)) {
+
+                let parameterId = query.endpointId + '/' + token.text;
+                let node = graph.getNodeWithId(parameterId);
+
+                if(node) {
+                    
+                    if(node.data.options) {
+                        for(let option of node.data.options) {
+                            let item = new vscode.CompletionItem(option, vscode.CompletionItemKind.Value);
+                            completionItems.push(item);
+                        }
+                    } else if(node.data.type === 'boolean') {
+                        completionItems.push(new vscode.CompletionItem('true', vscode.CompletionItemKind.Value));
+                        completionItems.push(new vscode.CompletionItem('false', vscode.CompletionItemKind.Value));
+                    }
+                    
+                } 
+
+            } else {
+
+                let nodes = graph.getOutgoingNodes(query.endpointId);
+
+                for(let node of nodes) {
+    
+                    if(node.data.kind === 'parameter') {
+                        
+                        let item = new vscode.CompletionItem(node.label, vscode.CompletionItemKind.Field);
+    
+                        let snippetPattern = node.label + '="{value}"';
+    
+                        if(node.data.default != null) {
+                            snippetPattern = node.label + '="{'+ node.data.default +'}"';
+                        } else if(node.data.type == 'boolean') {
+                            snippetPattern = node.label + '="{false}"';
+                        } else if(node.data.type === 'enum' && node.data.options.length > 0) {
+                            snippetPattern = node.label + '="{'+ node.data.options[0] +'}"';
+                        }
+    
+                        let snippet = this.createTextSnippet(snippetPattern);
+                        item.insertText = new vscode.SnippetString(snippet);
+                        item.detail = 'type:' + node.data.type;
+    
+                        if(node.data.options) {
+                            item.detail += ' options:[' + node.data.options.toString() + ']';
+                        }
+    
+                        item.documentation =  node.data.description;
+                        item.filterText = node.label.replace('{','').replace('}', '');
+    
+                        completionItems.push(item);
+                    }
+    
                 }
 
             }
@@ -277,7 +348,10 @@ export class ElasticsearchQueryCompletionManager {
                         for(let name of parameterNames) {
                             let parameter = endpoint.url.params[name];
                             let parameterId = endpointId + '/' + name;
-                            graph.addNode(parameterId, name, { kind: 'parameter' });
+                            graph.addNode(parameterId, name, { 
+                                kind: 'parameter', 
+                                ...parameter
+                             });
                             graph.addEdge(endpointId, parameterId);
                         }
         
@@ -311,6 +385,35 @@ export class ElasticsearchQueryCompletionManager {
                             }
 
                             previousStepId = stepId;
+                        }
+                    }
+                }
+            }
+        }
+
+        let globalFiles = this.getRestApiGlobalSpecificationFiles();
+        let graphNames = Object.keys(this._graphs);
+
+        for(let file of globalFiles) {
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let parameterNames = Object.keys(source.params);
+
+            for(let graphName of graphNames) {
+                if(graphName.startsWith('method_')) {
+                    let graph = this._graphs[graphName] as Graph;
+                    let nodes = graph.findNodes(n=> n.data.kind === 'endpoint');
+                
+                    for(let node of nodes) {
+
+                        for(let name of parameterNames) {
+                            let parameter = source.params[name];
+                            let parameterId = node.id + '/' + name;
+                            graph.addNode(parameterId, name, { 
+                                kind: 'parameter',
+                                ...parameter
+                             });
+                            graph.addEdge(node.id, parameterId);
                         }
                     }
                 }
@@ -419,14 +522,10 @@ export class ElasticsearchQueryCompletionManager {
                             node = children.find(n=> n.data.isDynamicNode);
         
                             if(!node) {
-                                console.warn('Could not find a children node with id %s', nextNodeId);
-                                console.log(steps);
                                 children = [];
                                 break;
                             }
                         } else if(!node) {
-                            console.warn('Could not find a children node with id %s', nextNodeId)
-                            console.log(steps);
                             children = [];
                             break;
                         }
@@ -434,9 +533,6 @@ export class ElasticsearchQueryCompletionManager {
                         steps[index + 1] = node.id;
                     }
                 }
-
-            } else {
-                console.log('failed find root node with %s', steps[0]);
             }
 
         }
@@ -544,10 +640,8 @@ export class ElasticsearchQueryCompletionManager {
                     index++;
                 }
             }
-    
 
         }catch(ex) {
-            console.log(ex);
         }
 
         
@@ -680,16 +774,29 @@ export class ElasticsearchQueryCompletionManager {
         return this.getFilesWithFolderPath(folderPath);
     }
 
+    private getRestApiGlobalSpecificationFiles():string[] {
+
+        let extension = vscode.extensions.getExtension(constant.ExtensionId);
+        let versionNumber = this.getVersionNumber();
+        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
+        let files:string[] = this.getFilesWithFolderPath(folderPath)
+                                        .filter(f=> f.endsWith('_common.json'))
+
+        return files;
+    }
+
     private getRestApiSpecificationFiles():string[] {
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
         let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
-        
-        return this.getFilesWithFolderPath(folderPath);
+        let files:string[] = this.getFilesWithFolderPath(folderPath)
+                                        .filter(f=> !f.endsWith('_common.json'))
+
+        return files;
     }
 
-    private getFilesWithFolderPath(folderPath:string, filterWithExtension:string = '.json') {
+    private getFilesWithFolderPath(folderPath:string, filterWithPrefix:string='', filterWithExtension:string = '.json') {
 
         let jsonFiles:string[] = [];
         let files = fs.readdirSync(folderPath);
@@ -697,10 +804,13 @@ export class ElasticsearchQueryCompletionManager {
         for(let file of files) {
             const extension = path.extname(file);
 
-            if(extension === filterWithExtension) {
-                jsonFiles.push( 
-                    path.join(folderPath, file)
-                );
+            if(file.startsWith(filterWithPrefix)) {
+
+                if(extension === filterWithExtension) {
+                    jsonFiles.push( 
+                        path.join(folderPath, file)
+                    );
+                }
             }
         }
 

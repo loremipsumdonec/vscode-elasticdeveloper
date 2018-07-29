@@ -1,6 +1,5 @@
 'use strict'
 
-import * as textTokenFactory from '../models/textToken';
 import * as entityDocumentScannerFactory from './entityDocumentScanner'
 
 import { TextToken } from '../models/textToken';
@@ -132,16 +131,10 @@ export class ElasticsearchQueryDocument {
         let query:ElasticsearchQuery = null;
         let document = ElasticsearchQueryDocument.parse(text);
 
-        if(document.queries.length > 0) {
-
-            for(let current of document.queries) {
-                let first = current.textTokens[0];
-                let last = current.textTokens[current.textTokens.length - 1];
-
-                if(first.offset <= offset && offset <= last.offsetEnd) {
-                    query = current;
-                    break;
-                }
+        for(let current of document.queries) {
+            if(current.isInRange(offset)) {
+                query = current;
+                break;
             }
         }
 

@@ -39,7 +39,7 @@ export class TextToken {
             return this._offset + this._text.length;
         }
 
-        return 0;
+        return this._offset;
     }
 
     public get index():number {
@@ -68,6 +68,10 @@ export class TextToken {
 
     public get hasText():boolean {
         return (this._text && this._text.length > 0);
+    }
+
+    public isInRange(offset:number):boolean {
+        return this.offset <= offset && offset <= this.offsetEnd
     }
 }
 

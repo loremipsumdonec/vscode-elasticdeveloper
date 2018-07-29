@@ -23,6 +23,34 @@ export class PropertyToken extends TextToken {
         this._propertyValueType = value;
     }
 
+    public isInRange(offset:number):boolean {
+
+        let status = super.isInRange(offset);
+
+        if(!status && this.propertyValueToken) {
+            return this.propertyValueToken.isInRange(offset);
+        }
+
+        return status;
+    }
+
+    public tokenAt(offset:number): TextToken {
+     
+        let token:TextToken = null;
+
+        if(this.isInRange(offset)) {
+
+            if(this.propertyValueToken && this.propertyValueToken.isInRange(offset)) {
+                token = this.propertyValueToken;
+            } else {
+                token = this;
+            }
+
+        }
+
+        return token;
+    }
+
 }
 
 export function createPropertyToken(text:string, offset:number, type:number, propertyValueType?:number):PropertyToken {

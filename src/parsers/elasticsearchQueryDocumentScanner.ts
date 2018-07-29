@@ -49,7 +49,6 @@ export enum TokenType {
 
 export class ElasticsearchQueryDocumentScanner {
 
-    private _direction:Direction;
     private _source:string;
     private _stream:TextStream;
     private _state:ScannerState;
@@ -174,12 +173,10 @@ export class ElasticsearchQueryDocumentScanner {
 
         let token = null;
 
-        if(this._state == ScannerState.AfterCommand) {
-            if(this._stream.char === '(') {
-                this._state = ScannerState.WithinInput;
-            } else if(this._stream.char === '?') {
-                this._state = ScannerState.WithinQueryString
-            }
+        if(this._stream.char === '(') {
+            this._state = ScannerState.WithinInput;
+        } else if(this._stream.char === '?') {
+            this._state = ScannerState.WithinQueryString
         }
 
         switch(this._state) {
@@ -209,6 +206,7 @@ export class ElasticsearchQueryDocumentScanner {
             case ScannerState.WithinInput:
                 token = this.getArgumentToken();
                 break;
+            case ScannerState.AfterQueryString:
             case ScannerState.AfterInput:
             case ScannerState.AfterCommand:
                 token = this.getBodyToken();
@@ -453,27 +451,33 @@ export class ElasticsearchQueryDocumentScanner {
     private getQueryStringValueToken(): TextToken {
 
         let token = null;
-        this._stream.advanceUntilNonWhitespace(1);
+        this._stream.advanceUntilNonWhitespace();
 
-        if(this._stream.char === '"') {
-            token = this.getArgumentStringValueToken();
+        if(this._stream.char !== '&' && this._stream.char !== '(' && this._stream.char !== '{') {
 
-            if(token) {
-                token.type = TokenType.QueryStringValue;
-            }
+            this._stream.advanceUntilNonWhitespace(1);
 
-        } else {
-
-            let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
-
+            if(this._stream.char === '"') {
+                token = this.getArgumentStringValueToken();
+    
+                if(token) {
+                    token.type = TokenType.QueryStringValue;
+                }
+    
+            } else {
+    
+                let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
+    
                 if(value) {
                     value = value.trim();
-
-                    token = textTokenFactory.createTextToken(
-                        value, 
-                        this._stream.position - value.length, 
-                        TokenType.QueryStringValue);
                 }
+    
+                token = textTokenFactory.createTextToken(
+                    value, 
+                    this._stream.position - value.length, 
+                    TokenType.QueryStringValue);
+            }
+
         }
 
         return token;

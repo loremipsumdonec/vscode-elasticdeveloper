@@ -25,6 +25,9 @@ export class ElasticsearchQuery extends Entity {
     private _hasValidBody = undefined;
     private _options = {};
 
+    private _offset:number = -1;
+    private _offsetEnd:number = -1;
+
     public static parse(queryAsString:string, body?:any):ElasticsearchQuery {
 
         let query: ElasticsearchQuery = null;
@@ -204,8 +207,28 @@ export class ElasticsearchQuery extends Entity {
         return output;
     }
 
+    private refreshRange(textToken:TextToken) {
+
+        let propertyToken:PropertyToken = textToken as PropertyToken;
+
+        if(this._offset === -1 || this._offset > textToken.offset) {
+            this._offset = textToken.offset;
+        }
+
+        if(this._offsetEnd < textToken.offsetEnd) {
+            this._offsetEnd = textToken.offsetEnd;
+        }
+
+        if(propertyToken && propertyToken.propertyValueToken) {
+            if(this._offsetEnd < propertyToken.propertyValueToken.offsetEnd) {
+                this._offsetEnd = propertyToken.propertyValueToken.offsetEnd;
+            }
+        }
+    }
+
     public addTextToken(textToken:TextToken) {
         super.addTextToken(textToken);
+        this.refreshRange(textToken);
 
         if(textToken.type === TokenType.Method) {
             this.method = textToken.text;
@@ -238,13 +261,12 @@ export class ElasticsearchQuery extends Entity {
 
         let tokenType:TokenType = TokenType.Empty;
 
-        for(let textToken of this.textTokens) {
+        for(let token of this.textTokens) {
 
-            if(textToken.offset <= offset && offset <= textToken.offsetEnd) {
-                tokenType = textToken.type;
-                break;
+            if(token.isInRange(offset)) {
+                tokenType = token.type;
             }
-
+            
         }
 
         switch(tokenType) {
@@ -262,14 +284,29 @@ export class ElasticsearchQuery extends Entity {
         let token:TextToken = null;
 
         for(let textToken of this.textTokens) {
+            
+            if(textToken as PropertyToken) {
+                
+                if(textToken.isInRange(offset)) {
+                    token = textToken;
+                }
+                
+            } else {
 
-            if(textToken.offset <= offset && offset <= textToken.offsetEnd) {
-                token = textToken;
-                break;
+                if(textToken.isInRange(offset)) {
+                    token = textToken;
+                }
             }
+
         }
 
         return token;
+    }
+
+    public isInRange(offset:number):boolean {
+
+        let status = offset >= this._offset && offset <= this._offsetEnd;
+        return status;
     }
 }
 

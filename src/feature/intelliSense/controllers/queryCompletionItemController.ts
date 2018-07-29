@@ -12,7 +12,7 @@ export class QueryCompletionItemController extends QueryController
     implements vscode.CompletionItemProvider {
 
     public registerCommands() {
-        this.registerCompletionItemProvider(constant.ElasticsearchQueryDocumentSelector, this, '/', ':', '*','\n', '"', '?', '&');
+        this.registerCompletionItemProvider(constant.ElasticsearchQueryDocumentSelector, this, '=', '/', ':', '*','\n', '"', '?', '\&');
     }
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
