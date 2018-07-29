@@ -5,7 +5,7 @@ export const Publisher = 'crasnam';
 export const ExtensionId = Publisher + '.' + Name;
 export const WorkspaceStateEnvironmentPath = 'environment.path';
 export const CommandPrefix = Name;
-export const DefaultRestAPIVersion = '6.2.3';
+export const DefaultVersion = '6.3';
 
 /**
  *  ElasticsearchQuery

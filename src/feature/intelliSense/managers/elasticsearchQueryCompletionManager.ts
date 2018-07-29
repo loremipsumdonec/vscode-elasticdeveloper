@@ -16,6 +16,7 @@ import { isObject, isArray } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
 import { GephiStreamService } from '../../gephi/services/gephiStreamService';
 import { IEndpoint } from '../models/IEndpoint';
+import { LogManager } from '../../../managers/logManager';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
@@ -37,6 +38,21 @@ export class ElasticsearchQueryCompletionManager {
         this._graphs = {};
         this._endpoints = {};
         this._versionNumber = versionNumber;
+
+        EnvironmentManager.subscribe((eventName) => {
+            if(eventName === 'environment.changed') {
+
+                this._versionNumber = null;
+                this._endpoints = {};
+                this._graphs = {};
+                LogManager.info(false, 'cleared intellisense graphs and enpoints');
+            }
+        });
+
+    }
+
+    public get versionNumber():string {
+        return this._versionNumber;
     }
 
     public get graphs():any {
@@ -315,127 +331,6 @@ export class ElasticsearchQueryCompletionManager {
         return this._graphs[endpointId];
     }
 
-    protected loadEndpointGraphs() {
-
-        let files = this.getRestApiSpecificationFiles();
-        
-        for(let file of files) {
-
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let endpointId = Object.keys(source)[0];
-            let endpoint:IEndpoint = source[endpointId];
-            endpointId = 'endpoint_' + endpointId;
-            this._endpoints[endpointId] = endpoint;
-
-            if(endpoint.methods) {
-
-                for(let method of endpoint.methods) {
-
-                    let key = 'method_' + method.toLowerCase();
-
-                    if(!this._graphs[key]) {
-                        this._graphs[key] = new Graph();
-                    }
-
-                    let graph = this._graphs[key];
-
-                    graph.addNode(endpointId, endpointId, { kind: 'endpoint' });
-
-                    if(endpoint.url && endpoint.url.params) {
-                        let parameterNames = Object.keys(endpoint.url.params);
-        
-                        for(let name of parameterNames) {
-                            let parameter = endpoint.url.params[name];
-                            let parameterId = endpointId + '/' + name;
-                            graph.addNode(parameterId, name, { 
-                                kind: 'parameter', 
-                                ...parameter
-                             });
-                            graph.addEdge(endpointId, parameterId);
-                        }
-        
-                    }
-
-                    for(let path of endpoint.url.paths) {
-                        let steps:string[] = path.split('/').splice(1);
-                        let previousStepId:string = null;
-
-                        for(let index = 0; index < steps.length; index++) {
-                            let step = steps[index];
-                            let stepId = step;
-                            
-                            if(stepId.length == 0 && steps.length == 1) {
-                                stepId = '/';
-                                step = '/';
-                            }
-
-                            if(previousStepId) {
-                                stepId = previousStepId + '/'+ step;
-                            }
-
-                            graph.addNode(stepId, step, { kind: 'step' });
-
-                            if(index == steps.length - 1) {
-                                graph.addEdge(stepId, endpointId);
-                            }
-
-                            if(previousStepId) {
-                                graph.addEdge(previousStepId, stepId);
-                            }
-
-                            previousStepId = stepId;
-                        }
-                    }
-                }
-            }
-        }
-
-        let globalFiles = this.getRestApiGlobalSpecificationFiles();
-        let graphNames = Object.keys(this._graphs);
-
-        for(let file of globalFiles) {
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let parameterNames = Object.keys(source.params);
-
-            for(let graphName of graphNames) {
-                if(graphName.startsWith('method_')) {
-                    let graph = this._graphs[graphName] as Graph;
-                    let nodes = graph.findNodes(n=> n.data.kind === 'endpoint');
-                
-                    for(let node of nodes) {
-
-                        for(let name of parameterNames) {
-                            let parameter = source.params[name];
-                            let parameterId = node.id + '/' + name;
-                            graph.addNode(parameterId, name, { 
-                                kind: 'parameter',
-                                ...parameter
-                             });
-                            graph.addEdge(node.id, parameterId);
-                        }
-                    }
-                }
-            }
-        }
-
-        let keys = Object.keys(this._graphs);
-
-        for(let key of keys) {
-
-            if(key.startsWith('method_')) {
-
-                let graph = this._graphs[key] as Graph;
-                let nodes = graph.getNodes();
-    
-                for(let node of nodes) {
-                    node.data.isDynamicNode = node.label.endsWith('}');
-                }
-
-            }
-        }
-    }
 
     protected loadGraphWithEndpointId(endpointId:string) {
 
@@ -648,6 +543,128 @@ export class ElasticsearchQueryCompletionManager {
         return label;
     }
 
+    private loadEndpointGraphs() {
+
+        let files = this.getRestApiSpecificationFiles();
+        
+        for(let file of files) {
+
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let endpointId = Object.keys(source)[0];
+            let endpoint:IEndpoint = source[endpointId];
+            endpointId = 'endpoint_' + endpointId;
+            this._endpoints[endpointId] = endpoint;
+
+            if(endpoint.methods) {
+
+                for(let method of endpoint.methods) {
+
+                    let key = 'method_' + method.toLowerCase();
+
+                    if(!this._graphs[key]) {
+                        this._graphs[key] = new Graph();
+                    }
+
+                    let graph = this._graphs[key];
+
+                    graph.addNode(endpointId, endpointId, { kind: 'endpoint' });
+
+                    if(endpoint.url && endpoint.url.params) {
+                        let parameterNames = Object.keys(endpoint.url.params);
+        
+                        for(let name of parameterNames) {
+                            let parameter = endpoint.url.params[name];
+                            let parameterId = endpointId + '/' + name;
+                            graph.addNode(parameterId, name, { 
+                                kind: 'parameter', 
+                                ...parameter
+                             });
+                            graph.addEdge(endpointId, parameterId);
+                        }
+        
+                    }
+
+                    for(let path of endpoint.url.paths) {
+                        let steps:string[] = path.split('/').splice(1);
+                        let previousStepId:string = null;
+
+                        for(let index = 0; index < steps.length; index++) {
+                            let step = steps[index];
+                            let stepId = step;
+                            
+                            if(stepId.length == 0 && steps.length == 1) {
+                                stepId = '/';
+                                step = '/';
+                            }
+
+                            if(previousStepId) {
+                                stepId = previousStepId + '/'+ step;
+                            }
+
+                            graph.addNode(stepId, step, { kind: 'step' });
+
+                            if(index == steps.length - 1) {
+                                graph.addEdge(stepId, endpointId);
+                            }
+
+                            if(previousStepId) {
+                                graph.addEdge(previousStepId, stepId);
+                            }
+
+                            previousStepId = stepId;
+                        }
+                    }
+                }
+            }
+        }
+
+        let globalFiles = this.getRestApiGlobalSpecificationFiles();
+        let graphNames = Object.keys(this._graphs);
+
+        for(let file of globalFiles) {
+            const fileContent = fs.readFileSync(file, 'UTF-8');
+            let source = JSON.parse(fileContent);
+            let parameterNames = Object.keys(source.params);
+
+            for(let graphName of graphNames) {
+                if(graphName.startsWith('method_')) {
+                    let graph = this._graphs[graphName] as Graph;
+                    let nodes = graph.findNodes(n=> n.data.kind === 'endpoint');
+                
+                    for(let node of nodes) {
+
+                        for(let name of parameterNames) {
+                            let parameter = source.params[name];
+                            let parameterId = node.id + '/' + name;
+                            graph.addNode(parameterId, name, { 
+                                kind: 'parameter',
+                                ...parameter
+                             });
+                            graph.addEdge(node.id, parameterId);
+                        }
+                    }
+                }
+            }
+        }
+
+        let keys = Object.keys(this._graphs);
+
+        for(let key of keys) {
+
+            if(key.startsWith('method_')) {
+
+                let graph = this._graphs[key] as Graph;
+                let nodes = graph.getNodes();
+    
+                for(let node of nodes) {
+                    node.data.isDynamicNode = node.label.endsWith('}');
+                }
+
+            }
+        }
+    }
+
     private loadDslGraph(source, graph:Graph) {
 
         let stack:any[] = [];
@@ -743,23 +760,41 @@ export class ElasticsearchQueryCompletionManager {
         } else {
             let environment = EnvironmentManager.get().environment;
 
+            let extension = vscode.extensions.getExtension(constant.ExtensionId);
+            let folderPath =  extension.extensionPath +  '\\resources';
+
+            let folders = fs.readdirSync(folderPath)
+                .filter(
+                    f=> fs.statSync(path.join(folderPath, f)).isDirectory()
+                );
+
             if(environment && environment.hasVersion) {
 
-                let extension = vscode.extensions.getExtension(constant.ExtensionId);
-                let folderPath =  extension.extensionPath +  '\\resources';
-    
-                let folders = fs.readdirSync(folderPath)
-                    .filter(
-                        f=> fs.statSync(path.join(folderPath, f)).isDirectory()
-                    );
-    
                 let closestVersion = Version.getClosest(environment.version, folders);
+    
+                if(closestVersion) {
+                    versionNumber = closestVersion.toString();
+                }
+
+            } else if(environment) {
+                LogManager.warning(false, 'failed getting version from environment %s', environment);
+                
+                let version = Version.parse(constant.DefaultVersion);
+                LogManager.warning(false, 'using default version %s', version);
+
+                let closestVersion = Version.getClosest(version, folders);
     
                 if(closestVersion) {
                     versionNumber = closestVersion.toString();
                 }
             }
 
+        }
+
+        if(!versionNumber) {
+            LogManager.warning(false, 'failed getting versionNumber');
+        } else {
+            this._versionNumber = versionNumber;
         }
 
         return versionNumber;
@@ -787,11 +822,19 @@ export class ElasticsearchQueryCompletionManager {
 
     private getRestApiSpecificationFiles():string[] {
 
+        let files:string[] = [];
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
-        let files:string[] = this.getFilesWithFolderPath(folderPath)
-                                        .filter(f=> !f.endsWith('_common.json'))
+
+        if(versionNumber) {
+
+            LogManager.verbose('loading rest-api-spec for version %s', versionNumber);
+
+            let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
+            files = this.getFilesWithFolderPath(folderPath)
+                                            .filter(f=> !f.endsWith('_common.json'))
+
+        }
 
         return files;
     }

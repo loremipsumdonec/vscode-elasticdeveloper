@@ -23,12 +23,18 @@ export class IntellisenseCommandController extends Controller {
     }
 
     private async openEndpointDocumentation(endpointId:string) {
-        let manager:ElasticsearchQueryCompletionManager = ElasticsearchQueryCompletionManager.get();
 
+        let manager:ElasticsearchQueryCompletionManager = ElasticsearchQueryCompletionManager.get();
         let endpoint:IEndpoint = manager.getEndpointWithId(endpointId);
     
-        if(endpoint) {
-            vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(endpoint.documentation));
+        if(endpoint && endpoint.documentation) {
+            let url = endpoint.documentation;
+
+            if(url.indexOf('/master/')) {
+                url = url.replace('/master/', '/'+ manager.versionNumber + '/');
+            }
+
+            vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url));
         }
     }
 

@@ -9,10 +9,14 @@ export class Version {
     
     public static hydrate(versionAsObject:any):Version {
 
-        let version: Version = new Version();
-        version.major = versionAsObject._major;
-        version.minor = versionAsObject._minor;
-        version.patch = versionAsObject._patch;
+        let version: Version;
+
+        if(versionAsObject) {
+            version = new Version();
+            version.major = versionAsObject._major;
+            version.minor = versionAsObject._minor;
+            version.patch = versionAsObject._patch;
+        }
 
         return version;
     }
@@ -43,6 +47,11 @@ export class Version {
         let closest:Version = null;
         let versionAsString = version.toString();
         
+        if(versions.length > 0) {
+            let groups = versions[0].split('.').length;
+            versionAsString = versionAsString.split('.').splice(0, groups).join('.');
+        }
+
         index = versions.findIndex((v) => {
             return v === versionAsString;
         });
@@ -72,7 +81,7 @@ export class Version {
             }    
 
         } else {
-            closest = version;
+            closest = Version.parse(versions[index]); 
         }
 
         return closest;
