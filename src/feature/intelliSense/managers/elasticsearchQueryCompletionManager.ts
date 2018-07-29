@@ -104,16 +104,22 @@ export class ElasticsearchQueryCompletionManager {
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
         
-        switch(token.type) {
-            case TokenType.Command:
-                completionItems = this.getCompletionItemsForQueryCommand(query);
-                break;
-            case TokenType.QueryString:
-                completionItems = this.getCompletionItemsForQueryString(query, token as PropertyToken, offset);
-                break;
-            case TokenType.Body:
-                completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
-                break;
+        if(token) {
+
+            switch(token.type) {
+                case TokenType.Command:
+                    completionItems = this.getCompletionItemsForQueryCommand(query);
+                    break;
+                case TokenType.QueryString:
+                    completionItems = this.getCompletionItemsForQueryString(query, token as PropertyToken, offset);
+                    break;
+                case TokenType.Body:
+                    completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
+                    break;
+            }
+
+        } else {
+            LogManager.warning(false, 'could not find any token at offset %s', offset);
         }
 
         return completionItems;
@@ -212,7 +218,7 @@ export class ElasticsearchQueryCompletionManager {
         if(query.hasEndpointId) {
             let graph = this.getGraphWithMethod(query.method);
 
-            if(token.propertyValueToken && token.propertyValueToken.isInRange(offset)) {
+            if(token.hasText && token.propertyValueToken && token.propertyValueToken.isInRange(offset)) {
 
                 let parameterId = query.endpointId + '/' + token.text;
                 let node = graph.getNodeWithId(parameterId);
@@ -240,19 +246,6 @@ export class ElasticsearchQueryCompletionManager {
                     if(node.data.kind === 'parameter') {
                         
                         let item = new vscode.CompletionItem(node.label, vscode.CompletionItemKind.Field);
-    
-                        let snippetPattern = node.label + '="{value}"';
-    
-                        if(node.data.default != null) {
-                            snippetPattern = node.label + '="{'+ node.data.default +'}"';
-                        } else if(node.data.type == 'boolean') {
-                            snippetPattern = node.label + '="{false}"';
-                        } else if(node.data.type === 'enum' && node.data.options.length > 0) {
-                            snippetPattern = node.label + '="{'+ node.data.options[0] +'}"';
-                        }
-    
-                        let snippet = this.createTextSnippet(snippetPattern);
-                        item.insertText = new vscode.SnippetString(snippet);
                         item.detail = 'type:' + node.data.type;
     
                         if(node.data.options) {

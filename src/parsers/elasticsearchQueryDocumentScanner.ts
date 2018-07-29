@@ -453,31 +453,43 @@ export class ElasticsearchQueryDocumentScanner {
         let token = null;
         this._stream.advanceUntilNonWhitespace();
 
-        if(this._stream.char !== '&' && this._stream.char !== '(' && this._stream.char !== '{') {
+        if(this._stream.char === '=') {
 
+            let lastPosition = this._stream.position;
             this._stream.advanceUntilNonWhitespace(1);
 
-            if(this._stream.char === '"') {
-                token = this.getArgumentStringValueToken();
-    
-                if(token) {
-                    token.type = TokenType.QueryStringValue;
-                }
-    
-            } else {
-    
-                let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
-    
-                if(value) {
-                    value = value.trim();
-                }
-    
-                token = textTokenFactory.createTextToken(
-                    value, 
-                    this._stream.position - value.length, 
-                    TokenType.QueryStringValue);
-            }
+            if(this.isNotEndOfStream) {
+                let char = this._stream.char;
 
+                if(char === '"') {
+                    token = this.getArgumentStringValueToken();
+        
+                    if(token) {
+                        token.type = TokenType.QueryStringValue;
+                    }
+        
+                } else {
+        
+                    let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
+        
+                    if(value) {
+                        value = value.trim();
+                    }
+        
+                    token = textTokenFactory.createTextToken(
+                        value, 
+                        this._stream.position - value.length, 
+                        TokenType.QueryStringValue);
+                }
+
+            } else {
+
+                    token = textTokenFactory.createTextToken(
+                    '', 
+                    lastPosition + 1, 
+                    TokenType.QueryStringValue);
+
+            }
         }
 
         return token;
@@ -608,10 +620,13 @@ export class ElasticsearchQueryDocumentScanner {
             this._stream.advance();
         }
 
-        token = textTokenFactory.createTextToken(
-            body, 
-            this._stream.position - body.length,
-            TokenType.Body);
+        if(body) {
+
+            token = textTokenFactory.createTextToken(
+                body, 
+                this._stream.position - body.length,
+                TokenType.Body);
+        }
 
         if(this._state === ScannerState.AfterBody) {
 
@@ -623,7 +638,11 @@ export class ElasticsearchQueryDocumentScanner {
                 this._state = ScannerState.WithinContent;
             }
         } else {
-            token.isValid = false;
+
+            if(token) {
+                token.isValid = false;
+            }
+            
             this._state = ScannerState.WithinContent;
         }
 

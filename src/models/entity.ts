@@ -11,8 +11,6 @@ export class Entity {
     }
 
     public addTextToken(textToken:TextToken) {
-        if(textToken.hasText) {
-            this._textTokens.push(textToken);
-        }
+        this._textTokens.push(textToken);
     }
 }
