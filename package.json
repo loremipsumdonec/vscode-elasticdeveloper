@@ -32,7 +32,7 @@
   "main": "./out/extension",
   "contributes": {
     "configuration": {
-      "title": "Elastic Developer",
+      "title": "Elasticsearch Developer tool",
       "properties": {
         "elasticdeveloper.intelliSense.openEndpointDocumentation.enabled": {
           "type": "boolean",
