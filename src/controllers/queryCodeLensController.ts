@@ -5,17 +5,25 @@ import * as constant from '../constant';
 
 import { QueryController } from './queryController';
 import { ElasticsearchQueryDocument} from '../parsers/elasticSearchQueryDocument';
-import { ElasticsearchQueryCompletionManager } from '../feature/intelliSense/managers/elasticsearchQueryCompletionManager';
 import { ElasticsearchQuery } from '../models/elasticSearchQuery';
 
 export class QueryCodeLensController extends QueryController 
     implements vscode.CodeLensProvider {
 
-    private _codeLensProviders:any[];
+    private _onDidChangeCodeLensesEventEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+    private _queryCodeLensProviders:((query:ElasticsearchQuery, configuration:any, range:vscode.Range) => vscode.CodeLens)[] = []
 
-    onDidChangeCodeLenses?: vscode.Event<void>;
+    public get onDidChangeCodeLenses(): vscode.Event<void> {
+        return this._onDidChangeCodeLensesEventEmitter.event;
+    }
     
-    public registerCommands() {
+    protected initiate() {
+        
+        this.loadQueryCodeLensProviders();
+        super.initiate();
+    }
+
+    protected registerCommands() {
 
         this.registerCommand(constant.ElasticsearchQueryCodeLensCommandRunQuery, 
             (query, configuration) => { this.runQuery(query, configuration) });
@@ -26,8 +34,13 @@ export class QueryCodeLensController extends QueryController
         this.registerCodeLensProvider(constant.ElasticsearchQueryDocumentSelector, this);
     }
 
-    public registerProvider(provider:(query:ElasticsearchQuery, range:vscode.Range) => vscode.CodeLens) {
-        this._codeLensProviders.push(provider);
+    protected registerEventSubscriptions() {
+        super.registerEventSubscriptions();
+
+        vscode.workspace.onDidChangeConfiguration((e)=> {
+            this.loadQueryCodeLensProviders();
+            this._onDidChangeCodeLensesEventEmitter.fire(); 
+        });
     }
 
     public provideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens[]> {
@@ -55,20 +68,11 @@ export class QueryCodeLensController extends QueryController
             }
         }
 
-        let queryCodeLensProviders:((query:ElasticsearchQuery, configuration:any, range:vscode.Range) => vscode.CodeLens)[] = []
-        queryCodeLensProviders.push(this.createRunQueryCodeLens);
-        queryCodeLensProviders.push(this.createHasNameCodeLens);
-        queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
-        
-        /*
-        queryCodeLensProviders.push(this.createShowUrlCodeLens);
-        queryCodeLensProviders.push(this.createHasBodyCodeLens);*/
-
         for(let query of document.queries) {
             
             let range = this.getRangeWithin(textDocument, query.textTokens[0]);
             
-            for(let provider of queryCodeLensProviders) {
+            for(let provider of this._queryCodeLensProviders) {
                 let codeLens = provider.call(this, query, configuration, range);
             
                 if(codeLens) {
@@ -84,6 +88,23 @@ export class QueryCodeLensController extends QueryController
     
     public resolveCodeLens?(codeLens: vscode.CodeLens, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens> {
         return null;
+    }
+
+    private loadQueryCodeLensProviders() {
+
+        let configuration = vscode.workspace.getConfiguration();
+        this._queryCodeLensProviders = [];
+        
+        this._queryCodeLensProviders.push(this.createRunQueryCodeLens);
+        this._queryCodeLensProviders.push(this.createHasNameCodeLens);
+        
+        let value = configuration.get(constant.IntelliSenseConfigurationCodeLensCommandOpenEndpointDocumentationEnabled);
+        if(value) {
+            this._queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
+        }
+        
+        this._queryCodeLensProviders.push(this.createShowUrlCodeLens);
+        this._queryCodeLensProviders.push(this.createHasBodyCodeLens);
     }
 
     private createConfigurationRunAllCodeLens(configuration:any, document:ElasticsearchQueryDocument, range:vscode.Range): vscode.CodeLens {

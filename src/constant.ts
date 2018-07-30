@@ -62,11 +62,6 @@ export const EnvironmentCommandSetAsTarget = 'environment.setAsTarget';
 export const EnvironmentExplorerCommandOpenFile = 'environment.openFile.fromExplorer';
 
 /**
- * Configuration
- */
-export const ConfigurationFeatureExplorerEnabled = Name + '.configuration.feature.explorer.enabled';
-
-/**
  * ExplorerCommandRefreshNode
  */
  export const ExplorerCommandRefreshNode = 'explorer.refreshNode.fromExplorer';
@@ -76,6 +71,7 @@ export const ConfigurationFeatureExplorerEnabled = Name + '.configuration.featur
   */
  export const IntelliSenseCommandStreamGraph = 'intelliSense.streamGraph';
  export const IntelliSenseCodeLensCommandOpenEndpointDocumentation = 'intelliSense.openEndpointDocumentation.fromCodeLens';
+ export const IntelliSenseConfigurationCodeLensCommandOpenEndpointDocumentationEnabled = Name + '.intelliSense.openEndpointDocumentation.enabled';
 
  /**
   * Endpoint

@@ -34,10 +34,10 @@
     "configuration": {
       "title": "Elastic Developer",
       "properties": {
-        "elasticdeveloper.configuration.feature.explorer.enabled": {
+        "elasticdeveloper.intelliSense.openEndpointDocumentation.enabled": {
           "type": "boolean",
           "default": "true",
-          "description": "Toggle Elasticsearch explorer feature, prototype version"
+          "description": "Enable Code lens 'open endpoint documentation'"
         }
       }
     },

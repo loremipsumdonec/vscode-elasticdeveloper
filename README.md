@@ -17,6 +17,7 @@ This is a vscode extension that I have built to make it easier to work with Elas
     - Retract the index template from the target environment
 - Query
     - Autocomplete for Elasticsearch REST API
+    - Open REST API endpoint documentation from a query
     - Run a single query
     - Support for Bulk API, Multi Search API
     - Run multiple queries
@@ -131,6 +132,8 @@ The extension has support for the Bulk API and will manage the conversion of mul
 #### Open REST API endpoint documentation
 ![Open endpoint documentation, REST API](images/open_endpoint_doc.gif)
 When a query has a valid endpoint a new code lens will be added and clicking on this will open the endpoint documentation.
+
+> It is possible to disable this code lens with the configuration key elastisearch
 
 ### Named query 
 A named query give you the possiblity to easier identify queries when using the "Run all queries" action and using HTML transformations. The name should be JSON firendly because the name will be added as a property on the response object.
