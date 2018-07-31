@@ -315,8 +315,6 @@ export class ElasticsearchQueryCompletionManager {
 
     protected getGraphWithEndpointId(endpointId:string): Graph {
 
-        endpointId = endpointId.replace('.', '_');
-
         if(!this._graphs[endpointId]) {
             this.loadGraphWithEndpointId(endpointId);
         }
