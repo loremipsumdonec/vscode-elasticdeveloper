@@ -1,0 +1,7 @@
+{
+    "analyzer": "{analyzer}",
+    "text": "",
+    "tokenizer": "{tokenizer}",
+    "filter": ["{filter}"],
+    "char_filter": [""]
+}

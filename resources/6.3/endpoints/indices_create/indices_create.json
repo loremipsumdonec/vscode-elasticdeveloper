@@ -1,0 +1,74 @@
+{
+    "__templates": {
+        "field": {
+            "type": "{type}",
+            "fields": {
+                "{field}": {
+                    "__children_of": "field"
+                }
+            }
+        },
+        "field_types": {
+            "text": {},
+            "keyword": {},
+            "date": {},
+            "long": {},
+            "double": {},
+            "boolean": {}
+        }
+    },
+    "settings": {
+        "index": {
+        },
+        "__children_of": "settings/index",
+        "analysis": {
+            "analyzer": {
+                "{name}": {
+                    "type": "{standard}",
+                    "filter": []
+                }
+            },
+            "normalizer": {
+                "{name}": {
+                    "type": "{custom}",
+                    "char_filter": [],
+                    "filter": []
+                }
+            },
+            "tokenizer": {
+                "{name}": {
+                    "type": "{standard}"
+                }
+            },
+            "filter": {
+                "{name}": {
+                    "type": ""
+                }
+            },
+            "char_filter": {
+                "{name}": {
+                    "type": ""
+                }
+            }
+        }
+    },
+    "mappings": {
+        "{type}": {
+            "properties": {
+                "{field}": {
+                    "__children_of": "field"
+                }
+            }
+        }
+    },
+    "aliases": {
+        "{alias}": {
+            "filter": {
+                "term": {
+                    "{field}": "{value}"
+                }
+            },
+            "routing": "{value}"
+        }
+    }
+}

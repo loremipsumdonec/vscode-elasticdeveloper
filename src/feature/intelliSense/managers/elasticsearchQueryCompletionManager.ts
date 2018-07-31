@@ -291,7 +291,7 @@ export class ElasticsearchQueryCompletionManager {
                     completionItems = this.createCompletionItems(nodes, triggerCharacter);
         
                 } else {
-                    let children = graph.getRootNodes();
+                    let children = graph.findNodes(n=> n.data.depth === 0);
                     children = children.filter(n=> !n.data.isTemplate);
                     completionItems = this.createCompletionItems(children, triggerCharacter);
                 }
@@ -324,10 +324,8 @@ export class ElasticsearchQueryCompletionManager {
         return this._graphs[endpointId];
     }
 
-
     protected loadGraphWithEndpointId(endpointId:string) {
 
-        let gephiService = new GephiStreamService();
         let graph = new Graph();
         let files:string[] = this.getEndpointDslFiles(endpointId);
 
@@ -339,7 +337,7 @@ export class ElasticsearchQueryCompletionManager {
     
             for(let key of keys) {
                 if(key.startsWith('__')) {
-                    this.loadDslGraph(source[key], graph);
+                    this.loadDslGraph(source[key], graph, 100);
                     delete source[key];
                 }
             }
@@ -658,12 +656,13 @@ export class ElasticsearchQueryCompletionManager {
         }
     }
 
-    private loadDslGraph(source, graph:Graph) {
+    private loadDslGraph(source, graph:Graph, startDepth:number = 0) {
 
         let stack:any[] = [];
         stack.push( { 
             source: source, 
-            path: null });
+            path: null,
+            depth: startDepth});
 
         while(stack.length > 0) {
             let context = stack.pop();
@@ -677,7 +676,7 @@ export class ElasticsearchQueryCompletionManager {
 
                 if(!key.startsWith('__')) {
 
-                    let nodeId = path + '.' + key;
+                    let nodeId = path + '/' + key;
                     
                     if(path == null) {
                         nodeId = key;
@@ -690,16 +689,20 @@ export class ElasticsearchQueryCompletionManager {
                         if(current.length > 0) {
                             if(isObject(current[0])) {
                                 kind = vscode.CompletionItemKind.Reference;
-                                let arrayObjectNodeId = nodeId +'.[0]';
+                                let arrayObjectNodeId = nodeId +'/[0]';
 
-                                graph.addNode(arrayObjectNodeId, '[0]', { id: '[0]', kind: vscode.CompletionItemKind.Struct });
+                                graph.addNode(arrayObjectNodeId, '[0]', { 
+                                    id: '[0]', 
+                                    kind: vscode.CompletionItemKind.Struct, 
+                                    depth: context.depth });
+
                                 graph.addEdge(nodeId, arrayObjectNodeId);
 
-                                stack.push({ source:current[0], path: arrayObjectNodeId});
+                                stack.push({ source:current[0], path: arrayObjectNodeId, depth: context.depth + 1});
                             }
                         }
                         
-                        graph.addNode(nodeId, key, { kind: kind});
+                        graph.addNode(nodeId, key, { kind: kind, depth: context.depth});
                         graph.addEdge(path, nodeId);
 
                     } else if(isObject(current)) {
@@ -717,14 +720,26 @@ export class ElasticsearchQueryCompletionManager {
                             kind = vscode.CompletionItemKind.Value;
                         }
 
-                        graph.addNode(nodeId, key, { id: key, kind: kind, isTemplate:isTemplate });
+                        graph.addNode(nodeId, key, { 
+                            id: key, 
+                            kind: kind, 
+                            isTemplate:isTemplate, 
+                            depth: context.depth 
+                        });
+
                         graph.addEdge(path, nodeId);
 
-                        stack.push({ source:current, path: nodeId});
+                        stack.push({ source:current, path: nodeId, depth: context.depth + 1});
 
                     } else {
 
-                        graph.addNode(nodeId, key, { id: key, kind: vscode.CompletionItemKind.Field, defaultValue: current });
+                        graph.addNode(nodeId, key, { 
+                            id: key, 
+                            kind: vscode.CompletionItemKind.Field, 
+                            defaultValue: current, 
+                            depth:context.depth 
+                        });
+
                         graph.addEdge(path, nodeId);
                     }
 
@@ -793,11 +808,15 @@ export class ElasticsearchQueryCompletionManager {
         return versionNumber;
     }
 
-    private getEndpointDslFiles(endpoint:string) {
+    private getEndpointDslFiles(endpointId:string) {
+
+        if(endpointId.startsWith('endpoint_')) {
+            endpointId = endpointId.replace('endpoint_', '');
+        }
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpoint);
+        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId);
 
         return this.getFilesWithFolderPath(folderPath);
     }
@@ -835,17 +854,21 @@ export class ElasticsearchQueryCompletionManager {
     private getFilesWithFolderPath(folderPath:string, filterWithPrefix:string='', filterWithExtension:string = '.json') {
 
         let jsonFiles:string[] = [];
-        let files = fs.readdirSync(folderPath);
 
-        for(let file of files) {
-            const extension = path.extname(file);
+        if(fs.existsSync(folderPath)) {
 
-            if(file.startsWith(filterWithPrefix)) {
+            let files = fs.readdirSync(folderPath);
 
-                if(extension === filterWithExtension) {
-                    jsonFiles.push( 
-                        path.join(folderPath, file)
-                    );
+            for(let file of files) {
+                const extension = path.extname(file);
+    
+                if(file.startsWith(filterWithPrefix)) {
+    
+                    if(extension === filterWithExtension) {
+                        jsonFiles.push( 
+                            path.join(folderPath, file)
+                        );
+                    }
                 }
             }
         }

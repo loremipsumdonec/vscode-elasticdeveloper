@@ -1,0 +1,25 @@
+{
+    "__templates": {
+        "field": {
+            "type": "{type}",
+            "fields": {
+                "{field}": {
+                    "__children_of": "field"
+                }
+            }
+        },
+        "field_types": {
+            "text": {},
+            "keyword": {},
+            "date": {},
+            "long": {},
+            "double": {},
+            "boolean": {}
+        }
+    },
+    "properties": {
+        "{field}": {
+            "__children_of": "field"
+        }
+    }
+}

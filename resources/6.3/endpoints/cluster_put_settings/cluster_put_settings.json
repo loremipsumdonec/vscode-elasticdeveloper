@@ -1,0 +1,8 @@
+{
+    "persistent": {
+        "{setting}": ""
+    },
+    "transient": {
+        "{setting}": ""
+    }
+}

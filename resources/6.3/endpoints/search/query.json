@@ -90,8 +90,19 @@
 			"none": { "__is_value": true}
 		}
 	},
-
-    "query": {
+	"from": 0,
+	"size": 10,
+	"sort": [ { "{field}": {"order": "asc"} }],
+	"_source": [""],
+	"stored_fields": ["{field}"],
+	"script_fields": {
+		"{name}": {
+			"script": {
+				"__children_of": "script"
+			}
+		}
+	},
+    "query": {	
         "bool": {
 			"must": {
 				"__children_of": "query"
@@ -352,9 +363,7 @@
 		},
         "simple_query_string": {},
         "span_containing": {},
-        "span_field_masking": {
-			"__is_template": true
-		},
+        "span_field_masking": {},
 		"span_first": {},
         "span_multi": {},
         "span_near": {},

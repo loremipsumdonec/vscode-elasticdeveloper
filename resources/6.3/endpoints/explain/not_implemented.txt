@@ -1,0 +1,1 @@
+http://www.elastic.co/guide/en/elasticsearch/reference/master/search-explain.html

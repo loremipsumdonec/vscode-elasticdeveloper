@@ -16,19 +16,5 @@
                 "{parameter}": "{value}"
             }
         }
-    },
-	"__global": {
-		"from": 0,
-		"size": 10,
-		"sort": [ { "{field}": {"order": "asc"} }],
-		"_source": [""],
-        "stored_fields": ["{field}"],
-        "script_fields": {
-            "{name}": {
-                "script": {
-                    "__children_of": "script"
-                }
-            }
-        }
     }
 }

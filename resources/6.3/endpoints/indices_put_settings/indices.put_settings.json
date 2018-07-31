@@ -1,0 +1,34 @@
+{
+    "index": {
+    },
+    "analysis": {
+        "analyzer": {
+            "{name}": {
+                "type": "{standard}",
+                "filter": []
+            }
+        },
+        "normalizer": {
+            "{name}": {
+                "type": "{custom}",
+                "char_filter": [],
+                "filter": []
+            }
+        },
+        "tokenizer": {
+            "{name}": {
+                "type": "{standard}"
+            }
+        },
+        "filter": {
+            "{name}": {
+                "type": ""
+            }
+        },
+        "char_filter": {
+            "{name}": {
+                "type": ""
+            }
+        }
+    }
+}
