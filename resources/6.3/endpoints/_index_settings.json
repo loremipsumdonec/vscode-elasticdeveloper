@@ -1,10 +1,10 @@
 {
     "__templates": {
         "shard_allocations": {
-            "all": {"__is_value": true},
-            "primaries ": {"__is_value": true},
-            "replicas ": {"__is_value": true},
-            "none ": {"__is_value": true}
+            "all": {},
+            "primaries ": {},
+            "replicas ": {},
+            "none ": {}
         },
         "index_settings": {
             "__children_of": ["index_settings_static", "index_settings_dynamic", "index_mappings_settings"],
@@ -13,16 +13,16 @@
         "index_settings_static": {
             "index.number_of_shards": 5,
             "index.shard.check_on_startup": {
-                "__is_field": true,
-                "false": { "__is_value": true},
-                "checksum": { "__is_value": true},
-                "true": { "__is_value": true},
-                "fix": { "__is_value": true}
+                "__as_type": "string",
+                "false": { },
+                "checksum": { },
+                "true": { },
+                "fix": { }
             },
             "index.codec": {
-                "__is_field": true,
-                "default": { "__is_value": true},
-                "best_compression": { "__is_value": true}
+                "__as_type": "string",
+                "default": { },
+                "best_compression": { }
             },
             "index.routing_partition_size": 1
         },
@@ -46,11 +46,11 @@
             "index.highlight.max_analyzed_offset": -1,
             "index.max_terms_count": 65536,
             "index.routing.allocation.enable": {
-                "__is_field": true,
+                "__as_type": "string",
                 "__children_of": "shard_allocations"
             },
             "index.routing.rebalance.enable": {
-                "__is_field": true,
+                "__as_type": "string",
                 "__children_of": "shard_allocations"
             },
             "index.gc_deletes": "60s"

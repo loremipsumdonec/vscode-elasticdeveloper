@@ -193,7 +193,7 @@
 			"whitespace": {},
 			"stop": {
 				"stopwords": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "languages"
 				},
 				"stopwords_path": "{file}"
@@ -204,7 +204,7 @@
 				"flags": "",
 				"lowercase": "",
 				"stopwords": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "languages"
 				},
 				"stopwords_path": "{file}"
@@ -213,22 +213,22 @@
 				"separator": " ",
 				"max_output_size": 255,
 				"stopwords": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "languages"
 				},
 				"stopwords_path": "{file}"
 			},
 			"custom": {
 				"tokenizer": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "tokenizers"
 				},
 				"char_filter": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "character_filters"
 				},
 				"filter": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "token_filters"
 				},
 				"position_increment_gap": 100
@@ -305,7 +305,7 @@
 				"min_gram": 1,
 				"max_gram": 2,
 				"token_chars": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "token_chars"
 				}
 			},
@@ -313,7 +313,7 @@
 				"min_gram": 1,
 				"max_gram": 2,
 				"token_chars": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "token_chars"
 				}
 			}
@@ -356,7 +356,7 @@
 				"min_gram": 1,
 				"max_gram": "2",
 				"side": {
-					"__is_field": true,
+					"__as_type": "string",
 					"front": {},
 					"back": {}
 				}
@@ -372,7 +372,7 @@
 			},
 			"stop": {
 				"stopwords": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "languages"
 				},
 				"stopwords_path": "{file}",
@@ -411,7 +411,7 @@
 			},
 			"stemmer": {
 				"name": {
-					"__is_field":true,
+					"__as_type": "string",
 					"__children_of": "language_stemmers"
 				}
 			},
@@ -431,7 +431,7 @@
 			"kstem": {},
 			"snowball": {
 				"language": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "language_snowball_stemmers"
 				}
 			},
@@ -503,7 +503,7 @@
 			"delimited_payload": {
 				"delimiter": "|",
 				"encoding": {
-					"__is_field": true,
+					"__as_type": "string",
 					"int": {},
 					"float": {},
 					"identity": {}

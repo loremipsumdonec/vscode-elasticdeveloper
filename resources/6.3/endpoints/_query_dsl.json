@@ -5,7 +5,7 @@
 			"query": "this is a simple test",
 			"zero_terms_query": "",
 			"analyzer": {
-				"__is_field": true,
+				"__as_type": "string",
 				"__children_of": "analyzers"
 			}
 		},
@@ -26,11 +26,11 @@
 		},
 		"decay_function_options": {
 			"multi_value_mode": {
-				"__is_field":true,
-				"min": { "__is_value": true},
-				"max": { "__is_value": true},
-				"sum": { "__is_value": true},
-				"avg": { "__is_value": true}
+				"__as_type": "string",
+				"min": { },
+				"max": { },
+				"sum": { },
+				"avg": { }
 			},
 			"{field}": {
 				"orgin": "",
@@ -40,11 +40,11 @@
 			}
 		},
 		"score_modes": {
-			"min": { "__is_value": true},
-			"max": { "__is_value": true},
-			"sum": { "__is_value": true},
-			"avg": { "__is_value": true},
-			"none": { "__is_value": true}
+			"min": { },
+			"max": { },
+			"sum": { },
+			"avg": { },
+			"none": { }
 		},
 		"query_dsl": {	
 			"bool": {
@@ -227,7 +227,7 @@
 				"max_word_length": 0,
 				"stop_words": [""],
 				"analyzer": {
-					"__is_field": true,
+					"__as_type": "string",
 					"__children_of": "analyzers"
 				},
 				"minimum_should_match": "30%",
@@ -240,12 +240,12 @@
 				"query": "this is a simple test",
 				"fields": ["{field}"],
 				"type": {
-					"__is_field": true,
-					"best_fields": {"__is_value": true},
-					"most_fields": {"__is_value": true},
-					"cross_fields": {"__is_value": true},
-					"phrase": {"__is_value": true},
-					"phrase_prefix": {"__is_value": true}
+					"__as_type": "string",
+					"best_fields": {},
+					"most_fields": {},
+					"cross_fields": {},
+					"phrase": {},
+					"phrase_prefix": {}
 				},
 				"use_dis_max": true,
 				"tie_breaker": 0.0,
@@ -255,12 +255,12 @@
 				"path": "",
 				"ignore_unmapped": false,
 				"score_mode": {
-					"__is_field": true,
-					"avg": {"__is_value": true},
-					"sum": {"__is_value": true},
-					"min": {"__is_value": true},
-					"max": {"__is_value": true},
-					"none": {"__is_value": true}
+					"__as_type": "string",
+					"avg": {},
+					"sum": {},
+					"min": {},
+					"max": {},
+					"none": {}
 				},
 				"query": {
 					"__children_of": "query"
@@ -293,14 +293,14 @@
 				"value": "",
 				"boost": 1.2,
 				"flags": {
-					"__is_field": true,
-					"ALL": {"__is_value": true},
-					"ANYSTRING": {"__is_value": true},
-					"COMPLEMENT": {"__is_value": true},
-					"EMPTY": {"__is_value": true},
-					"INTERSECTION": {"__is_value": true},
-					"INTERVAL": {"__is_value": true},
-					"NONE": {"__is_value": true}
+					"__as_type": "string",
+					"ALL": {},
+					"ANYSTRING": {},
+					"COMPLEMENT": {},
+					"EMPTY": {},
+					"INTERSECTION": {},
+					"INTERVAL": {},
+					"NONE": {}
 				}
 			},
 			"script": {
@@ -318,6 +318,7 @@
 			"span_within": {},
 			"term": {
 				"{field}": {
+					"__as_type": ["string", "object"],
 					"value": "",
 					"boost": 2.0
 				}

@@ -7,9 +7,9 @@
         "query": {},
         "sort": {
             "{field}": {
-                "__is_field": true,
-                "asc": {"__is_value": true},
-                "desc": {"__is_value": true}
+                "__as_type": "string",
+                "asc": {},
+                "desc": {}
             }
         },
         "remote": {
@@ -23,17 +23,17 @@
     "dest": {
         "index": "{index}",
         "version_type": {
-            "__is_field": true,
-            "internal": {"__is_value": true},
-            "external": {"__is_value": true}
+            "__as_type": "string",
+            "internal": {},
+            "external": {}
         },
         "op_type": "create",
         "pipeline": "{pipeline}",
         "routing": {
-            "__is_field": true,
-            "keep": {"__is_value": true},
-            "discard": {"__is_value": true},
-            "={some text}": {"__is_value": true}
+            "__as_type": "string",
+            "keep": {},
+            "discard": {},
+            "={some text}": {}
         }
     },
     "script": {

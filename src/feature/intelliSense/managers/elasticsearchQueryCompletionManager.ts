@@ -346,6 +346,19 @@ export class ElasticsearchQueryCompletionManager {
                         }
                     }
 
+                    if(!foundNextNode) {
+                        for(let edge of edges) {
+                            let n = graph.getNodeWithId(edge.targetId);
+                            
+                            if(n.data.isDynamicNode) {
+                                visited.push(edge);
+                                node = n;
+                                foundNextNode = true
+                                break;
+                            }
+                        }
+                    }
+
                 } else {
                     node = graph.findNode(n=> n.label == step);
                     foundNextNode = node != null;
@@ -368,6 +381,8 @@ export class ElasticsearchQueryCompletionManager {
                     }
                     
                     let edges = graph.findEdges(e=> e.sourceId == node.id && e.kind != 'children_of');
+                    //we should also load more edges based on context..
+                    //and remove edges that already exists in the query.
 
                     for(let edge of edges) {
                         let target = graph.getNodeWithId(edge.targetId);
@@ -417,7 +432,7 @@ export class ElasticsearchQueryCompletionManager {
 
                                     if(token.propertyValueToken.type === EntityTokenType.OpenArray || 
                                         token.propertyValueToken.type === EntityTokenType.BetweenArrayValue) {
-                                        pattern = pattern.replace('{value}', '"$1"$0');
+                                        pattern = pattern.replace('{value}', '"$2"$0');
                                     } else if(!token.propertyValueToken.isValid) {
                                         pattern = pattern.replace('{value}', target.label + '"$0');    
                                     } else if(!target.data.isDynamicNode) {
@@ -425,7 +440,7 @@ export class ElasticsearchQueryCompletionManager {
                                     } 
 
                                 } else {
-                                    pattern = pattern.replace('{value}', '"$1"$0');
+                                    pattern = pattern.replace('{value}', '"$2"$0');
                                 }
                                 break;
 
@@ -438,6 +453,7 @@ export class ElasticsearchQueryCompletionManager {
                         
                         completionItems.push(item);
                     }
+                
                 }
             }
         }

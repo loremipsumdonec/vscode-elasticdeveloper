@@ -2,9 +2,9 @@
 	"__templates": {
 		"highlight_types": {
 			"__is_template": true,
-			"unified": {"__is_value": true},
-			"plain": {"__is_value": true},
-			"fvh": {"__is_value": true}
+			"unified": {},
+			"plain": {},
+			"fvh": {}
 		},
 		"highlight_options": {
 			"boundary_chars": "",
@@ -29,7 +29,7 @@
 			"require_field_match": true,
 			"tags_schema": "styled",
 			"type": {
-				"__is_field": true,
+				"__as_type": "string",
 				"__children_of": "highlight_types"
 			}
 		}		

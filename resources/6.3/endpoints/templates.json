@@ -1,7 +1,7 @@
 {
     "__templates": {
         "script_languages": {
-            "painless": { "__is_value": true }
+            "painless": {}
         },
         "script": {
             "id": "",
@@ -9,7 +9,7 @@
                 "__children_of": "query"
             },
             "lang": {
-                "__is_field":true,
+                "__as_type": "string",
                 "__children_of": "script_languages"
             },
             "params": {

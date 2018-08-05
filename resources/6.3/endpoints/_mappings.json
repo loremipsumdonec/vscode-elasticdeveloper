@@ -2,45 +2,45 @@
     "__templates": {
         "field_datatypes": {
             "__children_of": ["field_datatypes_string", "field_datatypes_numeric", "field_datatypes_range"],
-            "date": {"__is_value": true},
-            "boolean": {"__is_value": true},
-            "binary":  {"__is_value": true},
-            "ip": {"__is_value": true},
-            "geo_point": {"__is_value": true},
-            "geo_shape": {"__is_value": true},
-            "completion": {"__is_value": true},
-            "nested": {"__is_value": true},
-            "token_count": {"__is_value": true},
-            "murmur3": {"__is_value": true},
-            "percolator": {"__is_value": true},
-            "join": {"__is_value": true}
+            "date": {},
+            "boolean": {},
+            "binary":  {},
+            "ip": {},
+            "geo_point": {},
+            "geo_shape": {},
+            "completion": {},
+            "nested": {},
+            "token_count": {},
+            "murmur3": {},
+            "percolator": {},
+            "join": {}
         },
         "field_datatypes_string": {
-            "text": {"__is_value": true},
-            "keyword": {"__is_value": true}
+            "text": {},
+            "keyword": {}
         },
         "field_datatypes_numeric": {
-            "long": {"__is_value": true},
-            "integer": {"__is_value": true},
-            "short": {"__is_value": true},
-            "byte": {"__is_value": true},
-            "double": {"__is_value": true},
-            "float": {"__is_value": true},
-            "half_float": {"__is_value": true},
-            "scaled_float": {"__is_value": true}
+            "long": {},
+            "integer": {},
+            "short": {},
+            "byte": {},
+            "double": {},
+            "float": {},
+            "half_float": {},
+            "scaled_float": {}
         },
         "field_datatypes_range": {
-            "integer_range": {"__is_value": true},
-            "float_range": {"__is_value": true},
-            "long_range": {"__is_value": true},
-            "double_range": {"__is_value": true},
-            "date_range": {"__is_value": true}
+            "integer_range": {},
+            "float_range": {},
+            "long_range": {},
+            "double_range": {},
+            "date_range": {}
         },
         "mappings_properties": {
             "properties": {
                 "{field}": {
                     "type": {
-                        "__is_field":true,
+                        "__as_type": "string",
                         "__children_of": "field_datatypes"
                     },
                     "fields": {
