@@ -1,26 +1,10 @@
 {
-    "__templates": {
-        "field": {
-            "type": "{type}",
-            "fields": {
-                "{field}": {
-                    "__children_of": "field"
-                }
-            }
-        },
-        "field_types": {
-            "text": {},
-            "keyword": {},
-            "date": {},
-            "long": {},
-            "double": {},
-            "boolean": {}
-        }
-    },
+    "__import_file": ["_index_settings", "_mappings", "_aliases"],
     "settings": {
         "index": {
+            "__children_of": "index_settings"
         },
-        "__children_of": "settings/index",
+        "__children_of": "index_settings",
         "analysis": {
             "analyzer": {
                 "{name}": {
@@ -53,22 +37,9 @@
         }
     },
     "mappings": {
-        "{type}": {
-            "properties": {
-                "{field}": {
-                    "__children_of": "field"
-                }
-            }
-        }
+        "__children_of": "index_mappings"
     },
     "aliases": {
-        "{alias}": {
-            "filter": {
-                "term": {
-                    "{field}": "{value}"
-                }
-            },
-            "routing": "{value}"
-        }
+        "__children_of": "index_aliases"
     }
 }

@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as constant from '../../../constant';
-import { IEndpoint } from '../models/IEndpoint';
+import { IEndpoint } from '../models/iendpoint';
 import { Controller } from '../../../controllers/controller';
 import { ElasticsearchQueryCompletionManager } from '../managers/elasticsearchQueryCompletionManager';
 import { GephiStreamService } from '../../gephi/services/gephiStreamService';

@@ -1,0 +1,59 @@
+{
+    "__templates": {
+        "field_datatypes": {
+            "__children_of": ["field_datatypes_string", "field_datatypes_numeric", "field_datatypes_range"],
+            "date": {"__is_value": true},
+            "boolean": {"__is_value": true},
+            "binary":  {"__is_value": true},
+            "ip": {"__is_value": true},
+            "geo_point": {"__is_value": true},
+            "geo_shape": {"__is_value": true},
+            "completion": {"__is_value": true},
+            "nested": {"__is_value": true},
+            "token_count": {"__is_value": true},
+            "murmur3": {"__is_value": true},
+            "percolator": {"__is_value": true},
+            "join": {"__is_value": true}
+        },
+        "field_datatypes_string": {
+            "text": {"__is_value": true},
+            "keyword": {"__is_value": true}
+        },
+        "field_datatypes_numeric": {
+            "long": {"__is_value": true},
+            "integer": {"__is_value": true},
+            "short": {"__is_value": true},
+            "byte": {"__is_value": true},
+            "double": {"__is_value": true},
+            "float": {"__is_value": true},
+            "half_float": {"__is_value": true},
+            "scaled_float": {"__is_value": true}
+        },
+        "field_datatypes_range": {
+            "integer_range": {"__is_value": true},
+            "float_range": {"__is_value": true},
+            "long_range": {"__is_value": true},
+            "double_range": {"__is_value": true},
+            "date_range": {"__is_value": true}
+        },
+        "mappings_properties": {
+            "properties": {
+                "{field}": {
+                    "type": {
+                        "__is_field":true,
+                        "__children_of": "field_datatypes"
+                    },
+                    "fields": {
+                        "__children_of": "mappings_properties/properties"
+                    },
+                    "__children_of": "mappings_properties"
+                }
+            }
+        },
+        "index_mappings": {
+            "{_doc}": {
+                "__children_of": "mappings_properties"
+            }
+        }
+    }
+}

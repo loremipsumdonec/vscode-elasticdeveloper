@@ -1,0 +1,21 @@
+{
+    "__templates": {
+        "script_language": {
+            "painless":{"__is_value": true},
+            "expression":{"__is_value": true},
+            "mustache":{"__is_value": true},
+            "java":{"__is_value": true}
+        },
+        "script": {
+            "id": "",
+            "lang": {
+                "__is_field": true,
+                "__children_of": "script_language"
+            },
+            "source": "",
+            "params": {
+                "{parameter}": "{value}"
+            }
+        }
+    }
+}

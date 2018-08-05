@@ -171,6 +171,10 @@ export class Graph {
         return this._edges;
     }
 
+    public findEdges(getEdge: (edge:Edge) => boolean) {
+        return this._edges.filter(getEdge);
+    }
+
     public getEdgeWithId(edgeId:string): Edge {
         return this._edges.find(e=> e.id === edgeId);
     }

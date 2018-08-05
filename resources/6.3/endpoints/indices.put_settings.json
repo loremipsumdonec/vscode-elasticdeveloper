@@ -1,5 +1,7 @@
 {
+    "__import_file": ["_index_settings"],
     "index": {
+        "__children_of": "index_settings"
     },
     "analysis": {
         "analyzer": {

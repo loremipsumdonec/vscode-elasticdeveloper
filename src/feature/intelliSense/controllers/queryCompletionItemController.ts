@@ -26,7 +26,7 @@ export class QueryCompletionItemController extends QueryController
             let offset = document.offsetAt(position);
 
             var manager = ElasticsearchQueryCompletionManager.get();
-            completionItems = manager.getCompletionItems(query, offset, triggerCharacter);
+            completionItems = manager.getCompletionItems(query, offset, triggerCharacter, document);
 
         }
 

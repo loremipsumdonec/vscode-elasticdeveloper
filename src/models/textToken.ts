@@ -8,6 +8,7 @@ export class TextToken {
     private _path:string;
     private _text:string;
     private _isValid:boolean = true;
+    private _depth:number = -1;
 
     public get isValid():boolean {
         return this._isValid;
@@ -50,12 +51,20 @@ export class TextToken {
         this._index = index;
     }
 
+    public get depth():number {
+        return this._depth;
+    }
+
     public get path():string {
         return this._path;
     }
 
     public set path(value:string) {
         this._path = value;
+        
+        if(this._path) {
+            this._depth = this._path.split('.').length - 1;
+        }
     }
 
     public get text():string {

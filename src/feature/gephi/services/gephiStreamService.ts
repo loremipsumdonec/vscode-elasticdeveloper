@@ -8,14 +8,10 @@ export class GephiStreamService {
 
     public async syncGraph(graph:Graph) {
 
-        let batch = [];
         let visited:string[] = [];
         let pendingEdges:Edge[] = [];
-        let nodes = graph.getRootNodes();
-        
-        if(nodes.length === 0) {
-            graph.getNodes().forEach(n=> nodes.push(n));
-        }
+        let nodes = [];
+        graph.getNodes().forEach(n=> nodes.push(n));
 
         while(nodes.length > 0) {
             let node = nodes.pop();
@@ -81,6 +77,7 @@ export class GephiStreamService {
             {
                 ae: {
                     [edge.id]: {
+                        label: edge.kind ? edge.kind: '',
                         source:edge.sourceId,
                         target: edge.targetId,
                         directed:edge.directed,

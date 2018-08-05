@@ -8,15 +8,17 @@ import * as path from 'path'
 
 import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
 import { TokenType } from "../../../parsers/elasticsearchQueryDocumentScanner";
-import { EntityDocumentScanner } from "../../../parsers/entityDocumentScanner";
-import { Graph, Node } from "../../../models/graph";
+import { EntityDocumentScanner, TokenType as EntityTokenType } from "../../../parsers/entityDocumentScanner";
+import { Graph, Node, Edge } from "../../../models/graph";
 import { EnvironmentManager } from '../../../managers/environmentManager';
 import { Version } from '../../../models/version';
-import { isObject, isArray } from 'util';
+import { isObject, isArray, deprecate } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
 import { GephiStreamService } from '../../gephi/services/gephiStreamService';
-import { IEndpoint } from '../models/IEndpoint';
+import { IEndpoint } from '../models/iendpoint';
 import { LogManager } from '../../../managers/logManager';
+import { IQueryBodyContext } from '../models/iqueryBodyContext';
+import { TextToken } from '../../../models/textToken';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
@@ -99,7 +101,7 @@ export class ElasticsearchQueryCompletionManager {
         return this.getEndpointIdWith(query.method, query.command);
     }
 
-    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string): vscode.CompletionItem[] {
+    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string, textDocument: vscode.TextDocument): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
@@ -114,7 +116,7 @@ export class ElasticsearchQueryCompletionManager {
                     completionItems = this.getCompletionItemsForQueryString(query, token as PropertyToken, offset);
                     break;
                 case TokenType.Body:
-                    completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter);
+                    completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter, textDocument);
                     break;
             }
 
@@ -266,38 +268,178 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
-    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string): vscode.CompletionItem[] {
+    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string, textDocument: vscode.TextDocument): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let bodyToken = query.tokenAt(offset);
         let offsetInBody = offset - bodyToken.offset;
-        let entityDocumentScanner = new EntityDocumentScanner(bodyToken.text.substr(0, offsetInBody));
+        let body = bodyToken.text.substr(0, offsetInBody + 1);
+        let entityDocumentScanner = new EntityDocumentScanner(body);
         let token = entityDocumentScanner.scanUntilPosition(offsetInBody) as PropertyToken;
+        let tokens = entityDocumentScanner.store;
         
-        if(!triggerCharacter && token.propertyValueToken.text != null && token.propertyValueToken.text.length == 0) {
-            triggerCharacter = '"';
-        }
-
         if(token) {
-
             let graph = this.getGraphWithEndpointId(query.endpointId);
 
             if(graph) {
 
-                if(token.path) {
-                    let steps = token.path.replace(/\[\w+\]/, '.[0]').split('.');
-                    let root = graph.getNodeWithId(steps[0]);
-                    let nodes = this.getNodesWithSteps(steps, root, graph, n => n.label);
-                    completionItems = this.createCompletionItems(nodes, triggerCharacter);
-        
-                } else {
-                    let children = graph.findNodes(n=> n.data.depth === 0);
-                    children = children.filter(n=> !n.data.isTemplate);
-                    completionItems = this.createCompletionItems(children, triggerCharacter);
+                let nodeSteps:string[] = ['root'];
+                let tokenSteps:string[] = [];
+                let tokenPath = token.path;
+
+                if(tokenPath) {
+                    tokenPath = tokenPath.replace('[', '.[');
+                    tokenSteps = tokenPath.split('.')                   
+                            .filter(s => s !== '');
+
+                    tokenPath.replace(/\[\w+\]/, '.[0]')
+                            .split('.')
+                            .filter(s => s !== '')
+                            .forEach(s=> nodeSteps.push(s));
+                }
+                
+                let node:Node = undefined;
+                let visited:Edge[] = [];
+
+            for(let depth = 0; depth < nodeSteps.length; depth++) {
+                let step = nodeSteps[depth];
+                let path = undefined;
+                let foundNextNode = false;
+
+                if(depth > 0) {
+                    for(let index = 0; index < depth; index++) {
+                        if(path) {
+                            if(tokenSteps[index].startsWith('[')) {
+                                path += tokenSteps[index];
+                            } else {
+                                path += '.' + tokenSteps[index];
+                            }
+                        } else {
+                            path = tokenSteps[index];
+                        }
+                    }
                 }
 
+                if(node) {
+                    let currentTokenAtThisDepth = tokens.find(t=> t.path == path);
+                    let tokenType = currentTokenAtThisDepth.propertyValueToken ? currentTokenAtThisDepth.propertyValueToken.type: currentTokenAtThisDepth.type;
+                    let edges:Edge[] = [];
+
+                    if(tokenType === EntityTokenType.PropertyValue) {
+                        edges = graph.findEdges(e=> e.sourceId == node.id && (
+                            e.kind !== 'array' && e.kind !== 'object' && e.kind !== 'children_of'));
+
+                    } else if(tokenType === EntityTokenType.OpenEntity) {
+                        edges = graph.findEdges(e=> e.sourceId == node.id && e.kind === 'object');
+                    } else if(tokenType === EntityTokenType.OpenArray) {
+                        edges = graph.findEdges(e=> e.sourceId == node.id && e.kind === 'array');
+                    }
+
+                    for(let edge of edges) {
+                        let n = graph.getNodeWithId(edge.targetId);
+                        
+                        if(n.label === step) {
+                            visited.push(edge);
+                            node = n;
+                            foundNextNode = true
+                            break;
+                        }
+                    }
+
+                } else {
+                    node = graph.findNode(n=> n.label == step);
+                    foundNextNode = node != null;
+                }
+
+                if(!foundNextNode) {
+                    node = null;
+                    break;
+                }
             }
 
+            /** ------------------------------------------ */
+
+                if(node) {
+                    
+                    let context:Edge;
+
+                    if(visited.length > 0) {
+                        context = visited[visited.length - 1];
+                    }
+                    
+                    let edges = graph.findEdges(e=> e.sourceId == node.id && e.kind != 'children_of');
+
+                    for(let edge of edges) {
+                        let target = graph.getNodeWithId(edge.targetId);
+                        let label = target.label;
+                        let hasLabel:boolean = true;
+                        let kind:string = edge.kind;
+
+                        let pattern = '"{label}": {value}';
+
+                        if((token.hasText && !token.propertyValueToken) && target.label !== token.text) {
+                            continue;
+                        } else if(token.hasText && token.propertyValueToken && token.propertyValueToken.type === EntityTokenType.PropertyValue) {
+                            pattern = '{value}';
+                            hasLabel = false;
+                            kind = context.kind;
+                        } else if(token.hasText && token.propertyValueToken && 
+                                (   
+                                    token.propertyValueToken.type === EntityTokenType.OpenArray || 
+                                    token.propertyValueToken.type === EntityTokenType.BetweenArrayValue
+                                )) 
+                        {
+                            pattern = '{value}';
+                            hasLabel = false;
+                            label = edge.kind + ' value';
+                        } else {
+                            pattern = pattern.replace('{label}', label);
+                        }
+
+                        let item:vscode.CompletionItem = new vscode.CompletionItem(label);
+                        item.filterText = label.replace('{','').replace('}', '');
+                        item.detail = kind;
+
+                        switch(kind) {
+
+                            case 'object':
+                                item.kind = vscode.CompletionItemKind.Module;
+                                pattern = pattern.replace('{value}', '{$0}');
+                                break;
+                            case 'array':
+                                item.kind = vscode.CompletionItemKind.Enum;
+                                pattern = pattern.replace('{value}', '[$0]');
+                                break;
+                            default:
+                                if(!hasLabel && token.propertyValueToken) {
+
+                                    item.kind = vscode.CompletionItemKind.EnumMember;
+
+                                    if(token.propertyValueToken.type === EntityTokenType.OpenArray || 
+                                        token.propertyValueToken.type === EntityTokenType.BetweenArrayValue) {
+                                        pattern = pattern.replace('{value}', '"$1"$0');
+                                    } else if(!token.propertyValueToken.isValid) {
+                                        pattern = pattern.replace('{value}', target.label + '"$0');    
+                                    } else if(!target.data.isDynamicNode) {
+                                        pattern = null;
+                                    } 
+
+                                } else {
+                                    pattern = pattern.replace('{value}', '"$1"$0');
+                                }
+                                break;
+
+                        }
+
+                        if(pattern) {
+                            pattern = this.createSnippetPattern(pattern);
+                            item.insertText = new vscode.SnippetString(pattern);
+                        }
+                        
+                        completionItems.push(item);
+                    }
+                }
+            }
         }
 
         return completionItems;
@@ -315,9 +457,12 @@ export class ElasticsearchQueryCompletionManager {
 
     protected getGraphWithEndpointId(endpointId:string): Graph {
 
+        this.loadGraphWithEndpointId(endpointId);
+
+        /*
         if(!this._graphs[endpointId]) {
             this.loadGraphWithEndpointId(endpointId);
-        }
+        }*/
 
         return this._graphs[endpointId];
     }
@@ -325,31 +470,74 @@ export class ElasticsearchQueryCompletionManager {
     protected loadGraphWithEndpointId(endpointId:string) {
 
         let graph = new Graph();
-        let files:string[] = this.getEndpointDslFiles(endpointId);
+        let files:string[] =[];
+        let imported:string[] = [];
+        let endpointFile = this.getEndpointFile(endpointId);
 
-        for(let file of files) {
+        if(endpointFile) {
+            files.push(endpointFile);
 
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let keys = Object.keys(source);
-    
-            for(let key of keys) {
-                if(key.startsWith('__')) {
-                    this.loadDslGraph(source[key], graph, 100);
-                    delete source[key];
+            while(files.length > 0){
+                let file = files.pop();
+                
+                if(!imported.find(f=> f === file)) {
+                    imported.push(file);
+
+                    const fileContent = fs.readFileSync(file, 'UTF-8');
+                    let source = JSON.parse(fileContent);
+                    let keys = Object.keys(source);
+
+                    for(let key of keys) {
+                        if(key === ("__import_file")) {
+                            
+                            if(isArray(source[key])) {
+                                for(let importFile of source[key]) {
+                                    importFile = this.getEndpointFile(importFile);
+
+                                    if(importFile) {
+                                        files.push(importFile);
+                                    }
+                                }
+                            }
+
+                        } else if(key.startsWith('__')) {
+                            if(key !== '__inactive') {
+                                this.loadDslGraph(source[key], graph, 100);
+                            }
+                            delete source[key];
+                        }
+                    }
+
+                    this.loadDslGraph(source, graph);
                 }
             }
-    
-            this.loadDslGraph(source, graph);
+
+            let nodes = graph.getNodes();
+            graph.addNode('root', 'root', { depth:-1, types:["object"]});
+
+            for(let node of nodes) {
+                node.data.isDynamicNode = node.label.endsWith('}');
+
+                if(node.data.depth === 0) {
+                    node.data.types.forEach(t=> graph.addEdge('root', node.id, null, t));
+                }
+            }
+
+            let edges = graph.findEdges(edge=> edge.kind === 'children_of');
+
+            for(let edge of edges) {
+                let children = graph.getOutgoingNodes(edge.targetId);
+                let source = graph.getNodeWithId(edge.sourceId);
+
+                for(let child of children) {
+                    source.data.types.forEach(t=>
+                        graph.addEdge(edge.sourceId, child.id, null, t)
+                    );
+                }
+            }
+
+            this._graphs[endpointId] = graph;
         }
-
-        let nodes = graph.getNodes();
-
-        for(let node of nodes) {
-            node.data.isDynamicNode = node.label.endsWith('}');
-        }
-
-        this._graphs[endpointId] = graph;
     }
 
     protected getChildrenNodesWithParentNodeId(node:Node, graph:Graph):Node[] {
@@ -370,6 +558,90 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         return children;
+    }
+
+    private getNodesBasedOnContext(path:string, context:PropertyToken[], nodes:Node[], graph:Graph): Node[] {
+
+        let nodesBasedOnContext:Node[] = [];
+        let fieldNodes = nodes.filter(n=> n.data.isField);
+
+        while(fieldNodes.length > 0) {
+            let fieldNode = fieldNodes.pop();
+            let fieldNodePath = fieldNode.label;
+
+            if(path) {
+                fieldNodePath = path + '.' + fieldNode.label;
+            }
+
+            let contextToken = context.find(c=> c.text === fieldNode.label && c.path === fieldNodePath);
+            
+            if(contextToken && contextToken.propertyValueToken) {
+                let fieldNodeChild = this.getChildrenNodesWithParentNodeId(fieldNode, graph)
+                                                .find(n=> n.label === contextToken.propertyValueToken.text)
+
+                if(fieldNodeChild) {
+                    nodesBasedOnContext = this.getChildrenNodesWithParentNodeId(fieldNodeChild, graph);
+                    break;
+                }
+                
+            }
+
+        }
+
+        return nodesBasedOnContext;
+    }
+
+    private filterBasedOnContext(nodes:Node[], path:string, context:PropertyToken[]):Node[] {
+
+        let filtered: Node[] = [];
+
+        while(nodes.length > 0) {
+            let node = nodes.pop();
+            let propertyPath = path + '.' + node.label;
+
+            if(!path) {
+                propertyPath = node.label;
+            }
+
+            let exists = context.find(c=> c.path === propertyPath);
+
+            if(!exists) {
+                filtered.push(node);
+            }
+        }
+
+        return filtered;
+    }
+
+    private getNodeWithLabelBasedOnContext(label:string, path:string, context:PropertyToken[], nodes:Node[], graph:Graph): Node {
+
+        let node:Node = null;
+        let fieldNodes = nodes.filter(n=> n.data.isField);
+
+        while(fieldNodes.length > 0) {
+            let fieldNode = fieldNodes.pop();
+            let fieldNodePath = fieldNode.label;
+
+            if(path) {
+                fieldNodePath = path + '.' + fieldNode.label;
+            }
+
+            let contextToken = context.find(c=> c.text === fieldNode.label && c.path === fieldNodePath);
+            
+            if(contextToken && contextToken.propertyValueToken) {
+                let fieldNodeChild = this.getChildrenNodesWithParentNodeId(fieldNode, graph)
+                                                .find(n=> n.label === contextToken.propertyValueToken.text)
+
+                if(fieldNodeChild) {
+                    node = this.getChildrenNodesWithParentNodeId(fieldNodeChild, graph)
+                        .find(n=> n.label === label);
+                    break;
+                }
+            }
+
+        }
+
+        return node;
     }
 
     public getNodesWithSteps(steps:string[], root:Node, graph:Graph, findNode: (node:Node) => string):Node[] {
@@ -493,6 +765,24 @@ export class ElasticsearchQueryCompletionManager {
                 }
             }
 
+        }
+
+        return text;
+    }
+
+    private createSnippetPattern(text:string) {
+
+        let matches = text.match(/\{(\w+)\}/g);
+
+        if(matches) {
+
+            let index = 1;
+
+            for(let m of matches) {
+                let key = m.substring(1, m.length - 1);
+                text = text.replace(m, '${' + index + ':' + key + '}');
+                index++;
+            }
         }
 
         return text;
@@ -660,99 +950,149 @@ export class ElasticsearchQueryCompletionManager {
         stack.push( { 
             source: source, 
             path: null,
-            depth: startDepth});
+            types: [],
+            depth: startDepth
+        });
 
         while(stack.length > 0) {
             let context = stack.pop();
             let source = context.source;
             let path = context.path;
 
-            let keys = Object.keys(source);
+            if(isObject(source)) {
 
-            for(let key of keys) {
-                let current = source[key];
+                let keys = Object.keys(source);
 
-                if(!key.startsWith('__')) {
-
-                    let nodeId = path + '/' + key;
-                    
-                    if(path == null) {
-                        nodeId = key;
-                    }
-
-                    if(isArray(current)) {
+                for(let key of keys) {
+                    let current = source[key];
+                    let types:string[] = []
+    
+                    if(!key.startsWith('__')) {
+    
+                        let nodeId = path + '/' + key;
                         
-                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Enum;
+                        if(path == null) {
+                            nodeId = key;
+                        }
+    
+                        if(isArray(current)) {
+                            
+                            if(current.length > 0) {
+                                
+                                for(let index = 0; index < current.length;index++) {
+                                    let arrayEntry =  current[index];
+                                    let arrayEntryTypes:string[] = []
+                                    let id = '['+ index +']';
+                                    let arrayEntryNodeId = nodeId +'/['+ index +']';
+                                    let depth = context.depth + 1;
 
-                        if(current.length > 0) {
-                            if(isObject(current[0])) {
-                                kind = vscode.CompletionItemKind.Reference;
-                                let arrayObjectNodeId = nodeId +'/[0]';
+                                    if(isObject(arrayEntry)) {
 
-                                graph.addNode(arrayObjectNodeId, '[0]', { 
-                                    id: '[0]', 
-                                    kind: vscode.CompletionItemKind.Struct, 
-                                    depth: context.depth });
+                                        let arrayEntryType = 'object';
+                            
+                                        if(arrayEntry.__as_type) {
+            
+                                            if(isArray(arrayEntry.__as_type)) {
+                                                arrayEntry.__as_type.forEach(t=> arrayEntryTypes.push(t));
+                                            } else {
+                                                arrayEntryTypes.push(arrayEntry.__as_type);
+                                            }
 
-                                graph.addEdge(nodeId, arrayObjectNodeId);
+                                        } else {
+                                            arrayEntryTypes.push(arrayEntryType);
+                                        }
 
-                                stack.push({ source:current[0], path: arrayObjectNodeId, depth: context.depth + 1});
+                                        graph.addNode(arrayEntryNodeId, '[0]', { 
+                                            id: id,
+                                            types: arrayEntryTypes,
+                                            depth: depth
+                                        });
+
+                                        arrayEntryTypes.forEach(t=> 
+                                            graph.addEdge(nodeId, arrayEntryNodeId, null, t)
+                                        );
+
+                                        stack.push({ source:arrayEntry, path: arrayEntryNodeId, depth: depth});
+
+                                    } else {
+                                        let type = typeof(arrayEntry);
+
+                                        graph.addNode(arrayEntryNodeId, '[0]', { 
+                                            id: id,
+                                            types: [type],
+                                            defaultValue: arrayEntry.toString(),
+                                            depth: depth
+                                        });
+
+                                        graph.addEdge(nodeId, arrayEntryNodeId, null, type);
+                                    }
+                                }
                             }
+                            
+                            graph.addNode(nodeId, key, { types: ['array'], depth: context.depth});
+                            graph.addEdge(path, nodeId, null, 'array');
+                            
+    
+                        } else if(isObject(current)) {
+    
+                            let type = 'object';
+                            
+                            if(current.__as_type) {
+
+                                if(isArray(current.__as_type)) {
+                                    current.__as_type.forEach(t=> types.push(t));
+                                } else {
+                                    types.push(current.__as_type);
+                                }
+                            } else {
+                                types.push(type);
+                            }
+    
+                            graph.addNode(nodeId, key, { 
+                                id: key,
+                                types: types,
+                                depth: context.depth 
+                            });
+    
+                            types.forEach(t=> 
+                                graph.addEdge(path, nodeId, null, t)
+                            );
+
+                            stack.push({ source:current, path: nodeId, types: types, depth: context.depth + 1})
+    
+                        } else {
+    
+                            let type = typeof(current);
+                            types.push(type);
+
+                            graph.addNode(nodeId, key, { 
+                                id: key, 
+                                defaultValue: current.toString(),
+                                types: types,
+                                depth:context.depth 
+                            });
+    
+                            types.forEach(t=> 
+                                graph.addEdge(path, nodeId, null, type)
+                            );
+
                         }
+    
+                    } else if(key === '__children_of') {
                         
-                        graph.addNode(nodeId, key, { kind: kind, depth: context.depth});
-                        graph.addEdge(path, nodeId);
-
-                    } else if(isObject(current)) {
-
-                        let isTemplate = false;
-                        let kind:vscode.CompletionItemKind = vscode.CompletionItemKind.Class;
-
-                        if(current.__is_template) {
-                            isTemplate = true;
+                        if(isArray(current)) {
+    
+                            for(let c of current) {
+                                graph.addEdge(path, c, null, 'children_of');
+                            }
+            
+                        } else {
+                            graph.addEdge(path, current, null, 'children_of');
                         }
-
-                        if(current.__is_field) {
-                            kind = vscode.CompletionItemKind.Field;
-                        } else if(current.__is_value) {
-                            kind = vscode.CompletionItemKind.Value;
-                        }
-
-                        graph.addNode(nodeId, key, { 
-                            id: key, 
-                            kind: kind, 
-                            isTemplate:isTemplate, 
-                            depth: context.depth 
-                        });
-
-                        graph.addEdge(path, nodeId);
-
-                        stack.push({ source:current, path: nodeId, depth: context.depth + 1});
-
-                    } else {
-
-                        graph.addNode(nodeId, key, { 
-                            id: key, 
-                            kind: vscode.CompletionItemKind.Field, 
-                            defaultValue: current, 
-                            depth:context.depth 
-                        });
-
-                        graph.addEdge(path, nodeId);
-                    }
-
-                } else if(key === '__children_of') {
-                    
-                    if(isArray(current)) {
-
-                        for(let c of current) {
-                            graph.addEdge(path, c, null, 'children_of');
-                        }
-        
-                    } else {
-                        graph.addEdge(path, current, null, 'children_of');
                     }
                 }
+            } else {
+                console.log('is not an object...');
             }
         }
     }
@@ -806,7 +1146,7 @@ export class ElasticsearchQueryCompletionManager {
         return versionNumber;
     }
 
-    private getEndpointDslFiles(endpointId:string) {
+    private getEndpointFile(endpointId:string):string {
 
         if(endpointId.startsWith('endpoint_')) {
             endpointId = endpointId.replace('endpoint_', '');
@@ -814,9 +1154,13 @@ export class ElasticsearchQueryCompletionManager {
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
         let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId);
+        let file =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId + '.json');
 
-        return this.getFilesWithFolderPath(folderPath);
+        if(!fs.existsSync(file)) {
+            file = null;
+        }
+
+        return file;
     }
 
     private getRestApiGlobalSpecificationFiles():string[] {
