@@ -121,6 +121,7 @@ export class ElasticsearchQueryDocument {
 
         }catch(ex) {
             LogManager.error(false, 'failed parse ElasticSearchQueryDocument %s', ex.message);
+            LogManager.error(false, ex.stack);
         }
 
         return document;

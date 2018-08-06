@@ -1,56 +1,22 @@
 'use strict'
 
 import * as vscode from 'vscode';
-import * as constant from '../../../constant';
-import * as fs from 'fs';
-import * as path from 'path'
 
 import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
 import { TokenType } from "../../../parsers/elasticsearchQueryDocumentScanner";
 import { EntityDocumentScanner, TokenType as EntityTokenType } from "../../../parsers/entityDocumentScanner";
 import { Graph, Node, Edge } from "../../../models/graph";
-import { EnvironmentManager } from '../../../managers/environmentManager';
-import { Version } from '../../../models/version';
-import { isObject, isArray } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
 import { IEndpoint } from '../models/iendpoint';
 import { LogManager } from '../../../managers/logManager';
+import { IntellisenseGraphManager } from './intellisenseGraphManager';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
 export class ElasticsearchQueryCompletionManager {
     
-    private _endpoints:any;
-    private _graphs:any;
-    private _versionNumber:string
-
-    constructor(versionNumber?:string) {
-        this._graphs = {};
-        this._endpoints = {};
-        this._versionNumber = versionNumber;
-
-        EnvironmentManager.subscribe((eventName) => {
-            if(eventName === 'environment.changed') {
-
-                this._versionNumber = null;
-                this._endpoints = {};
-                this._graphs = {};
-                LogManager.info(false, 'cleared intellisense graphs and enpoints');
-            }
-        });
-
-    }
-
-    public get versionNumber():string {
-        return this._versionNumber;
-    }
-
-    public get graphs():any {
-        return this._graphs;
-    }
-
     public getEndpointWithId(endpointId:string): IEndpoint {
-        return this._endpoints[endpointId];
+        return IntellisenseGraphManager.get().getEndpointWithId(endpointId);
     }
 
     public getEndpointWith(method:string, command:string): IEndpoint {
@@ -266,7 +232,13 @@ export class ElasticsearchQueryCompletionManager {
         let token = entityDocumentScanner.scanUntilPosition(offsetInBody) as PropertyToken;
         let tokens = entityDocumentScanner.store;
         
+        //let context = getContextFromQueryBody()
+        //context.token.current, context.token.steps, context.token.tokens
+        //context.edge.current, context.edge.edges, context.edge.visited
+        //context.graph
+
         if(token) {
+            //graph = graphManager.getGraphWithEndpointId();
             let graph = this.getGraphWithEndpointId(query.endpointId);
 
             if(graph) {
@@ -323,6 +295,7 @@ export class ElasticsearchQueryCompletionManager {
                     let path = undefined;
                     let foundNextNode = false;
 
+                    //path = buildTokenPathWithDepth(depth)
                     if(depth > 0) {
                         for(let index = 0; index < depth; index++) {
                             if(path) {
@@ -512,103 +485,14 @@ export class ElasticsearchQueryCompletionManager {
     }
 
     protected getGraphWithMethod(method:string): Graph {
-        let key = 'method_' + method.toLowerCase();
-
-        if(!this._graphs[key]) {
-            this.loadEndpointGraphs();
-        }
-
-        return this._graphs[key];
+        let manager = IntellisenseGraphManager.get();
+        return manager.getGraphWithMethod(method);
     }
 
     protected getGraphWithEndpointId(endpointId:string): Graph {
 
-        this.loadGraphWithEndpointId(endpointId);
-
-        if(!this._graphs[endpointId]) {
-            this.loadGraphWithEndpointId(endpointId);
-        }
-
-        return this._graphs[endpointId];
-    }
-
-    protected loadGraphWithEndpointId(endpointId:string) {
-
-        let graph = new Graph();
-        let files:string[] =[];
-        let imported:string[] = [];
-        let endpointFile = this.getEndpointFile(endpointId);
-
-        if(endpointFile) {
-            files.push(endpointFile);
-
-            while(files.length > 0){
-                let file = files.pop();
-                
-                if(!imported.find(f=> f === file)) {
-                    imported.push(file);
-
-                    const fileContent = fs.readFileSync(file, 'UTF-8');
-                    let source = JSON.parse(fileContent);
-                    let keys = Object.keys(source);
-
-                    for(let key of keys) {
-                        if(key === ("__import_file")) {
-                            
-                            if(isArray(source[key])) {
-                                for(let importFile of source[key]) {
-                                    importFile = this.getEndpointFile(importFile);
-
-                                    if(importFile) {
-                                        files.push(importFile);
-                                    }
-                                }
-                            }
-
-                        } else if(key.startsWith('__')) {
-                            if(key !== '__inactive') {
-                                this.loadDslGraph(source[key], graph, 100);
-                            }
-                            delete source[key];
-                        }
-                    }
-
-                    this.loadDslGraph(source, graph);
-                }
-            }
-
-            let nodes = graph.getNodes();
-            graph.addNode('root', 'root', { depth:-1, types:["object"]});
-
-            for(let node of nodes) {
-                node.data.isDynamicNode = node.label.endsWith('}');
-
-                if(node.data.depth === 0) {
-                    node.data.types.forEach(t=> graph.addEdge('root', node.id, null, t));
-                }
-            }
-
-            let edges = graph.findEdges(edge=> edge.kind === 'children_of');
-
-            for(let edge of edges) {
-                let children = graph.getOutgoingNodes(edge.targetId);
-                let source = graph.getNodeWithId(edge.sourceId);
-
-                for(let child of children) {
-                    
-                    child.data.types.forEach(t=>
-                        graph.addEdge(edge.sourceId, child.id, null, t)
-                    );
-
-                    /*
-                    source.data.types.forEach(t=>
-                        graph.addEdge(edge.sourceId, child.id, null, t)
-                    );*/
-                }
-            }
-
-            this._graphs[endpointId] = graph;
-        }
+        let manager = IntellisenseGraphManager.get();
+        return manager.getGraphWithEndpointId(endpointId);
     }
 
     protected getChildrenNodesWithParentNodeId(node:Node, graph:Graph):Node[] {
@@ -703,402 +587,6 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         return text;
-    }
-
-    private loadEndpointGraphs() {
-
-        let files = this.getRestApiSpecificationFiles();
-        
-        for(let file of files) {
-
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let endpointId = Object.keys(source)[0];
-            let endpoint:IEndpoint = source[endpointId];
-            endpointId = 'endpoint_' + endpointId;
-            this._endpoints[endpointId] = endpoint;
-
-            if(endpoint.methods) {
-
-                for(let method of endpoint.methods) {
-
-                    let key = 'method_' + method.toLowerCase();
-
-                    if(!this._graphs[key]) {
-                        this._graphs[key] = new Graph();
-                    }
-
-                    let graph = this._graphs[key];
-
-                    graph.addNode(endpointId, endpointId, { kind: 'endpoint' });
-
-                    if(endpoint.url && endpoint.url.params) {
-                        let parameterNames = Object.keys(endpoint.url.params);
-        
-                        for(let name of parameterNames) {
-                            let parameter = endpoint.url.params[name];
-                            let parameterId = endpointId + '/' + name;
-                            graph.addNode(parameterId, name, { 
-                                kind: 'parameter', 
-                                ...parameter
-                             });
-                            graph.addEdge(endpointId, parameterId);
-                        }
-        
-                    }
-
-                    for(let path of endpoint.url.paths) {
-                        let steps:string[] = path.split('/').splice(1);
-                        let previousStepId:string = null;
-
-                        for(let index = 0; index < steps.length; index++) {
-                            let step = steps[index];
-                            let stepId = step;
-                            
-                            if(stepId.length == 0 && steps.length == 1) {
-                                stepId = '/';
-                                step = '/';
-                            }
-
-                            if(previousStepId) {
-                                stepId = previousStepId + '/'+ step;
-                            }
-
-                            graph.addNode(stepId, step, { kind: 'step' });
-
-                            if(index == steps.length - 1) {
-                                graph.addEdge(stepId, endpointId);
-                            }
-
-                            if(previousStepId) {
-                                graph.addEdge(previousStepId, stepId);
-                            }
-
-                            previousStepId = stepId;
-                        }
-                    }
-                }
-            }
-        }
-
-        let globalFiles = this.getRestApiGlobalSpecificationFiles();
-        let graphNames = Object.keys(this._graphs);
-
-        for(let file of globalFiles) {
-            const fileContent = fs.readFileSync(file, 'UTF-8');
-            let source = JSON.parse(fileContent);
-            let parameterNames = Object.keys(source.params);
-
-            for(let graphName of graphNames) {
-                if(graphName.startsWith('method_')) {
-                    let graph = this._graphs[graphName] as Graph;
-                    let nodes = graph.findNodes(n=> n.data.kind === 'endpoint');
-                
-                    for(let node of nodes) {
-
-                        for(let name of parameterNames) {
-                            let parameter = source.params[name];
-                            let parameterId = node.id + '/' + name;
-                            graph.addNode(parameterId, name, { 
-                                kind: 'parameter',
-                                ...parameter
-                             });
-                            graph.addEdge(node.id, parameterId);
-                        }
-                    }
-                }
-            }
-        }
-
-        let keys = Object.keys(this._graphs);
-
-        for(let key of keys) {
-
-            if(key.startsWith('method_')) {
-
-                let graph = this._graphs[key] as Graph;
-                let nodes = graph.getNodes();
-    
-                for(let node of nodes) {
-                    node.data.isDynamicNode = node.label.endsWith('}');
-                }
-
-            }
-        }
-    }
-
-    private loadDslGraph(source, graph:Graph, startDepth:number = 0) {
-
-        let stack:any[] = [];
-        stack.push( { 
-            source: source, 
-            path: null,
-            types: [],
-            depth: startDepth
-        });
-
-        while(stack.length > 0) {
-            let context = stack.pop();
-            let source = context.source;
-            let path = context.path;
-
-            if(isObject(source)) {
-
-                let keys = Object.keys(source);
-
-                for(let key of keys) {
-                    let current = source[key];
-                    let types:string[] = []
-    
-                    if(!key.startsWith('__')) {
-    
-                        let nodeId = path + '/' + key;
-                        
-                        if(path == null) {
-                            nodeId = key;
-                        }
-    
-                        if(isArray(current)) {
-                            
-                            if(current.length > 0) {
-                                
-                                for(let index = 0; index < current.length;index++) {
-                                    let arrayEntry =  current[index];
-                                    let arrayEntryTypes:string[] = []
-                                    let id = '['+ index +']';
-                                    let arrayEntryNodeId = nodeId +'/['+ index +']';
-                                    let depth = context.depth + 1;
-
-                                    if(isObject(arrayEntry)) {
-
-                                        let arrayEntryType = 'object';
-                            
-                                        if(arrayEntry.__as_type) {
-            
-                                            if(isArray(arrayEntry.__as_type)) {
-                                                arrayEntry.__as_type.forEach(t=> arrayEntryTypes.push(t));
-                                            } else {
-                                                arrayEntryTypes.push(arrayEntry.__as_type);
-                                            }
-
-                                        } else {
-                                            arrayEntryTypes.push(arrayEntryType);
-                                        }
-
-                                        graph.addNode(arrayEntryNodeId, '[0]', { 
-                                            id: id,
-                                            types: arrayEntryTypes,
-                                            depth: depth
-                                        });
-
-                                        arrayEntryTypes.forEach(t=> 
-                                            graph.addEdge(nodeId, arrayEntryNodeId, null, t)
-                                        );
-
-                                        stack.push({ source:arrayEntry, path: arrayEntryNodeId, depth: depth});
-
-                                    } else {
-                                        let type = typeof(arrayEntry);
-
-                                        graph.addNode(arrayEntryNodeId, '[0]', { 
-                                            id: id,
-                                            types: [type],
-                                            defaultValue: arrayEntry.toString(),
-                                            depth: depth
-                                        });
-
-                                        graph.addEdge(nodeId, arrayEntryNodeId, null, type);
-                                    }
-                                }
-                            }
-                            
-                            graph.addNode(nodeId, key, { types: ['array'], depth: context.depth});
-                            graph.addEdge(path, nodeId, null, 'array');
-                            
-    
-                        } else if(isObject(current)) {
-    
-                            let type = 'object';
-                            
-                            if(current.__as_type) {
-
-                                if(isArray(current.__as_type)) {
-                                    current.__as_type.forEach(t=> types.push(t));
-                                } else {
-                                    types.push(current.__as_type);
-                                }
-                            } else {
-                                types.push(type);
-                            }
-    
-                            graph.addNode(nodeId, key, { 
-                                id: key,
-                                types: types,
-                                depth: context.depth 
-                            });
-    
-                            types.forEach(t=> 
-                                graph.addEdge(path, nodeId, null, t)
-                            );
-
-                            stack.push({ source:current, path: nodeId, types: types, depth: context.depth + 1})
-    
-                        } else {
-    
-                            let type = typeof(current);
-                            types.push(type);
-
-                            graph.addNode(nodeId, key, { 
-                                id: key, 
-                                defaultValue: current.toString(),
-                                types: types,
-                                depth:context.depth 
-                            });
-    
-                            types.forEach(t=> 
-                                graph.addEdge(path, nodeId, null, type)
-                            );
-
-                        }
-    
-                    } else if(key === '__children_of') {
-                        
-                        if(isArray(current)) {
-    
-                            for(let c of current) {
-                                graph.addEdge(path, c, null, 'children_of');
-                            }
-            
-                        } else {
-                            graph.addEdge(path, current, null, 'children_of');
-                        }
-                    }
-                }
-            } else {
-                console.log('is not an object...');
-            }
-        }
-    }
-
-    private getVersionNumber() {
-
-        let versionNumber:string = null;
-
-        if(this._versionNumber) {
-            versionNumber = this._versionNumber;
-        } else {
-            let environment = EnvironmentManager.get().environment;
-
-            let extension = vscode.extensions.getExtension(constant.ExtensionId);
-            let folderPath =  extension.extensionPath +  '\\resources';
-
-            let folders = fs.readdirSync(folderPath)
-                .filter(
-                    f=> fs.statSync(path.join(folderPath, f)).isDirectory()
-                );
-
-            if(environment && environment.hasVersion) {
-
-                let closestVersion = Version.getClosest(environment.version, folders);
-    
-                if(closestVersion) {
-                    versionNumber = closestVersion.toString();
-                }
-
-            } else if(environment) {
-                LogManager.warning(false, 'failed getting version from environment %s', environment);
-                
-                let version = Version.parse(constant.DefaultVersion);
-                LogManager.warning(false, 'using default version %s', version);
-
-                let closestVersion = Version.getClosest(version, folders);
-    
-                if(closestVersion) {
-                    versionNumber = closestVersion.toString();
-                }
-            }
-
-        }
-
-        if(!versionNumber) {
-            LogManager.warning(false, 'failed getting versionNumber');
-        } else {
-            this._versionNumber = versionNumber;
-        }
-
-        return versionNumber;
-    }
-
-    private getEndpointFile(endpointId:string):string {
-
-        if(endpointId.startsWith('endpoint_')) {
-            endpointId = endpointId.replace('endpoint_', '');
-        }
-
-        let extension = vscode.extensions.getExtension(constant.ExtensionId);
-        let versionNumber = this.getVersionNumber();
-        let file =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId + '.json');
-
-        if(!fs.existsSync(file)) {
-            file = null;
-        }
-
-        return file;
-    }
-
-    private getRestApiGlobalSpecificationFiles():string[] {
-
-        let extension = vscode.extensions.getExtension(constant.ExtensionId);
-        let versionNumber = this.getVersionNumber();
-        let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
-        let files:string[] = this.getFilesWithFolderPath(folderPath)
-                                        .filter(f=> f.endsWith('_common.json'))
-
-        return files;
-    }
-
-    private getRestApiSpecificationFiles():string[] {
-
-        let files:string[] = [];
-        let extension = vscode.extensions.getExtension(constant.ExtensionId);
-        let versionNumber = this.getVersionNumber();
-
-        if(versionNumber) {
-
-            LogManager.verbose('loading rest-api-spec for version %s', versionNumber);
-
-            let folderPath =  path.join(extension.extensionPath, 'resources', versionNumber, 'rest-api-spec');
-            files = this.getFilesWithFolderPath(folderPath)
-                                            .filter(f=> !f.endsWith('_common.json'))
-
-        }
-
-        return files;
-    }
-
-    private getFilesWithFolderPath(folderPath:string, filterWithPrefix:string='', filterWithExtension:string = '.json') {
-
-        let jsonFiles:string[] = [];
-
-        if(fs.existsSync(folderPath)) {
-
-            let files = fs.readdirSync(folderPath);
-
-            for(let file of files) {
-                const extension = path.extname(file);
-    
-                if(file.startsWith(filterWithPrefix)) {
-    
-                    if(extension === filterWithExtension) {
-                        jsonFiles.push( 
-                            path.join(folderPath, file)
-                        );
-                    }
-                }
-            }
-        }
-
-        return jsonFiles;
     }
 
     public static get(): ElasticsearchQueryCompletionManager {

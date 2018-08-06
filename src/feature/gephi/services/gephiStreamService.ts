@@ -3,8 +3,17 @@
 import * as request from 'request'
 import { Graph, Node, Edge } from "../../../models/graph";
 import { isObject } from 'util';
+import { LogManager } from '../../../managers/logManager';
 
 export class GephiStreamService {
+
+    private _url:string;
+    private _buffer:string[];
+
+    constructor(url:string) {
+        this._url = url;
+        this._buffer = [];
+    }
 
     public async syncGraph(graph:Graph) {
 
@@ -35,6 +44,7 @@ export class GephiStreamService {
         }
 
         pendingEdges.forEach(e=> this.syncEdge(e));
+        this.flush();
     }
 
     public async syncNode(node:Node) {
@@ -89,33 +99,64 @@ export class GephiStreamService {
 
     }
 
-    public async sendEvent(event:any) {
+    public async sendEvent(event:any, force:boolean = false) {
 
-        let output = JSON.stringify(event);
+        if(this._buffer.length > 20 || force) {
 
-        let options = {
-            method: 'POST',
-            url: 'http://localhost:8080/workspace1?operation=updateGraph',
-            body:output,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+            if(event) {
+                let output = JSON.stringify(event);
+                this._buffer.push(output);
+            }
+            
+
+            let url = this._url + '?operation=updateGraph';
+            let body = ''
+
+            while(this._buffer.length > 0){
+                if(body.length === 0) {
+                    body = this._buffer.pop();
+                } else {
+                    body += '\r\n' + this._buffer.pop();
+                }
+            }
+
+            body += '\r\n';
+
+            let options = {
+                method: 'POST',
+                url: this._url + '?operation=updateGraph',
+                body:body,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+    
+            return new Promise((resolve, reject) => {
+    
+                request(options, (error, response, body)=> {
+                    if(error) {
+                        LogManager.warning(false, 'failed streaming events to %s with error code %s', url, error.code);
+                        LogManager.warning(false, error.message);
+                        reject();
+                    } else {
+                        resolve();
+                    }
+                });
+    
+            });
+
+        } else {
+
+            if(event) {
+                let output = JSON.stringify(event);
+                this._buffer.push(output);
             }
         }
 
-        return new Promise((resolve, reject) => {
-
-            request(options, (error, response, body)=> {
-                if(error) {
-                    reject();
-                } else {
-                    console.log(output);
-                    resolve();
-                }
-            });
-
-        });
-
     }
 
+    private flush() {
+        this.sendEvent(null, true);
+    }
 }
