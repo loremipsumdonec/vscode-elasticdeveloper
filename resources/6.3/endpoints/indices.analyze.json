@@ -1,9 +1,5 @@
 {
     "__import_file": ["_analysis"],
-        "type": {
-            "__as_type":"string",
-            "__children_of": "token_filters"
-        },
         "text": {
             "__as_type": ["array", "string"]
         },
@@ -15,13 +11,28 @@
             "__as_type":"string",
             "__children_of": "tokenizers"
         },
-        "filter": [{
+        "filter": [
+            {
+                "__as_type":"string",
+                "__children_of": "token_filters"
+            },
+            {
             "type": {
                 "__as_type":"string",
                 "__children_of": "token_filters"
             }
         }],
-        "char_filter": [""],
+        "char_filter": [
+            {
+                "__as_type":"string",
+                "__children_of": "character_filters"
+            },
+            {
+                "type": {
+                    "__as_type":"string",
+                    "__children_of": "character_filters"
+            }
+        }],
         "normalizer": {
             "__as_type":"string",
             "__children_of": "normalization_token_filters"

@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 import * as constant from '../../../constant';
-import * as urlhelper from '../../../helpers/url';
 import * as fs from 'fs';
 import * as path from 'path'
 
@@ -12,23 +11,12 @@ import { EntityDocumentScanner, TokenType as EntityTokenType } from "../../../pa
 import { Graph, Node, Edge } from "../../../models/graph";
 import { EnvironmentManager } from '../../../managers/environmentManager';
 import { Version } from '../../../models/version';
-import { isObject, isArray, deprecate } from 'util';
+import { isObject, isArray } from 'util';
 import { PropertyToken } from '../../../models/propertyToken';
-import { GephiStreamService } from '../../gephi/services/gephiStreamService';
 import { IEndpoint } from '../models/iendpoint';
 import { LogManager } from '../../../managers/logManager';
-import { IQueryBodyContext } from '../models/iqueryBodyContext';
-import { TextToken } from '../../../models/textToken';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
-
-interface IRestApiEndpoints {
-    get:Graph;
-    put:Graph;
-    delete:Graph;
-    post:Graph;
-    head:Graph
-}
 
 export class ElasticsearchQueryCompletionManager {
     
@@ -537,10 +525,9 @@ export class ElasticsearchQueryCompletionManager {
 
         this.loadGraphWithEndpointId(endpointId);
 
-        /*
         if(!this._graphs[endpointId]) {
             this.loadGraphWithEndpointId(endpointId);
-        }*/
+        }
 
         return this._graphs[endpointId];
     }
@@ -644,90 +631,6 @@ export class ElasticsearchQueryCompletionManager {
         return children;
     }
 
-    private getNodesBasedOnContext(path:string, context:PropertyToken[], nodes:Node[], graph:Graph): Node[] {
-
-        let nodesBasedOnContext:Node[] = [];
-        let fieldNodes = nodes.filter(n=> n.data.isField);
-
-        while(fieldNodes.length > 0) {
-            let fieldNode = fieldNodes.pop();
-            let fieldNodePath = fieldNode.label;
-
-            if(path) {
-                fieldNodePath = path + '.' + fieldNode.label;
-            }
-
-            let contextToken = context.find(c=> c.text === fieldNode.label && c.path === fieldNodePath);
-            
-            if(contextToken && contextToken.propertyValueToken) {
-                let fieldNodeChild = this.getChildrenNodesWithParentNodeId(fieldNode, graph)
-                                                .find(n=> n.label === contextToken.propertyValueToken.text)
-
-                if(fieldNodeChild) {
-                    nodesBasedOnContext = this.getChildrenNodesWithParentNodeId(fieldNodeChild, graph);
-                    break;
-                }
-                
-            }
-
-        }
-
-        return nodesBasedOnContext;
-    }
-
-    private filterBasedOnContext(nodes:Node[], path:string, context:PropertyToken[]):Node[] {
-
-        let filtered: Node[] = [];
-
-        while(nodes.length > 0) {
-            let node = nodes.pop();
-            let propertyPath = path + '.' + node.label;
-
-            if(!path) {
-                propertyPath = node.label;
-            }
-
-            let exists = context.find(c=> c.path === propertyPath);
-
-            if(!exists) {
-                filtered.push(node);
-            }
-        }
-
-        return filtered;
-    }
-
-    private getNodeWithLabelBasedOnContext(label:string, path:string, context:PropertyToken[], nodes:Node[], graph:Graph): Node {
-
-        let node:Node = null;
-        let fieldNodes = nodes.filter(n=> n.data.isField);
-
-        while(fieldNodes.length > 0) {
-            let fieldNode = fieldNodes.pop();
-            let fieldNodePath = fieldNode.label;
-
-            if(path) {
-                fieldNodePath = path + '.' + fieldNode.label;
-            }
-
-            let contextToken = context.find(c=> c.text === fieldNode.label && c.path === fieldNodePath);
-            
-            if(contextToken && contextToken.propertyValueToken) {
-                let fieldNodeChild = this.getChildrenNodesWithParentNodeId(fieldNode, graph)
-                                                .find(n=> n.label === contextToken.propertyValueToken.text)
-
-                if(fieldNodeChild) {
-                    node = this.getChildrenNodesWithParentNodeId(fieldNodeChild, graph)
-                        .find(n=> n.label === label);
-                    break;
-                }
-            }
-
-        }
-
-        return node;
-    }
-
     public getNodesWithSteps(steps:string[], root:Node, graph:Graph, findNode: (node:Node) => string):Node[] {
 
         let children:Node[] = [];
@@ -780,58 +683,6 @@ export class ElasticsearchQueryCompletionManager {
         return children;
     }
 
-    private createCompletionItems(nodes:Node[], triggerCharacter:string): vscode.CompletionItem[] {
-
-        let completionItems:vscode.CompletionItem[] = [];
-
-        for(let node of nodes) {
-
-            let label:string = node.data.label;
-
-            if(!label) {
-                label = node.label;
-            }
-
-            let item = new vscode.CompletionItem(label, node.data.kind);
-            item.filterText = label.replace('{','').replace('}', '');
-
-            let snippet:string =  this.getCompletionItemSnippet(node, triggerCharacter);            
-
-            switch(item.kind) {
-                case vscode.CompletionItemKind.Class:
-                    item.insertText = new vscode.SnippetString(snippet + ': {$0\n}');
-                    break;
-                case vscode.CompletionItemKind.Enum:
-                    item.insertText = new vscode.SnippetString(snippet +': ["${0}"]');
-                    break;
-                case vscode.CompletionItemKind.Reference:
-                    item.insertText = new vscode.SnippetString(snippet +': [{${0}\n}]');
-                    break;
-                case vscode.CompletionItemKind.Field:
-                    if(node.data.defaultValue) {
-                        let defaultValue = node.data.defaultValue.toString().replace('{','').replace('}', '');
-                        item.insertText = new vscode.SnippetString(snippet +': "${2:' + defaultValue + '}"$0');
-                    } else {
-                        item.insertText = new vscode.SnippetString(snippet +': "${2}"$0');
-                    }
-                    break;
-                case vscode.CompletionItemKind.Value:
-                    item.insertText = new vscode.SnippetString(snippet);
-                    break;
-                case vscode.CompletionItemKind.Struct:
-                    item.insertText = new vscode.SnippetString('[{$0\n\t}]');
-                    break;
-                case vscode.CompletionItemKind.Method:
-                    item.insertText = new vscode.SnippetString(snippet);
-                    break;
-            }
-
-            completionItems.push(item);
-        }
-
-        return completionItems;
-    }
-
     private createTextSnippet(text:string):string {
 
         if(text && text.length > 0){
@@ -852,40 +703,6 @@ export class ElasticsearchQueryCompletionManager {
         }
 
         return text;
-    }
-
-    private getCompletionItemSnippet(node:Node, triggerCharacter:string):string {
-
-        let label:string = node.data.label;
-
-        if(!label) {
-            label = node.label;
-        }
-
-        if(triggerCharacter !== '"') {
-            label = '"'+ label +'"';
-        }
-
-        try{
-
-            let matches = label.match(/\{(\w+)\}/g);
-
-            if(matches) {
-    
-                let index = 1;
-    
-                for(let m of matches) {
-                    let key = m.substring(1, m.length - 1);
-                    label = label.replace(m, '${' + index + ':' + key + '}');
-                    index++;
-                }
-            }
-
-        }catch(ex) {
-        }
-
-        
-        return label;
     }
 
     private loadEndpointGraphs() {

@@ -272,7 +272,6 @@
 			"thai": {}
 		},
 		"normalizers": {
-
 		},
 		"tokenizers": {
 			"__children_of": ["word_oriented_tokenizers", "partial_word_oriented_tokenizers", "structured_text_tokenizers"]
