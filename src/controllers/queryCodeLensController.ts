@@ -103,8 +103,6 @@ export class QueryCodeLensController extends QueryController
             this._queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
         }
         
-        this._queryCodeLensProviders.push(this.createShowUrlCodeLens);
-        this._queryCodeLensProviders.push(this.createHasBodyCodeLens);
     }
 
     private createConfigurationRunAllCodeLens(configuration:any, document:ElasticsearchQueryDocument, range:vscode.Range): vscode.CodeLens {
