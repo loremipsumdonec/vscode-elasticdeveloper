@@ -1,8 +1,8 @@
 {
   "name": "elasticdeveloper",
   "displayName": "Elasticsearch Developer tool",
-  "description": "Create Elasticsearch Query DSL from vscode",
-  "version": "1.1.0",
+  "description": "Has autocomplete support and other features",
+  "version": "1.2.0",
   "license": "MIT",
   "preview": false,
   "publisher": "crasnam",
