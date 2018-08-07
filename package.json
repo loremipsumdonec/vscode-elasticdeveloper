@@ -38,6 +38,11 @@
           "type": "boolean",
           "default": "true",
           "description": "Enable Code lens 'open endpoint documentation'"
+        },
+        "elasticdeveloper.intelliSense.enabled": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Enable intelliSense support"
         }
       }
     },

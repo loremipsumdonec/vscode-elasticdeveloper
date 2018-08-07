@@ -1,0 +1,13 @@
+{
+    "__import_file": ["_query_dsl"],
+    "__templates": {
+        "index_aliases": {
+            "{alias}": {
+                "filter": {
+                    "__children_of": "query_dsl"
+                },
+                "routing": "{value}"
+            }
+        }
+    }
+}

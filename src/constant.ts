@@ -72,6 +72,7 @@ export const EnvironmentExplorerCommandOpenFile = 'environment.openFile.fromExpl
  export const IntelliSenseCommandStreamGraph = 'intelliSense.streamGraph';
  export const IntelliSenseCodeLensCommandOpenEndpointDocumentation = 'intelliSense.openEndpointDocumentation.fromCodeLens';
  export const IntelliSenseConfigurationCodeLensCommandOpenEndpointDocumentationEnabled = Name + '.intelliSense.openEndpointDocumentation.enabled';
+ export const IntelliSenseConfigurationEnabled = Name + '.intelliSense.enabled';
 
  /**
   * Endpoint

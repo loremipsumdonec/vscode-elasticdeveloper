@@ -1,0 +1,22 @@
+{
+    "create": {
+        "_index": "{index}",
+        "_type": "{type}",
+        "_id": ""
+    },
+    "delete": {
+        "_index": "{index}",
+        "_type": "{type}",
+        "_id": ""
+    },
+    "index": {        
+        "_index": "{index}",
+        "_type": "{type}",
+        "_id": ""},
+    "update": {
+        "_index": "{index}",
+        "_type": "{type}",
+        "_id": ""
+    },
+    "{field}": "{value}"
+}

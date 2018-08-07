@@ -25,7 +25,8 @@ import { IntellisenseCommandController } from './feature/intelliSense/controller
 export function activate(context: vscode.ExtensionContext) {
 
     let configuration = vscode.workspace.getConfiguration();
-    
+    let value = configuration.get(constant.IntelliSenseConfigurationEnabled);
+
     LogManager.verbose('elasticdeveloper extension activated');
     LogManager.verbose('elasticdeveloper decorating EnvironmentManager');
 
@@ -37,7 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
     let controllers: Controller[] = [];
     controllers.push(new QueryCodeLensController());
     controllers.push(new QueryCommandController());
-    controllers.push(new QueryCompletionItemController());
     controllers.push(new EnvironmentCodeLensController());
     controllers.push(new EnvironmentCommandController());
     controllers.push(new EnvironmentTreeDataProviderController());
@@ -46,7 +46,11 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new IndexCommandController());
     controllers.push(new ScriptCommandController());
     controllers.push(new IntellisenseCommandController());
-
+    
+    if(value) {
+        controllers.push(new QueryCompletionItemController());
+    }
+    
     LogManager.verbose('elasticdeveloper register controllers');
 
     for(let controller of controllers) {

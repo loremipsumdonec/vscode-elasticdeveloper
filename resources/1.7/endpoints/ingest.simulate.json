@@ -1,0 +1,13 @@
+{
+    "pipeline": {},
+    "docs":[
+        {
+            "_index": "{index}",
+            "_type": "",
+            "_id": "",
+            "_source": {
+                "{field}": "{value}"
+            }
+        }
+    ]
+}

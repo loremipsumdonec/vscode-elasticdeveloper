@@ -1,0 +1,19 @@
+{
+    "docs": [
+        {
+            "_index": "{index}",
+            "_type": "",
+            "_id": "",
+            "term_statistics": true,
+            "fields":[],
+            "ids": [],
+            "parameters": {
+                "fields": [],
+                "term_statistics": true
+            },
+            "doc": {
+                "{field}": "{value}"
+            }
+        }
+    ]
+}

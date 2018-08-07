@@ -1,0 +1,56 @@
+{
+    "__templates": {
+        "request_template": {
+            "id": "",
+            "request": {
+                "query": {}
+            },
+            "ratings": [{
+              "_index": "{index}",
+              "_id": "",
+              "rating" : 1,
+              "template_id": "",
+              "params": {
+                  "{parameter}": "{value}"
+              }
+            }]
+        },
+        "metrics": {
+            "precision": {
+                "k": 10,
+                "relevant_rating_threshold": 1,
+                "ignore_unlabeled": false
+            },
+            "mean_reciprocal_rank": {
+                "k": 10,
+                "relevant_rating_threshold": 1
+            },
+            "dcg": {
+                "k": 10,
+                "normalize": true
+            },
+            "expected_reciprocal_rank": {
+                "k": 10,
+                "maximum_relevance": 3
+            }
+        }
+    },
+    "templates": [
+        {
+            "id": "",
+            "template": {
+                "inline": {
+                    "query": {}
+                }
+            }
+        }
+    ],
+    "requests": [
+        {
+            "__children_of": "request_template"
+        }
+    ],
+    "metric": {
+        "__children_of": "metrics"
+    }
+}

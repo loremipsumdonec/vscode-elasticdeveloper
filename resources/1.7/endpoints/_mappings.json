@@ -1,0 +1,59 @@
+{
+    "__templates": {
+        "field_datatypes": {
+            "__children_of": ["field_datatypes_string", "field_datatypes_numeric", "field_datatypes_range"],
+            "date": {},
+            "boolean": {},
+            "binary":  {},
+            "ip": {},
+            "geo_point": {},
+            "geo_shape": {},
+            "completion": {},
+            "nested": {},
+            "token_count": {},
+            "murmur3": {},
+            "percolator": {},
+            "join": {}
+        },
+        "field_datatypes_string": {
+            "text": {},
+            "keyword": {}
+        },
+        "field_datatypes_numeric": {
+            "long": {},
+            "integer": {},
+            "short": {},
+            "byte": {},
+            "double": {},
+            "float": {},
+            "half_float": {},
+            "scaled_float": {}
+        },
+        "field_datatypes_range": {
+            "integer_range": {},
+            "float_range": {},
+            "long_range": {},
+            "double_range": {},
+            "date_range": {}
+        },
+        "mappings_properties": {
+            "properties": {
+                "{field}": {
+                    "type": {
+                        "__as_type": "string",
+                        "__children_of": "field_datatypes"
+                    },
+                    "fields": {
+                        "__children_of": "mappings_properties/properties"
+                    },
+                    "__children_of": "mappings_properties"
+                }
+            }
+        },
+        "index_mappings": {
+            "{_doc}": {
+                "__children_of": "mappings_properties"
+            }
+        }
+    }
+}

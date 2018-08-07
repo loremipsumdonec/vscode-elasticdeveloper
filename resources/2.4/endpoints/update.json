@@ -1,0 +1,12 @@
+{
+    "{field}": "{value}",
+    "doc": {
+        "{field}": "{value}"
+    },
+    "upsert": {
+        "{field}": "{value}"
+    },
+    "scripted_upsert": true,
+    "doc_as_upsert": true,
+    "script": {}
+}
