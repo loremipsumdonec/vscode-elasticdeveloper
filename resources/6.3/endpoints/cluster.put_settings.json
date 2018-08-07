@@ -1,8 +1,11 @@
 {
+    "__import_file": ["_index_settings"],
     "persistent": {
-        "{setting}": ""
+        "__children_of": ["index_settings_dynamic"],
+        "{setting}": "{value}"
     },
     "transient": {
-        "{setting}": ""
+        "__children_of": ["index_settings_dynamic"],
+        "{setting}": "{value}"
     }
 }

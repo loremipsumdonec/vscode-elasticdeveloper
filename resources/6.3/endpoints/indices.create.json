@@ -1,5 +1,5 @@
 {
-    "__import_file": ["_index_settings", "_mappings", "_aliases"],
+    "__import_file": ["_index_settings", "_mappings", "_aliases", "_analysis"],
     "settings": {
         "index": {
             "__children_of": "index_settings"
@@ -8,15 +8,15 @@
         "analysis": {
             "analyzer": {
                 "{name}": {
-                    "type": "{standard}",
-                    "filter": []
+                    "type": {
+                        "__as_type":"string",
+                        "__children_of": "analyzers"
+                    }
                 }
             },
             "normalizer": {
                 "{name}": {
-                    "type": "{custom}",
-                    "char_filter": [],
-                    "filter": []
+                    "type": "{custom}"
                 }
             },
             "tokenizer": {

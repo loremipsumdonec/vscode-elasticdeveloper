@@ -232,13 +232,7 @@ export class ElasticsearchQueryCompletionManager {
         let token = entityDocumentScanner.scanUntilPosition(offsetInBody) as PropertyToken;
         let tokens = entityDocumentScanner.store;
         
-        //let context = getContextFromQueryBody()
-        //context.token.current, context.token.steps, context.token.tokens
-        //context.edge.current, context.edge.edges, context.edge.visited
-        //context.graph
-
         if(token) {
-            //graph = graphManager.getGraphWithEndpointId();
             let graph = this.getGraphWithEndpointId(query.endpointId);
 
             if(graph) {
@@ -261,9 +255,9 @@ export class ElasticsearchQueryCompletionManager {
                 let node:Node = undefined;
                 let visited:Edge[] = [];
 
-                let getNode:((step:string, edges:Edge[], visited:Edge[], graph:Graph)=> Node)[] = [];
+                let getNode:((step:string, token:PropertyToken, tokens:PropertyToken[], edges:Edge[], visited:Edge[], graph:Graph)=> Node)[] = [];
                 getNode.push(
-                    (step, edges, visited, graph) => {
+                    (step, token, tokens, edges, visited, graph) => {
 
                         for(let edge of edges) {
                             let n = graph.getNodeWithId(edge.targetId);
@@ -277,7 +271,47 @@ export class ElasticsearchQueryCompletionManager {
                 );
 
                 getNode.push(
-                    (step, edges, visited, graph) => {
+                    (step, token, tokens, edges, visited, graph) => {
+
+                        for(let edge of edges) {
+                            let targetNode = graph.getNodeWithId(edge.targetId);
+                            let contextToken = tokens.find(t=> t.depth === token.depth && t.text === targetNode.label);
+
+                            if(contextToken) {
+  
+                                let edgesBasedOnContext = graph.getEdgesWithSourceId(edge.targetId);
+
+                                for(let e of edgesBasedOnContext) {
+                                    let contextNode = graph.getNodeWithId(e.targetId);
+                                    let contextNodeEdges = graph.getEdgesWithSourceId(contextNode.id);
+
+                                    for(let contextNodeEdge of contextNodeEdges) {
+                                        let node = graph.getNodeWithId(contextNodeEdge.targetId);
+
+                                        if(node.label === contextToken.propertyValueToken.text) {
+
+                                            let edges = graph.getEdgesWithSourceId(node.id);
+
+                                            for(let edge of edges) {
+                                                let node = graph.getNodeWithId(edge.targetId);
+
+                                                if(node.label === step) {
+                                                    visited.push(edge);
+                                                    return node;
+                                                }
+                                            }
+                                        }
+                                    } 
+                                }
+                            }
+
+                        }
+
+                    return null;
+                });
+
+                getNode.push(
+                    (step, token, tokens, edges, visited, graph) => {
 
                         for(let edge of edges) {
                             let n = graph.getNodeWithId(edge.targetId);
@@ -295,7 +329,6 @@ export class ElasticsearchQueryCompletionManager {
                     let path = undefined;
                     let foundNextNode = false;
 
-                    //path = buildTokenPathWithDepth(depth)
                     if(depth > 0) {
                         for(let index = 0; index < depth; index++) {
                             if(path) {
@@ -326,7 +359,7 @@ export class ElasticsearchQueryCompletionManager {
                         }
 
                         for(let fn of getNode) {
-                            node = fn.call(this, step, edges, visited, graph);
+                            node = fn.call(this, step, currentTokenAtThisDepth, tokens, edges, visited, graph);
 
                             if(node) {
                                 foundNextNode = true
@@ -571,6 +604,7 @@ export class ElasticsearchQueryCompletionManager {
 
         if(text && text.length > 0){
 
+            text = text.replace('{{', '{').replace('}}', '}');
             let matches = text.match(/\{([\w| ]+)\}/g);
 
             if(matches) {

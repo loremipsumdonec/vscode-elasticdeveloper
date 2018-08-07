@@ -188,7 +188,14 @@
 			"Turkish": {}
 		},
         "analyzers": {
-			"standard": {},
+			"standard": {
+				"max_token_length": 255,
+				"stopwords": {
+					"__as_type": "string",
+					"__children_of": "languages"
+				},
+				"stopwords_path": "{file}"
+			},
 			"simple": {},
 			"whitespace": {},
 			"stop": {

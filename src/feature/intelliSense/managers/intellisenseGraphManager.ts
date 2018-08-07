@@ -133,19 +133,37 @@ export class IntellisenseGraphManager {
             let edges = graph.findEdges(edge=> edge.kind === 'children_of');
 
             for(let edge of edges) {
-                let children = graph.getOutgoingNodes(edge.targetId);
-                let source = graph.getNodeWithId(edge.sourceId);
+                let incomingEdges = graph.findEdges(e=> e.targetId == edge.sourceId && e.kind !== 'children_of');
 
-                for(let child of children) {
+                if(incomingEdges.length > 0) {
+                    let stack:Edge[] = graph.findEdges(e=> e.sourceId == edge.sourceId && e.kind === 'children_of');
+                    let children:string[] = [];
+                    let visited:string[] = [];
                     
-                    child.data.types.forEach(t=>
-                        graph.addEdge(edge.sourceId, child.id, null, t)
-                    );
+                    while(stack.length > 0) {
+                        let current = stack.pop();
 
-                    /*
-                    source.data.types.forEach(t=>
-                        graph.addEdge(edge.sourceId, child.id, null, t)
-                    );*/
+                        if(!visited.find(v => v === current.targetId)) {
+                            visited.push(current.targetId);
+
+                            if(current.kind === 'children_of') {
+                                let childrenOfEdges = graph.getEdgesWithSourceId(current.targetId);
+                                childrenOfEdges.forEach(e => stack.push(e));
+                            } else {
+                                children.push(current.targetId);
+                            }
+
+                        }
+
+                    }
+
+                    for(let childNodeId of children) {
+                        let child = graph.getNodeWithId(childNodeId);
+
+                        child.data.types.forEach(t=>
+                            graph.addEdge(edge.sourceId, child.id, null, t)
+                        );
+                    }
                 }
             }
 
@@ -259,26 +277,56 @@ export class IntellisenseGraphManager {
                                 types.push(type);
                             }
     
-                            graph.addNode(nodeId, key, { 
-                                id: key,
-                                types: types,
-                                depth: context.depth 
-                            });
-    
-                            types.forEach(t=> 
-                                graph.addEdge(path, nodeId, null, t)
-                            );
+                            if(current.__object || current.__string) {
+                                
+                                if(current.__object) {
 
-                            stack.push({ source:current, path: nodeId, types: types, depth: context.depth + 1})
+                                    graph.addNode(nodeId + '-object', key, { 
+                                        id: key,
+                                        types: ['object'],
+                                        depth: context.depth 
+                                    });
+    
+                                    graph.addEdge(path, nodeId + '-object', null, 'object');
+                                    stack.push({ source:current.__object, path: nodeId + '-object', types: ['object'], depth: context.depth + 1});
+                                }
+
+                                if(current.__string) {
+
+                                    graph.addNode(nodeId + '-string', key, { 
+                                        id: key,
+                                        types: ['string'],
+                                        depth: context.depth 
+                                    });
+    
+                                    graph.addEdge(path, nodeId + '-string', null, 'string');
+                                    stack.push({ source:current.__string, path: nodeId + '-string', types: ['string'], depth: context.depth + 1});
+                                }
+
+                            } else {
+                                stack.push({ source:current, path: nodeId, types: types, depth: context.depth + 1});
+                            
+                                graph.addNode(nodeId, key, { 
+                                    id: key,
+                                    types: types,
+                                    depth: context.depth 
+                                });
+
+                                types.forEach(t=> 
+                                    graph.addEdge(path, nodeId, null, t)
+                                );
+                            }
     
                         } else {
     
                             let type = typeof(current);
+                            let defaultValue = current;
+
                             types.push(type);
 
                             graph.addNode(nodeId, key, { 
                                 id: key, 
-                                defaultValue: current.toString(),
+                                defaultValue: defaultValue,
                                 types: types,
                                 depth:context.depth 
                             });

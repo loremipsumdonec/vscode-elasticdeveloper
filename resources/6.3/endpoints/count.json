@@ -1,2 +1,6 @@
 {
+    "__import_file": ["_query_dsl"],
+	"query": {
+		"__children_of": "query_dsl"
+	}
 }

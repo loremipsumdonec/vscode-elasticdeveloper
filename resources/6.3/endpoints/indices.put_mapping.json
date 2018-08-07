@@ -1,7 +1,10 @@
 {
     "__templates": {
         "field": {
-            "type": "{type}",
+            "type": {
+                "__as_type": "string",
+                "__children_of": "field_types"
+            },
             "fields": {
                 "{field}": {
                     "__children_of": "field"

@@ -7,10 +7,20 @@
             "__as_type":"string",
             "__children_of": "analyzers"
         },
-        "tokenizer": {
-            "__as_type":"string",
-            "__children_of": "tokenizers"
-        },
+        "tokenizer": 
+            {
+                "__string": {
+                    "__as_type": "string",
+                    "__children_of": "tokenizers"
+                },
+                "__object": {
+                    "__as_type": "object",
+                    "type": {
+                        "__as_type":"string",
+                        "__children_of": "tokenizers"
+                    }
+                }
+            },
         "filter": [
             {
                 "__as_type":"string",

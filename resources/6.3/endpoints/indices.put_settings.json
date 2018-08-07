@@ -1,13 +1,15 @@
 {
-    "__import_file": ["_index_settings"],
+    "__import_file": ["_index_settings", "_analysis"],
     "index": {
         "__children_of": "index_settings"
     },
     "analysis": {
         "analyzer": {
             "{name}": {
-                "type": "{standard}",
-                "filter": []
+                "type": {
+                    "__as_type":"string",
+                    "__children_of": "analyzers"
+                }
             }
         },
         "normalizer": {
