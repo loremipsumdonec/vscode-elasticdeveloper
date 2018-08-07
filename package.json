@@ -1,8 +1,8 @@
 {
   "name": "elasticdeveloper",
   "displayName": "Elasticsearch Developer tool",
-  "description": "Create Elasticsearch Query DSL from vscode",
-  "version": "1.1.0",
+  "description": "Has autocomplete support and other features",
+  "version": "1.2.0",
   "license": "MIT",
   "preview": false,
   "publisher": "crasnam",
@@ -32,12 +32,17 @@
   "main": "./out/extension",
   "contributes": {
     "configuration": {
-      "title": "Elastic Developer",
+      "title": "Elasticsearch Developer tool",
       "properties": {
-        "elasticdeveloper.configuration.feature.explorer.enabled": {
+        "elasticdeveloper.intelliSense.openEndpointDocumentation.enabled": {
           "type": "boolean",
           "default": "true",
-          "description": "Toggle Elasticsearch explorer feature, prototype version"
+          "description": "Enable Code lens 'open endpoint documentation'"
+        },
+        "elasticdeveloper.intelliSense.enabled": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Enable intelliSense support"
         }
       }
     },
@@ -97,6 +102,14 @@
       {
         "command": "elasticdeveloper.explorer.refreshNode.fromExplorer",
         "title": "Refresh"
+      },
+      {
+        "command": "elasticdeveloper.intelliSense.streamGraph",
+        "title": "Stream intelliSense graph to Gephi"
+      },
+      {
+        "command": "elasticdeveloper.intelliSense.openEndpointDocumentation.fromEditorContext",
+        "title": "Open endpoint documentation"
       }
     ],
     "menus": {
@@ -129,7 +142,13 @@
       ],
       "editor/title/context": [],
       "editor/title": [],
-      "editor/context": [],
+      "editor/context": [
+        {
+          "command": "elasticdeveloper.intelliSense.openEndpointDocumentation.fromEditorContext",
+          "when": "resourceExtname == .esquery",
+          "group": "navigation"
+        }
+      ],
       "commandPalette": [],
       "view/item/context": [
         {

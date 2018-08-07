@@ -5,7 +5,7 @@ export const Publisher = 'crasnam';
 export const ExtensionId = Publisher + '.' + Name;
 export const WorkspaceStateEnvironmentPath = 'environment.path';
 export const CommandPrefix = Name;
-export const DefaultRestAPIVersion = '6.2.3';
+export const DefaultVersion = '6.3';
 
 /**
  *  ElasticsearchQuery
@@ -62,12 +62,18 @@ export const EnvironmentCommandSetAsTarget = 'environment.setAsTarget';
 export const EnvironmentExplorerCommandOpenFile = 'environment.openFile.fromExplorer';
 
 /**
- * Configuration
- */
-export const ConfigurationFeatureExplorerEnabled = Name + '.configuration.feature.explorer.enabled';
-
-/**
  * ExplorerCommandRefreshNode
  */
-
  export const ExplorerCommandRefreshNode = 'explorer.refreshNode.fromExplorer';
+
+ /**
+  * IntelliSense
+  */
+ export const IntelliSenseCommandStreamGraph = 'intelliSense.streamGraph';
+ export const IntelliSenseCodeLensCommandOpenEndpointDocumentation = 'intelliSense.openEndpointDocumentation.fromCodeLens';
+ export const IntelliSenseConfigurationCodeLensCommandOpenEndpointDocumentationEnabled = Name + '.intelliSense.openEndpointDocumentation.enabled';
+ export const IntelliSenseConfigurationEnabled = Name + '.intelliSense.enabled';
+
+ /**
+  * Endpoint
+  */

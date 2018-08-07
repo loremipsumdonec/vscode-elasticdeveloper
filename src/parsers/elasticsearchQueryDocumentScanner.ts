@@ -21,6 +21,10 @@ export enum ScannerState {
     WithinConfiguration,
     AfterMethod,
     AfterCommand,
+    WithinQueryString,
+    AfterQueryStringName,
+    BeforeQueryStringValue,
+    AfterQueryString,
     WithinInput,
     AfterArgumentName,
     BeforeArgumentValue,
@@ -35,6 +39,8 @@ export enum TokenType {
     Command,
     Method,
     Input,
+    QueryString,
+    QueryStringValue,
     Argument,
     ArgumentValue,
     Body,
@@ -43,7 +49,6 @@ export enum TokenType {
 
 export class ElasticsearchQueryDocumentScanner {
 
-    private _direction:Direction;
     private _source:string;
     private _stream:TextStream;
     private _state:ScannerState;
@@ -168,10 +173,10 @@ export class ElasticsearchQueryDocumentScanner {
 
         let token = null;
 
-        if(this._state == ScannerState.AfterCommand) {
-            if(this._stream.char === '(') {
-                this._state = ScannerState.WithinInput;
-            }
+        if(this._stream.char === '(') {
+            this._state = ScannerState.WithinInput;
+        } else if(this._stream.char === '?') {
+            this._state = ScannerState.WithinQueryString
         }
 
         switch(this._state) {
@@ -195,9 +200,13 @@ export class ElasticsearchQueryDocumentScanner {
             case ScannerState.AfterMethod:
                 token = this.getCommandToken();
                 break;
+            case ScannerState.WithinQueryString:
+                token = this.getQueryStringToken();
+                break;
             case ScannerState.WithinInput:
                 token = this.getArgumentToken();
                 break;
+            case ScannerState.AfterQueryString:
             case ScannerState.AfterInput:
             case ScannerState.AfterCommand:
                 token = this.getBodyToken();
@@ -337,7 +346,7 @@ export class ElasticsearchQueryDocumentScanner {
     private getCommandToken(): TextToken {
 
         let token = null;
-        let command = this._stream.advanceUntilRegEx(/[^\(|\{|\n|\s]+/);
+        let command = this._stream.advanceUntilRegEx(/[^\?|\(|\{|\n|\s]+/);
 
         if(command) {
 
@@ -353,7 +362,7 @@ export class ElasticsearchQueryDocumentScanner {
 
             this._stream.advanceUntilNonWhitespace();
 
-            if(this._stream.char === '(' || this._stream.char === '{') {
+            if(this._stream.char === '?' || this._stream.char === '(' || this._stream.char === '{') {
                 this._state = ScannerState.AfterCommand;
             } else if(this._stream.position > token.offsetEnd) {
                 this._state = ScannerState.WithinContent;
@@ -364,6 +373,37 @@ export class ElasticsearchQueryDocumentScanner {
 
         return token;
 
+    }
+
+    private getQueryStringToken():PropertyToken {
+
+        let token = null;
+
+        if(this.isNotEndOfStream) {
+
+            if(this._stream.char === '?' || this._stream.char === '&') {
+                this._stream.advance();
+                let argumentName = this._stream.advanceUntilRegEx(/[\=|\&|\(|\{|\n]/, true);
+    
+                token = propertyTokenFactory.createPropertyToken(
+                    argumentName, 
+                    this._stream.position - argumentName.length,
+                    TokenType.QueryString
+                );
+    
+                token.propertyValueToken = this.getQueryStringValueToken();
+                this._stream.advanceUntilNonWhitespace();
+            }
+    
+            if(this._stream.char == '(' || this._stream.char == '{') {
+                this._state = ScannerState.AfterQueryString
+            } else {
+                this._state = ScannerState.WithinQueryString
+            }
+
+        }
+
+        return token;
     }
 
     private getArgumentToken(): PropertyToken {
@@ -403,6 +443,53 @@ export class ElasticsearchQueryDocumentScanner {
 
         } else {
             this._state = ScannerState.WithinInput;
+        }
+
+        return token;
+    }
+
+    private getQueryStringValueToken(): TextToken {
+
+        let token = null;
+        this._stream.advanceUntilNonWhitespace();
+
+        if(this._stream.char === '=') {
+
+            let lastPosition = this._stream.position;
+            this._stream.advanceUntilNonWhitespace(1);
+
+            if(this.isNotEndOfStream) {
+                let char = this._stream.char;
+
+                if(char === '"') {
+                    token = this.getArgumentStringValueToken();
+        
+                    if(token) {
+                        token.type = TokenType.QueryStringValue;
+                    }
+        
+                } else {
+        
+                    let value = this._stream.advanceUntilRegEx(/[\&|\(|\{|\n)]/, true);
+        
+                    if(value) {
+                        value = value.trim();
+                    }
+        
+                    token = textTokenFactory.createTextToken(
+                        value, 
+                        this._stream.position - value.length, 
+                        TokenType.QueryStringValue);
+                }
+
+            } else {
+
+                    token = textTokenFactory.createTextToken(
+                    '', 
+                    lastPosition + 1, 
+                    TokenType.QueryStringValue);
+
+            }
         }
 
         return token;
@@ -504,11 +591,7 @@ export class ElasticsearchQueryDocumentScanner {
     private getBodyToken(openingChar='{', closingChar='}'): TextToken {
 
         let token = null;
-        
-        let hasFoundStartBody:boolean = false;
-        let hasFoundEndBody:boolean = false;
         let startTagsTicks = 0;
-
         let body = '';
 
         while(!this._stream.endOfStream) {
@@ -537,12 +620,15 @@ export class ElasticsearchQueryDocumentScanner {
             this._stream.advance();
         }
 
-        if(this._state === ScannerState.AfterBody) {
+        if(body) {
 
             token = textTokenFactory.createTextToken(
                 body, 
                 this._stream.position - body.length,
                 TokenType.Body);
+        }
+
+        if(this._state === ScannerState.AfterBody) {
 
             this._stream.advanceUntilNonWhitespace();
 
@@ -551,6 +637,13 @@ export class ElasticsearchQueryDocumentScanner {
             } else {
                 this._state = ScannerState.WithinContent;
             }
+        } else {
+
+            if(token) {
+                token.isValid = false;
+            }
+            
+            this._state = ScannerState.WithinContent;
         }
 
         return token;

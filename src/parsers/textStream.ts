@@ -60,8 +60,29 @@ export class TextStream {
         this._position = value;
     }
 
+    public get prevChar(): string {
+
+        try{
+            return this._source[this.position - 1];
+        } catch{
+
+        }
+
+        return null;
+    }
+
     public get char(): string {
         return this._source[this.position];
+    }
+
+    public get peekNextChar(): string {
+        try{
+            return this._source[this.position + 1];
+        } catch{
+            
+        }
+
+        return null;
     }
 
     public retreat(n:number = 1) {

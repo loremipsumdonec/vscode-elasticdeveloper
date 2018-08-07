@@ -1,0 +1,14 @@
+{
+    "docs": [
+        {
+            "_index": "{index}",
+            "_type": "",
+            "_id": "",
+            "_source" : {
+                "include":[],
+                "exclude": []
+            },
+            "stored_fields":[]
+        }
+    ]
+}

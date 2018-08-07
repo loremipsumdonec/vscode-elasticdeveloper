@@ -80,9 +80,13 @@ export abstract class Controller {
 
     protected initiate() {
         this.registerCommands();
+        this.registerEventSubscriptions();
     }
 
     protected registerCommands() {
+    }
+
+    protected registerEventSubscriptions() {
     }
 
     protected getCommand(partialCommand): string {

@@ -7,6 +7,16 @@ export class TextToken {
     private _index: number = 0;
     private _path:string;
     private _text:string;
+    private _isValid:boolean = true;
+    private _depth:number = -1;
+
+    public get isValid():boolean {
+        return this._isValid;
+    }
+
+    public set isValid(value:boolean) {
+        this._isValid = value;
+    }
 
     public get type():number {
         return this._type;
@@ -25,7 +35,12 @@ export class TextToken {
     }
 
     public get offsetEnd():number {
-        return this._offset + this._text.length;
+
+        if(this.hasText) {
+            return this._offset + this._text.length;
+        }
+
+        return this._offset;
     }
 
     public get index():number {
@@ -36,12 +51,20 @@ export class TextToken {
         this._index = index;
     }
 
+    public get depth():number {
+        return this._depth;
+    }
+
     public get path():string {
         return this._path;
     }
 
     public set path(value:string) {
         this._path = value;
+        
+        if(this._path) {
+            this._depth = this._path.split('.').length - 1;
+        }
     }
 
     public get text():string {
@@ -54,6 +77,10 @@ export class TextToken {
 
     public get hasText():boolean {
         return (this._text && this._text.length > 0);
+    }
+
+    public isInRange(offset:number):boolean {
+        return this.offset <= offset && offset <= this.offsetEnd
     }
 }
 

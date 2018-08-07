@@ -1,0 +1,30 @@
+{
+    "actions": [
+        {
+            "add": {
+                "index": "{index}",
+                "indices": [],
+                "alias": "{value}",
+                "aliases": [],
+                "filter": {
+                    "term": {
+                        "{field}": "{value}"
+                    }
+                },
+                "routing": "",
+                "search_routing": "",
+                "index_routing": "",
+                "is_write_index": true
+            },
+            "remove": {
+                "index": "{index}",
+                "indices": [],
+                "alias": "{value}",
+                "aliases": []
+            },
+            "remove_index": {
+                "index": "{index}"
+            }
+        }
+    ]
+}

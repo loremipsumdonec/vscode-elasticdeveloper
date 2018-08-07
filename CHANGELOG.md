@@ -2,10 +2,19 @@
 All notable changes to the "Elasticsearch Developer tool" extension will be documented in this file.
 
 ## [Future]
-- Better Autocomplete support, include existing indicies, aliases, etc from target environment
+- Better Intellisense should also include existing indicies, aliases, etc from target environment
+- Create a language server
 - Rebuild syntax highlight
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
+
+## [1.2.0] - 2018-08-07
+### Added
+- Open REST API endpoint documentation
+- Autocomplete support
+### Fixed
+- Better autocomplete support for REST API
+    - Has support for query strings
 
 ## [1.1.0] - 2018-07-09
 ### Added

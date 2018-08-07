@@ -1,6 +1,5 @@
 'use strict'
 
-import * as textTokenFactory from '../models/textToken';
 import * as entityDocumentScannerFactory from './entityDocumentScanner'
 
 import { TextToken } from '../models/textToken';
@@ -8,6 +7,7 @@ import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 import { Configuration } from '../models/configuration';
 import { ElasticsearchQueryDocumentScanner, ScannerState, TokenType } from './elasticsearchQueryDocumentScanner';
 import { LogManager } from '../managers/logManager';
+import { ElasticsearchQueryCompletionManager } from '../feature/intelliSense/managers/elasticsearchQueryCompletionManager';
 
 export class ElasticsearchQueryDocument {
 
@@ -83,6 +83,8 @@ export class ElasticsearchQueryDocument {
                         document.addQuery(currentQuery);
                     } else if(token.type === TokenType.Command) {
                         currentQuery.addTextToken(token);
+                    } else if(token.type === TokenType.QueryString) {
+                        currentQuery.addTextToken(token);
                     } else if(token.type === TokenType.Argument) {
                         currentQuery.addTextToken(token);
                     } else if(token.type === TokenType.Body) {
@@ -106,8 +108,20 @@ export class ElasticsearchQueryDocument {
                 token = scanner.scan();
             }
 
+            if(document.hasQueries) {
+
+                let manager:ElasticsearchQueryCompletionManager = ElasticsearchQueryCompletionManager.get();
+
+                for(let query of document.queries) {
+                    if(query.hasCommand) {
+                        query.endpointId = manager.getEndpointIdWithQuery(query);
+                    }
+                }
+            }
+
         }catch(ex) {
             LogManager.error(false, 'failed parse ElasticSearchQueryDocument %s', ex.message);
+            LogManager.error(false, ex.stack);
         }
 
         return document;
@@ -118,16 +132,10 @@ export class ElasticsearchQueryDocument {
         let query:ElasticsearchQuery = null;
         let document = ElasticsearchQueryDocument.parse(text);
 
-        if(document.queries.length > 0) {
-
-            for(let current of document.queries) {
-                let first = current.textTokens[0];
-                let last = current.textTokens[current.textTokens.length - 1];
-
-                if(first.offset <= offset && offset <= last.offsetEnd) {
-                    query = current;
-                    break;
-                }
+        for(let current of document.queries) {
+            if(current.isInRange(offset)) {
+                query = current;
+                break;
             }
         }
 
@@ -140,11 +148,7 @@ export class ElasticsearchQueryDocument {
 
             for(let name in configuration.params) {
                 let key = '{{' + name + '}}';
-
-                /** 
-                 *  don’t know why I need two of these in some cases.. ¯\_(ツ)_/¯. 
-                 *  It's always fun with more
-                 */
+                
                 bodyToken.text = bodyToken.text.replace(key, configuration.params[name]);
                 bodyToken.text = bodyToken.text.replace(key, configuration.params[name]);
             }

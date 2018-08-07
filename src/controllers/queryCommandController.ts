@@ -2,10 +2,11 @@
 
 import * as vscode from 'vscode';
 import * as constant from '../constant';
+import * as fs from 'fs';
+import * as path from 'path'
 
 import { QueryController } from './queryController';
 import { ElasticsearchQueryDocument} from '../parsers/elasticSearchQueryDocument';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
 
 export class QueryCommandController extends QueryController {
 
@@ -43,5 +44,4 @@ export class QueryCommandController extends QueryController {
         }
         
     }
-
 }

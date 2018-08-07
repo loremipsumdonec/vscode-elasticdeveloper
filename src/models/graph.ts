@@ -1,111 +1,206 @@
 'use strict'
 
+import * as vscode from 'vscode';
+
 export class Graph {
+    
+    private _onNodeAddedEventEmitter: vscode.EventEmitter<Node>;
+    private _onNodeUpdatedEventEmitter: vscode.EventEmitter<Node>;
+    private _onEdgeAddedEventEmitter: vscode.EventEmitter<Edge>;
 
     private _nodes:Node[] = [];
-    private _links:Link[] = [];
+    private _edges:Edge[] = [];
+    private _pendingEdges:Edge[] = [];
 
-    public get nodes():Node[] {
+    constructor() {
+        this._onNodeAddedEventEmitter = new vscode.EventEmitter<Node>();
+        this._onNodeUpdatedEventEmitter = new vscode.EventEmitter<Node>();
+        this._onEdgeAddedEventEmitter = new vscode.EventEmitter<Edge>();
+    }
+
+    public clear() {
+
+        this._nodes = [];
+        this._edges = [];
+        this._pendingEdges = [];
+    }
+
+    public get onNodeAdded(): vscode.Event<Node> {
+        return this._onNodeAddedEventEmitter.event;
+    }
+
+    public get onNodeUpdated(): vscode.Event<Node> {
+        return this._onNodeUpdatedEventEmitter.event;
+    }
+
+    public addNode(nodeId:string, label?:string, data?:any) {
+
+        if(this.hasNotNodeWithId(nodeId)) {
+
+            let node = {
+                id: nodeId,
+                label:label,
+                data:data,
+                incoming:0
+            }
+
+            this._nodes.push(node);
+            this._onNodeAddedEventEmitter.fire(node);
+
+            let pendingEdges = this._pendingEdges.filter(e=> e.sourceId == nodeId || e.targetId == nodeId);
+
+            for(let edge of pendingEdges) {
+                if(this.hasNodeWithId(edge.sourceId) && this.hasNodeWithId(edge.targetId)) {
+                    
+                    this._edges.push(edge);
+                    this._onEdgeAddedEventEmitter.fire(edge);
+                    this._pendingEdges = this._pendingEdges.filter(e=> e.id !== edge.id);
+                    
+                    if(nodeId !== edge.targetId) {
+                        let target = this.getNodeWithId(edge.targetId);
+                        target.incoming++;
+                        this._onNodeUpdatedEventEmitter.fire(target);
+                    } else {
+                        node.incoming++;
+                        this._onNodeUpdatedEventEmitter.fire(node);
+                    }
+                }
+            }
+            
+        }
+
+    }
+
+    public getNodes():Node[] {
         return this._nodes;
     }
 
-    public get links():Link[] {
-        return this._links;
+    public getRootNodes():Node[] {
+        return this._nodes.filter(n=> n.incoming === 0);
     }
 
-    public hasNode(nodeId:string): boolean {
+    public getOutgoingNodes(nodeId:string):Node[] {
+        let nodes:Node[] = [];
 
-        let index = this._nodes.findIndex(n=> n.id === nodeId);
-        return index > -1;
-    }
+        let edges = this.getEdgesWithSourceId(nodeId);
 
-    public hasLink(linkId:string): boolean {
-
-        let index = this._links.findIndex(l=> l.id === linkId);
-        return index > -1;
-    }
-
-    public getNode(nodeId:string): Node {
-        return this._nodes.find(n=> n.id === nodeId);
-    }
-
-    public getLeafs(nodeId:string): any {
-
-        let items:any[] = [];
-        let queue:string[] =  [];
-        let links =  this._links.filter(l=> l.sourceId === nodeId);
-
-        for(let link of links) {
-            queue.push(link.targetId);
-        }
-
-        while(queue.length > 0) {
-
-            let id = queue.pop();
-            let links =  this._links.filter(l=> l.sourceId === id);
-            let node = this._nodes.find(n=> n.id === id);
+        for(let edge of edges) {
             
-            if(node.item) {
-                items.push(node.item);
+            let node = this.getNodeWithId(edge.targetId);
+            
+            if(node) {
+                nodes.push(node);
             }
-            
-            for(let link of links) {
-                queue.push(link.targetId);
-            }
-            
         }
 
-        console.log(items);
-        return items;
+        return nodes;
     }
 
-    public addNode(nodeId:string, item:any) {
-
-        let node = this._nodes.find(n=> n.id === nodeId);
-
-        if(node && !node.item) {
-            node.item = item;
-        } else if(!node) {
-            this._nodes.push({
-                id: nodeId,
-                item:item
-            });
-        }
-
+    public hasNotNodeWithId(nodeId:string): boolean {
+        return !this.hasNodeWithId(nodeId);
     }
 
-    public addLink(sourceNodeId:string, targetNodeId:string) {
+    public hasNodeWithId(nodeId:string):boolean {
+        return this.getNodeWithId(nodeId) != null;
+    }
 
-        let linkId = sourceNodeId +'_'+ targetNodeId;
-        
-        if(!this.hasLink(linkId)) {
+    public getNodeWithId(nodeId:string): Node {
+        return this.findNode(n=> n.id === nodeId);
+    }
 
-            let source:Node = this.getNode(sourceNodeId);
-            let target:Node = this.getNode(targetNodeId);
+    public findNode(getNodeId: (node:Node) => boolean) {
+        return this._nodes.find(getNodeId);
+    }
 
-            if(source && target) {
-                let link:Link = {
-                    id:linkId,  
-                    sourceId:sourceNodeId,
-                    targetId:targetNodeId
+    public findNodes(getNode: (node:Node) => boolean) {
+        return this._nodes.filter(getNode);
+    }
+
+    public get onEdgeAdded(): vscode.Event<Edge> {
+        return this._onEdgeAddedEventEmitter.event;
+    }
+
+    public addEdge(sourceId:string, targetId:string, edgeId?:string, kind?:string, weight?:number, directed?:boolean, data?:any) {
+     
+        if(sourceId && targetId) {
+
+            if(edgeId == null) {
+
+                if(kind) {
+                    edgeId = sourceId + '_' + targetId + '_' + kind;
+                } else {
+                    edgeId = sourceId + '_' + targetId;
                 }
-
-                this._links.push(link);
+            }
+    
+            if(this.hasNotEdgeWithId(edgeId)) {
+    
+                let edge = {
+                    id:edgeId,
+                    sourceId:sourceId,
+                    targetId:targetId,
+                    directed:true,
+                    kind:kind,
+                    weight:weight,
+                    data:data
+                };
+    
+                if(this.hasNodeWithId(sourceId) && this.hasNodeWithId(targetId)) {
+                    let target = this.getNodeWithId(targetId);
+                    target.incoming++;
+                    this._edges.push(edge);
+                    this._onEdgeAddedEventEmitter.fire(edge);
+                } else {
+                    this._pendingEdges.push(edge);
+                }
             }
 
         }
-        
+
     }
 
+    public hasNotEdgeWithId(edgeId:string): boolean {
+        return !this.getEdgeWithId(edgeId);
+    }
+
+    public hasEdgeWithId(edgeId:string):boolean {
+        return this.getEdgeWithId(edgeId) != null;
+    }
+
+    public getEdges():Edge[] {
+        return this._edges;
+    }
+
+    public findEdges(getEdge: (edge:Edge) => boolean) {
+        return this._edges.filter(getEdge);
+    }
+
+    public getEdgeWithId(edgeId:string): Edge {
+        return this._edges.find(e=> e.id === edgeId);
+    }
+
+    public getEdgesWithSourceId(sourceId:string): Edge[] {
+        return this._edges.filter(e=> e.sourceId === sourceId);
+    }
+
+    public getEdgesWithTargetId(targetId:string): Edge[] {
+        return this._edges.filter(e=> e.targetId === targetId);
+    }
 }
 
 export interface Node {
     id:string;
-    item:any;
+    label:string;
+    data?:any;
+    incoming:number;
 }
 
-export interface Link {
+export interface Edge {
     id?:string;
+    directed:boolean;
     sourceId:string;
     targetId:string;
+    kind:string;
+    weight:number;
+    data?:any;
 }

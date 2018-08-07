@@ -22,6 +22,7 @@ export enum TokenType {
     OpenEntity,
     CloseEntity,
     OpenArray,
+    BetweenArrayValue,
     CloseArray,
     Property,
     PropertyValue,
@@ -34,6 +35,7 @@ export class EntityDocumentScanner {
     protected _stream:TextStream;
     protected _state:ScannerState;
     protected _steps:PropertyToken[] = [];
+    protected _store:PropertyToken[] = [];
 
     constructor(source:string, position:number=0) {
         
@@ -60,6 +62,10 @@ export class EntityDocumentScanner {
 
     public get state(): ScannerState {
         return this._state;
+    }
+
+    public get store(): PropertyToken[] {
+        return this._store;
     }
 
     public calibrate() {
@@ -100,6 +106,29 @@ export class EntityDocumentScanner {
             token = this.scan();
 
             if(token.path === path) {
+                break;
+            } else {
+                token = null;
+            }
+        }
+
+        return token;
+
+    }
+
+    public scanUntilPosition(position:number, store:boolean = false): TextToken {
+
+        let token = null;
+        this._store = [];
+
+        while(this.isNotEndOfStream) {
+            token = this.scan();
+            
+            if(token) {
+                this._store.push(token);
+            }
+
+            if(this._stream.position >= position) {
                 break;
             } else {
                 token = null;
@@ -173,34 +202,53 @@ export class EntityDocumentScanner {
                 this._stream.advanceUntilNonWhitespace();
 
                 let current = this._steps[this._steps.length -1];
-                let value = '[' + (current.index++) + ']';
 
-                token = propertyTokenFactory.createPropertyToken(
-                    value, 
-                    current.offset,
-                    TokenType.Property
-                );
+                if(this._stream.char !== ',') {
 
-                token.path = this.getPropertyPath() + value;
-                token.propertyValueToken = this.getPropertyValueToken();
+                    let value = '[' + (current.index++) + ']';
 
-                if(token.propertyValueToken) {
+                    token = propertyTokenFactory.createPropertyToken(
+                        value, 
+                        current.offset,
+                        TokenType.Property
+                    );
+    
+                    token.index = current.index - 1;
+                    token.path = this.getPropertyPath() + value;
+                    token.propertyValueToken = this.getPropertyValueToken();
+    
+                    if(token.propertyValueToken) {
+            
+                        switch(token.propertyValueToken.type) {
+                            case TokenType.OpenEntity:
+                                this._steps.push(token);
+                                break;
+                        }
         
-                    switch(token.propertyValueToken.type) {
-                        case TokenType.OpenEntity:
-                            this._steps.push(token);
-                            break;
                     }
     
-                }
+                    if(token.propertyValueToken.type === TokenType.CloseArray) {
+                        this._steps.pop();
+                    }
 
-                if(token.propertyValueToken.type === TokenType.CloseArray) {
-                    this._steps.pop();
+                } else {
+
+                    token = textTokenFactory.createTextToken(
+                        current.text, 
+                        current.offset, 
+                        current.type);
+
+                    token.index = current.index + 1;
+                    token.propertyValueToken = textTokenFactory.createTextToken(
+                        this._stream.char, 
+                        this._stream.position, 
+                        TokenType.BetweenArrayValue);
+                    
+                    token.path = this.getPropertyPath();
+                    this._stream.advanceUntilNonWhitespace(1);
                 }
 
             } else {
-
-                /* **/
 
                 let value = this._stream.advanceToTheClosest([/\}/, /\"/]);
 
@@ -234,7 +282,7 @@ export class EntityDocumentScanner {
                     this._state = ScannerState.WithinEntity
     
                 } else if(this._steps.length > 0) {
-                
+                    
                     let closingToken = this._steps.pop();
     
                     token = propertyTokenFactory.createPropertyToken(
@@ -242,7 +290,13 @@ export class EntityDocumentScanner {
                         closingToken.offset,
                         TokenType.Property
                     );
-    
+
+                    if(this.isInsideArray()) {
+                        token.path = this.getPropertyPath();
+                    } else {
+                        token.path = this.getPropertyPath(closingToken.text);
+                    }
+                    
                     token.propertyValueToken = this.getPropertyValueToken();
                     this._state = ScannerState.WithinEntity
     
@@ -257,7 +311,7 @@ export class EntityDocumentScanner {
         return token;
     }
 
-    private getPropertyPath(propertyName = ''):string {
+    public getPropertyPath(propertyName = ''):string {
 
         let path = '';
 
@@ -280,7 +334,13 @@ export class EntityDocumentScanner {
             }
 
             if(propertyName) {
-                path = path = path + '.' + propertyName;
+
+                if(propertyName.startsWith('[')) {
+                    path = path = path + propertyName;
+                } else {
+                    path = path = path + '.' + propertyName;
+                }
+
             }
 
         } else {
@@ -310,9 +370,11 @@ export class EntityDocumentScanner {
 
         if(this.isInsideArray()) {
 
+            /*
             if(this._stream.char === ',') {
                 this._stream.advanceUntilNonWhitespace(1);
             }
+            */
 
         } else {
             this._stream.advanceUntilNonWhitespace();
@@ -365,27 +427,39 @@ export class EntityDocumentScanner {
 
     private getPropertyStringValueToken(): TextToken {
 
-        let token = null;
+        let token:TextToken = null;
         let value = '';
+        
+        if(this._stream.char === '"') {
 
-        this._stream.advance();
+            this._stream.advance();
 
-        while(!this._stream.endOfStream) {
-
-            if(this._stream.char !== '"') {
-                value += this._stream.char;
-            } else {
-
+            while(!this._stream.endOfStream) {
+    
+                if(this._stream.char !== '"') {
+                    value += this._stream.char;
+                    this._stream.advance();
+                } else {
+    
+                    token = textTokenFactory.createTextToken(
+                        value, 
+                        this._stream.position - value.length, 
+                        TokenType.PropertyValue);
+    
+                    this._stream.advance();
+                    break;
+                }
+            }
+    
+            if(!token) {
+    
                 token = textTokenFactory.createTextToken(
                     value, 
                     this._stream.position - value.length, 
                     TokenType.PropertyValue);
-
-                this._stream.advance();
-                break;
+    
+                token.isValid = false;
             }
-
-            this._stream.advance();
         }
 
         return token;

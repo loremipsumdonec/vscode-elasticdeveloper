@@ -1,6 +1,5 @@
 'use strict'
 
-import * as vscode from 'vscode';
 import * as urlhelper from '../helpers/url';
 import { TextToken } from "./textToken";
 import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocument';
@@ -19,9 +18,15 @@ export class ElasticsearchQuery extends Entity {
     private _name:string;
     private _method:string;
     private _command:string;
+    private _endpointId:string;
     private _body:string;
     private _bulk:string[] = [];
     private _hasInput:boolean = false;
+    private _hasValidBody = undefined;
+    private _options = {};
+
+    private _offset:number = -1;
+    private _offsetEnd:number = -1;
 
     public static parse(queryAsString:string, body?:any):ElasticsearchQuery {
 
@@ -82,6 +87,42 @@ export class ElasticsearchQuery extends Entity {
         this._commandSteps = null;
     }
 
+    public getUrl():string {
+        let url = this._command;
+
+        let keys = Object.keys(this._options);
+
+        for(let index = 0; index < keys.length; index++) {
+            let key = keys[index];
+            let value = this._options[key];
+            let keyValue = key + '="' + value + '"';
+
+            if(!value) {
+                keyValue = key;
+            }
+
+            if(index === 0) {
+                url += '?' + keyValue;
+            } else {
+                url += '&' + keyValue;
+            }
+        }
+
+        return url;
+    }
+
+    public get hasEndpointId(): boolean {
+        return (this._endpointId && this._endpointId.length > 0);
+    }
+
+    public get endpointId():string {
+        return this._endpointId;
+    }
+
+    public set endpointId(value:string) {
+        this._endpointId = value;
+    }
+
     public get steps():string[] {
 
         if(this._commandSteps == null) {
@@ -97,6 +138,16 @@ export class ElasticsearchQuery extends Entity {
 
     public get hasBody():boolean {
         return (this._body && this._body.length > 0);
+    }
+
+    public get hasValidBody(): boolean {
+
+        if(this._hasValidBody == null) {
+            let exists = this.textTokens.find(t=> t.type === TokenType.Body && !t.isValid);
+            this._hasValidBody = exists == null;
+        }
+
+        return this._hasValidBody;
     }
 
     public get body():string {
@@ -116,6 +167,7 @@ export class ElasticsearchQuery extends Entity {
         }
 
         this._bulk.push(value);
+        this._hasValidBody = undefined;
     }
 
     public get bulk():string[] {
@@ -155,13 +207,42 @@ export class ElasticsearchQuery extends Entity {
         return output;
     }
 
+    private refreshRange(textToken:TextToken) {
+
+        let propertyToken:PropertyToken = textToken as PropertyToken;
+
+        if(this._offset === -1 || this._offset > textToken.offset) {
+            this._offset = textToken.offset;
+        }
+
+        if(this._offsetEnd < textToken.offsetEnd) {
+            this._offsetEnd = textToken.offsetEnd;
+        }
+
+        if(propertyToken && propertyToken.propertyValueToken) {
+            if(this._offsetEnd < propertyToken.propertyValueToken.offsetEnd) {
+                this._offsetEnd = propertyToken.propertyValueToken.offsetEnd;
+            }
+        }
+    }
+
     public addTextToken(textToken:TextToken) {
         super.addTextToken(textToken);
+        this.refreshRange(textToken);
 
         if(textToken.type === TokenType.Method) {
             this.method = textToken.text;
         } else if(textToken.type === TokenType.Command) {
             this.command = textToken.text;
+        } else if(textToken.type === TokenType.QueryString) {
+            let propertyToken = textToken as PropertyToken;
+
+            if(propertyToken.text && propertyToken.propertyValueToken) {
+                this._options[propertyToken.text] = propertyToken.propertyValueToken.text;
+            } else if(propertyToken.text) {
+                this._options[propertyToken.text] = null;
+            }
+
         } else if(textToken.type === TokenType.Argument) {
             this._hasInput = true;
             let propertyToken = textToken as PropertyToken;
@@ -169,7 +250,7 @@ export class ElasticsearchQuery extends Entity {
             if(propertyToken.text && propertyToken.propertyValueToken) {
                 this[propertyToken.text] = propertyToken.propertyValueToken.text;
             }
-
+            
         } else if(textToken.type === TokenType.Body) {
             this.addBody(textToken.text);
         }
@@ -180,13 +261,12 @@ export class ElasticsearchQuery extends Entity {
 
         let tokenType:TokenType = TokenType.Empty;
 
-        for(let textToken of this.textTokens) {
+        for(let token of this.textTokens) {
 
-            if(textToken.offset <= offset && offset <= textToken.offsetEnd) {
-                tokenType = textToken.type;
-                break;
+            if(token.isInRange(offset)) {
+                tokenType = token.type;
             }
-
+            
         }
 
         switch(tokenType) {
@@ -197,6 +277,36 @@ export class ElasticsearchQuery extends Entity {
         }
 
         return tokenType;
+    }
+
+    public tokenAt(offset:number): TextToken {
+     
+        let token:TextToken = null;
+
+        for(let textToken of this.textTokens) {
+            
+            if(textToken as PropertyToken) {
+                
+                if(textToken.isInRange(offset)) {
+                    token = textToken;
+                }
+                
+            } else {
+
+                if(textToken.isInRange(offset)) {
+                    token = textToken;
+                }
+            }
+
+        }
+
+        return token;
+    }
+
+    public isInRange(offset:number):boolean {
+
+        let status = offset >= this._offset && offset <= this._offsetEnd;
+        return status;
     }
 }
 

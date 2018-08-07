@@ -8,7 +8,6 @@ import * as HostEnvironmentManager from './managers/hostEnvironmentManagerDecora
 
 import { LogManager } from './managers/logManager';
 import { EnvironmentManager } from './managers/environmentManager';
-import { ServiceSpecificationManager } from './managers/serviceSpecificationManager';
 
 import { Controller } from './controllers/controller';
 import { QueryCodeLensController} from './controllers/queryCodeLensController';
@@ -17,15 +16,16 @@ import { EnvironmentCommandController } from './controllers/environmentCommandCo
 import { EnvironmentTreeDataProviderController } from './feature/explorer/environmentTreeDataProviderController';
 import { IndexTemplateCodeLensController } from './controllers/indexTemplateCodeLensController';
 import { IndexTemplateCommandController } from './controllers/indexTemplateCommandController';
-import { QueryCompletionItemController } from './controllers/queryCompletionItemController';
+import { QueryCompletionItemController } from './feature/intelliSense/controllers/queryCompletionItemController';
 import { QueryCommandController } from './controllers/queryCommandController';
 import { IndexCommandController } from './controllers/indexCommandController';
 import { ScriptCommandController } from './controllers/scriptCommandController';
+import { IntellisenseCommandController } from './feature/intelliSense/controllers/intellisenseCommandController';
 
 export function activate(context: vscode.ExtensionContext) {
 
     let configuration = vscode.workspace.getConfiguration();
-    let explorerFeatureEnabled = configuration.get(constant.ConfigurationFeatureExplorerEnabled);
+    let value = configuration.get(constant.IntelliSenseConfigurationEnabled);
 
     LogManager.verbose('elasticdeveloper extension activated');
     LogManager.verbose('elasticdeveloper decorating EnvironmentManager');
@@ -33,13 +33,11 @@ export function activate(context: vscode.ExtensionContext) {
     EnvironmentManager.decorateWith(WorkspaceEnvironmentManager.decorate(context));
     EnvironmentManager.decorateWith(HostEnvironmentManager.decorate());
     
-    ServiceSpecificationManager.decorateWith(FileSystemLoaderServiceSpecificationManager.decorate());
-    
     LogManager.verbose('elasticdeveloper loading controllers');
+
     let controllers: Controller[] = [];
     controllers.push(new QueryCodeLensController());
     controllers.push(new QueryCommandController());
-    controllers.push(new QueryCompletionItemController());
     controllers.push(new EnvironmentCodeLensController());
     controllers.push(new EnvironmentCommandController());
     controllers.push(new EnvironmentTreeDataProviderController());
@@ -47,7 +45,12 @@ export function activate(context: vscode.ExtensionContext) {
     controllers.push(new IndexTemplateCommandController());
     controllers.push(new IndexCommandController());
     controllers.push(new ScriptCommandController());
-
+    controllers.push(new IntellisenseCommandController());
+    
+    if(value) {
+        controllers.push(new QueryCompletionItemController());
+    }
+    
     LogManager.verbose('elasticdeveloper register controllers');
 
     for(let controller of controllers) {

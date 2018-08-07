@@ -1,0 +1,20 @@
+{
+    "__templates": {
+        "script_languages": {
+            "painless": {}
+        },
+        "script": {
+            "id": "",
+            "source": {
+                "__children_of": "query"
+            },
+            "lang": {
+                "__as_type": "string",
+                "__children_of": "script_languages"
+            },
+            "params": {
+                "{parameter}": "{value}"
+            }
+        }
+    }
+}
