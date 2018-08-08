@@ -14,22 +14,21 @@
                 "__children_of": "script_language"
             },
             "source": {
-                "__object": {
-                    "from": 0,
-                    "size": 10,
-                    "sort": [ { "{field}": {"order": "asc"} }],
-                    "_source": [""],
-                    "stored_fields": ["{field}"],
-                    "script_fields": {
-                        "{name}": {
-                            "script": {
-                                "__children_of": "script"
-                            }
+                "__as_type": ["object", "string"],
+                "from": 0,
+                "size": 10,
+                "sort": [ { "{field}": {"order": "asc"} }],
+                "_source": [""],
+                "stored_fields": ["{field}"],
+                "script_fields": {
+                    "{name}": {
+                        "script": {
+                            "__children_of": "script"
                         }
-                    },
-                    "query": {
-                        "__children_of": "query_dsl"
                     }
+                },
+                "query": {
+                    "__children_of": "query_dsl"
                 }
             },
             "params": {

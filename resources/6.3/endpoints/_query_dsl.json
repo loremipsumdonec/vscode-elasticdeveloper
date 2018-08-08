@@ -163,8 +163,95 @@
 				"fuzzy_transpositions": true
 			}
 		},
+		"term_level_queries": {
+			"term": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "{term}",
+					"boost": 1.0
+				}
+			},
+			"terms": {
+				"{field}": {
+					"__as_type": ["array", "object"],
+					"index": "{index}",
+					"type": "_doc",
+					"id": 1,
+					"path": "{path}"
+				}
+			},
+			"terms_set": {
+				"terms": ["{term}"],
+				"minimum_should_match_field": "{field}",
+				"minimum_should_match_script": {
+					"__children_of": "script_template"
+				}
+			},
+			"range": {
+				"{field}": {
+					"gte": 10,
+					"gt": 10,
+					"lte": 10,
+					"lt": 10,
+					"boost": 1.0
+				}
+			},
+			"exists": {
+				"field": "{field}"
+			},
+			"prefix": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 2.0
+				}
+			},
+			"wildcard": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 2.0
+				}
+			},
+			"regexp": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 1.2,
+					"flags": {
+						"__as_type": "string",
+						"ALL": {},
+						"ANYSTRING": {},
+						"COMPLEMENT": {},
+						"EMPTY": {},
+						"INTERSECTION": {},
+						"INTERVAL": {},
+						"NONE": {}
+					},
+					"max_determinized_states": 10000
+				}
+			},
+			"fuzzy": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 1.0,
+					"fuzziness": "AUTO",
+					"prefix_length": 0,
+					"max_expansions": 50,
+					"transpositions": false
+				}
+			},
+			"type": {
+				"value": "_doc"
+			},
+			"ids": {
+				"type": "_doc",
+				"values": []
+			}
+		},
 		"query_dsl": {
-			"__children_of": ["full_text_queries"],	
+			"__children_of": ["full_text_queries", "term_level_queries"],	
 			"bool": {
 				"must": {
 					"__children_of": "query_dsl"
@@ -209,9 +296,7 @@
 					}
 				]
 			},
-			"exists": {
-				"field": "{field}"
-			},
+
 			"function_score": {
 				"query": {
 					"__children_of": "query_dsl"
@@ -255,16 +340,7 @@
 				},
 				"min_score": 42
 			},
-			"fuzzy": {
-				"{field}": {
-					"value": "",
-					"boost": 1.0,
-					"fuzziness": "AUTO",
-					"prefix_length": 0,
-					"max_expansions": 50,
-					"transpositions": false
-				}
-			},
+
 			"geo_bounding_box": {},
 			"geo_distance": {},
 			"geo_polygon": {},
@@ -300,10 +376,7 @@
 					"__children_of": "query_dsl"
 				}
 			},
-			"ids": {
-				"type": "_doc",
-				"values": []
-			},
+
 			"match_all": {
 				"boost": 1.0
 			},
@@ -367,23 +440,10 @@
 				"preference": "",
 				"version": ""
 			},
-			"prefix": {},
 
-			"range": {},
-			"regexp": {
-				"value": "",
-				"boost": 1.2,
-				"flags": {
-					"__as_type": "string",
-					"ALL": {},
-					"ANYSTRING": {},
-					"COMPLEMENT": {},
-					"EMPTY": {},
-					"INTERSECTION": {},
-					"INTERVAL": {},
-					"NONE": {}
-				}
-			},
+
+
+
 			"script": {
 				"__children_of": "script"
 			},
@@ -397,26 +457,9 @@
 			"span_or": {},
 			"span_term": {},
 			"span_within": {},
-			"term": {
-				"{field}": {
-					"__as_type": ["string", "object"],
-					"value": "",
-					"boost": 2.0
-				}
-			},
-			"terms": {
-				"{field}": []
-			},
-			"terns_set": {},
-			"type": {
-				"value": "_doc"
-			},
-			"wildcard": {
-				"{field}": {
-					"value": "",
-					"boost": 2.0
-				}
-			},
+
+
+
 			"wrapper": {
 				"query": {
 					"__children_of": "query_dsl"
