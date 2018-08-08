@@ -551,8 +551,7 @@
 			"span_not": {},
 			"span_or": {},
 			"span_term": {},
-			"span_within": {},
-			
+			"span_within": {}
 		}
 	}
 }
