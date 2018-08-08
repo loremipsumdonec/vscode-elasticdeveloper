@@ -60,6 +60,17 @@
 			"avg": { },
 			"none": { }
 		},
+		"geo_spatial_relations": {
+			"INTERSECTS": {},
+			"DISJOINT": {},
+			"WITHIN": {},
+			"CONTAINS": {}
+		},
+		"geo_validation_methods": {
+			"IGNORE_MALFORMED": {},
+			"COERCE": {},
+			"STRICT": {}
+		},
 		"full_text_queries": {
 			"match": {
 				"{field}": {
@@ -381,21 +392,83 @@
 				"ignore_unmapped": false
 			}
 		},
-		"query_dsl": {
-			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries", "joining_queries"],	
-			"geo_bounding_box": {},
-			"geo_distance": {},
-			"geo_polygon": {},
+		"geo_queries": {
 			"geo_shape": {
 				"{field}": {
 					"shape": {
 						"type": "",
 						"coordinates": []
 					},
-					"relation": "within"
+					"relation": {
+						"__as_type": "string",
+						"__children_of": "geo_spatial_relations"
+					},
+					"ignore_unmapped": false
 				}
 			},
-
+			"geo_bounding_box": {
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"type": {
+					"__as_type": "string",
+					"memory": {},
+					"indexed":{}
+				},
+				"ignore_unmapped": false,
+				"{field}": {
+					"wkt": "{value}",
+					"top_left": {
+						"__as_type": ["string", "object", "array"],
+						"lat": "{value}",
+						"lon": "{value}"
+					},
+					"bottom_right": {
+						"__as_type": ["string", "object", "array"],
+						"lat": "{value}",
+						"lon": "{value}"
+					},
+					"top": "{value}",
+					"left": "{value}",
+					"bottom": "{value}",
+					"right": "{value}"
+				}
+			},
+			"geo_distance": {
+				"distance": "{value}",
+				"distance_type": {
+					"__as_type": "string",
+					"arc": {},
+					"plane": {}
+				},
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"{field}": {
+					"__as_type": ["string", "object", "array"],
+					"lat": "{value}",
+					"lon": "{value}"
+				}
+			},
+			"geo_polygon": {
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"{field}": {
+					"points": [{
+						"lat": "{value}",
+						"lon": "{value}"
+					}]
+				}
+			}
+		},
+		"query_dsl": {
+			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries", "joining_queries", "geo_queries"],	
+			
+			
 			"match_all": {
 				"boost": 1.0
 			},
@@ -421,8 +494,6 @@
 				"include": false,
 				"boost": 1.0
 			},
-			
-			
 			"percolate": {
 				"field": "{field}",
 				"name": "",
