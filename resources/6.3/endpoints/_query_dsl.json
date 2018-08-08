@@ -250,8 +250,16 @@
 				"values": []
 			}
 		},
-		"query_dsl": {
-			"__children_of": ["full_text_queries", "term_level_queries"],	
+		"compound_queries": {
+			"constant_score": {
+				"query": {
+					"__children_of": "query_dsl"
+				},
+				"filter": {
+					"__children_of": "query_dsl"
+				},
+				"boost": 1.2
+			},
 			"bool": {
 				"must": {
 					"__children_of": "query_dsl"
@@ -268,35 +276,15 @@
 				"minimum_should_match": 1,
 				"boost": 1.0
 			},
-			"boosting": {
-				"positive": {
-					"__children_of": "query_dsl"
-				},
-				"negative": {
-					"__children_of": "query_dsl"
-				},
-				"negative_boost": 0.2
-			},
-
-			"constant_score": {
-				"query": {
-					"__children_of": "query_dsl"
-				},
-				"filter": {
-					"__children_of": "query_dsl"
-				},
-				"boost": 1.2
-			},
 			"dis_max": {
-				"tie_breaker": 0.7,
-				"boost": 1.2,
+				"tie_breaker": 0.0,
+				"boost": 1.0,
 				"queries": [
 					{
 						"__children_of": "query_dsl"
 					}
 				]
 			},
-
 			"function_score": {
 				"query": {
 					"__children_of": "query_dsl"
@@ -309,7 +297,7 @@
 						},
 						"weight": 42,
 						"script_score": {
-							"__children_of": "script"
+							"__children_of": "script_template"
 						},
 						"random_score": {
 							"seed": 10,
@@ -340,7 +328,18 @@
 				},
 				"min_score": 42
 			},
-
+			"boosting": {
+				"positive": {
+					"__children_of": "query_dsl"
+				},
+				"negative": {
+					"__children_of": "query_dsl"
+				},
+				"negative_boost": 0.2
+			}
+		},
+		"query_dsl": {
+			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries"],	
 			"geo_bounding_box": {},
 			"geo_distance": {},
 			"geo_polygon": {},
@@ -376,13 +375,10 @@
 					"__children_of": "query_dsl"
 				}
 			},
-
 			"match_all": {
 				"boost": 1.0
 			},
 			"match_none": {},
-
-
 			"more_like_this": {
 				"fields": ["{field}"],
 				"like": [],
@@ -404,7 +400,6 @@
 				"include": false,
 				"boost": 1.0
 			},
-
 			"nested": {
 				"path": "",
 				"ignore_unmapped": false,
@@ -440,14 +435,9 @@
 				"preference": "",
 				"version": ""
 			},
-
-
-
-
 			"script": {
 				"__children_of": "script"
 			},
-
 			"span_containing": {},
 			"span_field_masking": {},
 			"span_first": {},
@@ -457,9 +447,6 @@
 			"span_or": {},
 			"span_term": {},
 			"span_within": {},
-
-
-
 			"wrapper": {
 				"query": {
 					"__children_of": "query_dsl"
