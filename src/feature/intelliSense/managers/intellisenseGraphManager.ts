@@ -188,7 +188,9 @@ export class IntellisenseGraphManager {
             let source = context.source;
             let path = context.path;
 
-            if(isObject(source)) {
+            if(isArray(source)) {
+                this.addArrayNodeToEndpointDslGraph(source, path, null, null, context, stack, graph);
+            } else if(isObject(source)) {
 
                 let keys = Object.keys(source);
 
@@ -206,62 +208,8 @@ export class IntellisenseGraphManager {
     
                         if(isArray(current)) {
                             
-                            if(current.length > 0) {
-                                
-                                for(let index = 0; index < current.length;index++) {
-                                    let arrayEntry =  current[index];
-                                    let arrayEntryTypes:string[] = []
-                                    let id = '['+ index +']';
-                                    let arrayEntryNodeId = nodeId +'/['+ index +']';
-                                    let depth = context.depth + 1;
-
-                                    if(isObject(arrayEntry)) {
-
-                                        let arrayEntryType = 'object';
+                            this.addArrayNodeToEndpointDslGraph(current, path, nodeId, key, context, stack, graph);
                             
-                                        if(arrayEntry.__as_type) {
-            
-                                            if(isArray(arrayEntry.__as_type)) {
-                                                arrayEntry.__as_type.forEach(t=> arrayEntryTypes.push(t));
-                                            } else {
-                                                arrayEntryTypes.push(arrayEntry.__as_type);
-                                            }
-
-                                        } else {
-                                            arrayEntryTypes.push(arrayEntryType);
-                                        }
-
-                                        graph.addNode(arrayEntryNodeId, '[0]', { 
-                                            id: id,
-                                            types: arrayEntryTypes,
-                                            depth: depth
-                                        });
-
-                                        arrayEntryTypes.forEach(t=> 
-                                            graph.addEdge(nodeId, arrayEntryNodeId, null, t)
-                                        );
-
-                                        stack.push({ source:arrayEntry, path: arrayEntryNodeId, depth: depth});
-
-                                    } else {
-                                        let type = typeof(arrayEntry);
-
-                                        graph.addNode(arrayEntryNodeId, '[0]', { 
-                                            id: id,
-                                            types: [type],
-                                            defaultValue: arrayEntry.toString(),
-                                            depth: depth
-                                        });
-
-                                        graph.addEdge(nodeId, arrayEntryNodeId, null, type);
-                                    }
-                                }
-                            }
-                            
-                            graph.addNode(nodeId, key, { types: ['array'], depth: context.depth});
-                            graph.addEdge(path, nodeId, null, 'array');
-                            
-    
                         } else if(isObject(current)) {
     
                             let type = 'object';
@@ -277,8 +225,20 @@ export class IntellisenseGraphManager {
                                 types.push(type);
                             }
     
-                            if(current.__object || current.__string) {
+                            if(current.__array || current.__object || current.__string) {
                                 
+                                if(current.__array) {
+
+                                    graph.addNode(nodeId + '-array', key, { 
+                                        id: key,
+                                        types: ['array'],
+                                        depth: context.depth 
+                                    });
+    
+                                    graph.addEdge(path, nodeId + '-array', null, 'array');
+                                    stack.push({ source: current.__array, path: nodeId + '-array', types: ['array'], depth: context.depth + 1});
+                                }
+
                                 if(current.__object) {
 
                                     graph.addNode(nodeId + '-object', key, { 
@@ -352,6 +312,68 @@ export class IntellisenseGraphManager {
                 }
             } else {
                 console.log('is not an object...');
+            }
+        }
+    }
+
+    private addArrayNodeToEndpointDslGraph(array:any[], path:string, nodeId:string, nodeLabel:string, context:any, stack:any[] , graph:Graph) {
+
+        if(array.length > 0) {
+            
+            if(!nodeId) {
+                nodeId = path;
+            } else {
+                graph.addNode(nodeId, nodeLabel, { types: ['array'], depth: context.depth});
+                graph.addEdge(path, nodeId, null, 'array');
+            }
+
+            for(let index = 0; index < array.length;index++) {
+                let arrayEntry =  array[index];
+                let arrayEntryTypes:string[] = []
+                let id = '['+ index +']';
+                let arrayEntryNodeId = nodeId +'/['+ index +']';
+                let depth = context.depth + 1;
+
+                if(isObject(arrayEntry)) {
+
+                    let arrayEntryType = 'object';
+        
+                    if(arrayEntry.__as_type) {
+
+                        if(isArray(arrayEntry.__as_type)) {
+                            arrayEntry.__as_type.forEach(t=> arrayEntryTypes.push(t));
+                        } else {
+                            arrayEntryTypes.push(arrayEntry.__as_type);
+                        }
+
+                    } else {
+                        arrayEntryTypes.push(arrayEntryType);
+                    }
+
+                    graph.addNode(arrayEntryNodeId, '[0]', { 
+                        id: id,
+                        types: arrayEntryTypes,
+                        depth: depth
+                    });
+
+                    arrayEntryTypes.forEach(t=> 
+                        graph.addEdge(nodeId, arrayEntryNodeId, null, t)
+                    );
+
+                    stack.push({ source:arrayEntry, path: arrayEntryNodeId, depth: depth});
+
+                } else {
+                    let type = typeof(arrayEntry);
+
+                    graph.addNode(arrayEntryNodeId, id, { 
+                        id: id,
+                        types: [type],
+                        defaultValue: arrayEntry.toString(),
+                        depth: depth
+                    });
+
+                    graph.addEdge(nodeId, arrayEntryNodeId, null, type);
+                }
             }
         }
     }

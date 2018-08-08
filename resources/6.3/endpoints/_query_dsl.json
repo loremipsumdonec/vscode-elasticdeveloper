@@ -1,6 +1,14 @@
 {
 	"__import_file": ["_analysis", "_script"],
 	"__templates": {
+		"artificial_document": {
+			"doc": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"__children_of": "artificial_document/doc"
+				}
+			}
+		},
 		"boolean_operators": {
 			"and": {},
 			"or": {}
@@ -465,18 +473,25 @@
 				}
 			}
 		},
-		"query_dsl": {
-			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries", "joining_queries", "geo_queries"],	
-			
-			
-			"match_all": {
-				"boost": 1.0
-			},
-			"match_none": {},
+		"specialized_queries":{
 			"more_like_this": {
 				"fields": ["{field}"],
-				"like": [],
-				"unlike": [],
+				"like": {
+					"__array": ["{some text}", {
+						"_index": "{index}",
+						"_type": "{_doc}",
+						"_id": "{id}",
+						"__children_of": "artificial_document"
+					}]
+				},
+				"unlike": {
+					"__array": ["{some text}", {
+						"_index": "{index}",
+						"_type": "{_doc}",
+						"_id": "{id}",
+						"__children_of": "artificial_document"
+					}]
+				},
 				"max_query_terms": 25,
 				"min_term_freq": 2,
 				"min_doc_freq": 5,
@@ -494,10 +509,13 @@
 				"include": false,
 				"boost": 1.0
 			},
+			"script": {
+				"__children_of": "script"
+			},
 			"percolate": {
 				"field": "{field}",
 				"name": "",
-				"document_type": "",
+				"document_type": "{type}",
 				"document": {
 					"{field}": "{value}"
 				},
@@ -509,9 +527,22 @@
 				"preference": "",
 				"version": ""
 			},
-			"script": {
-				"__children_of": "script"
-			},
+			"wrapper": {
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			}
+		},
+		"query_dsl": {
+			"__children_of": [
+				"full_text_queries", 
+				"term_level_queries", 
+				"compound_queries", 
+				"joining_queries", 
+				"geo_queries", 
+				"specialized_queries"],	
+			"match_all": {},
+			"match_none": {},
 			"span_containing": {},
 			"span_field_masking": {},
 			"span_first": {},
@@ -521,11 +552,7 @@
 			"span_or": {},
 			"span_term": {},
 			"span_within": {},
-			"wrapper": {
-				"query": {
-					"__children_of": "query_dsl"
-				}
-			}
+			
 		}
 	}
 }
