@@ -8,6 +8,11 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## [1.2.1] - 2018-08-08
+### Added
+- Better array support in the endpoint graphs
+### Fixed
+- Fixed query-dsl endpoint
 ## [1.2.0] - 2018-08-07
 ### Added
 - Open REST API endpoint documentation
