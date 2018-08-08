@@ -338,8 +338,51 @@
 				"negative_boost": 0.2
 			}
 		},
+		"joining_queries": {
+			"nested": {
+				"path": "",
+				"ignore_unmapped": false,
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"has_child": {
+				"type": "{type}",
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"min_children": 2,
+				"max_children": 10,
+				"ignore_unmapped": false,
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"has_parent": {
+				"parent_type": "{type}",
+				"score": true,
+				"ignore_unmapped": false,
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"parent_id": {
+				"type": "{type}",
+				"id": "",
+				"ignore_unmapped": false
+			}
+		},
 		"query_dsl": {
-			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries"],	
+			"__children_of": ["full_text_queries", "term_level_queries", "compound_queries", "joining_queries"],	
 			"geo_bounding_box": {},
 			"geo_distance": {},
 			"geo_polygon": {},
@@ -352,29 +395,7 @@
 					"relation": "within"
 				}
 			},
-			"has_child": {
-				"type": "",
-				"score_mode": {
-					"__children_of": "score_modes"
-				},
-				"min_children": 2,
-				"max_children": 10,
-				"ignore_unmapped": false,
-				"query": {
-					"__children_of": "query_dsl"
-				}
-			},
-			"has_parent": {
-				"parent_type": "",
-				"score": true,
-				"ignore_unmapped": false,
-				"score_mode": {
-					"__children_of": "score_modes"
-				},
-				"query": {
-					"__children_of": "query_dsl"
-				}
-			},
+
 			"match_all": {
 				"boost": 1.0
 			},
@@ -400,26 +421,8 @@
 				"include": false,
 				"boost": 1.0
 			},
-			"nested": {
-				"path": "",
-				"ignore_unmapped": false,
-				"score_mode": {
-					"__as_type": "string",
-					"avg": {},
-					"sum": {},
-					"min": {},
-					"max": {},
-					"none": {}
-				},
-				"query": {
-					"__children_of": "query_dsl"
-				}
-			},
-			"parent_id": {
-				"type": "",
-				"id": "",
-				"ignore_unmapped": false
-			},
+			
+			
 			"percolate": {
 				"field": "{field}",
 				"name": "",
