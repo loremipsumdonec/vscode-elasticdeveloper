@@ -1,6 +1,17 @@
 {
-	"__import_file": ["_analyzers", "_script"],
+	"__import_file": ["_analysis", "_script"],
 	"__templates": {
+		"boolean_operators": {
+			"and": {},
+			"or": {}
+		},
+		"multi_match_types": {
+			"best_fields": {},
+			"most_fields": {},
+			"cross_fields": {},
+			"phrase": {},
+			"phrase_prefix": {}
+		},
 		"default_match": {
 			"query": "this is a simple test",
 			"zero_terms_query": "",
@@ -11,7 +22,7 @@
 		},
 		"fuzziness": {
 			"cutoff_frequency": 0.001,
-			"max_expansions": 10,
+			"max_expansions": 50,
 			"lenient": true,
 			"fuzzy_transpositions": true,
 			"auto_generate_synonyms_phrase_query": true,
@@ -19,7 +30,10 @@
 			"prefix_length": 1
 		},
 		"match_options": {
-			"operator": "and",
+			"operator": {
+				"__as_type": "string",
+				"__children_of": "boolean_operators"
+			},
 			"boost": 1.0,
 			"minimum_should_match": 1,
 			"__children_of": ["default_match", "fuzziness"]
@@ -46,49 +60,143 @@
 			"avg": { },
 			"none": { }
 		},
-		"query_dsl": {	
-			"bool": {
-				"must": {
-					"__children_of": "query"
-				},
-				"must_not": {
-					"__children_of": "query"
-				},
-				"should": {
-					"__children_of": "query"
-				},
-				"filter": {
-					"__children_of": "query"
-				},
-				"minimum_should_match": 1,
-				"boost": 1.0
+		"full_text_queries": {
+			"match": {
+				"{field}": {
+					"__children_of": "match_options"
+				}
 			},
-			"boosting": {
-				"positive": {
-					"__children_of": "query"
+			"match_phrase": {
+				"{field}": {
+					"__children_of": "default_match"
+				}
+			},
+			"match_phrase_prefix":{
+				"{field}": {
+					"__children_of": "default_match",
+					"max_expansions": 50
+				}
+			},
+			"multi_match":{
+				"query": "this is a simple test",
+				"fields": ["{field}"],
+				"type": {
+					"__as_type": "string",
+					"__children_of": "multi_match_types"
 				},
-				"negative": {
-					"__children_of": "query"
-				},
-				"negative_boost": 0.2
+				"use_dis_max": true,
+				"tie_breaker": 0.0,
+				"__children_of": "match_options"
 			},
 			"common": {
 				"{field}": {
 					"query": "",
 					"cutoff_frequency": 0.001,
-					"low_freq_operator": "and",
+					"low_freq_operator": {
+						"__as_type": "string",
+						"__children_of": "boolean_operators"
+					},
 					"minimum_should_match": {
 						"low_freq" : 2,
 						"high_freq" : 3
 					}
 				}
 			},
-			"constant_score": {
-				"query": {
-					"__children_of": "query"
+			"query_string": {
+				"fields": ["{field}"],
+				"type": {
+					"__as_type": "string",
+					"__children_of": "multi_match_types"
+				},
+				"tie_breaker": 0,
+				"query": "",
+				"default_field": "",
+				"default_operator": {
+					"__as_type": "string",
+					"__children_of": "boolean_operators"
+				},
+				"analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"quote_analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"allow_leading_wildcard": true,
+				"enable_position_increments": true,
+				"fuzzy_max_expansions": 50,
+				"fuzziness": "AUTO",
+				"fuzzy_prefix_length": 0,
+				"fuzzy_transpositions": true,
+				"phrase_slop": 0,
+				"boost": 1.0,
+				"auto_generate_phrase_queries": false,
+				"analyze_wildcard": true,
+				"max_determinized_states": 10000,
+				"minimum_should_match": "30%",
+				"lenient": false,
+				"time_zone": "",
+				"quote_field_suffix": "",
+				"auto_generate_synonyms_phrase_query": "",
+				"all_fields": "*"
+			},
+			"simple_query_string": {
+				"fields": ["{field}"],
+				"default_operator": {
+					"__as_type": "string",
+					"__children_of": "boolean_operators"
+				},
+				"analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"flags": "ALL",
+				"analyze_wildcard": false,
+				"lenient": false,
+				"minimum_should_match": "30%",
+				"quote_field_suffix": "",
+				"auto_generate_synonyms_phrase_query": "",
+				"all_fields": "*",
+				"fuzzy_prefix_length": 0,
+				"fuzzy_max_expansions": 50,
+				"fuzzy_transpositions": true
+			}
+		},
+		"query_dsl": {
+			"__children_of": ["full_text_queries"],	
+			"bool": {
+				"must": {
+					"__children_of": "query_dsl"
+				},
+				"must_not": {
+					"__children_of": "query_dsl"
+				},
+				"should": {
+					"__children_of": "query_dsl"
 				},
 				"filter": {
-					"__children_of": "query"
+					"__children_of": "query_dsl"
+				},
+				"minimum_should_match": 1,
+				"boost": 1.0
+			},
+			"boosting": {
+				"positive": {
+					"__children_of": "query_dsl"
+				},
+				"negative": {
+					"__children_of": "query_dsl"
+				},
+				"negative_boost": 0.2
+			},
+
+			"constant_score": {
+				"query": {
+					"__children_of": "query_dsl"
+				},
+				"filter": {
+					"__children_of": "query_dsl"
 				},
 				"boost": 1.2
 			},
@@ -96,22 +204,23 @@
 				"tie_breaker": 0.7,
 				"boost": 1.2,
 				"queries": [
-					{"__children_of": "query"}
+					{
+						"__children_of": "query_dsl"
+					}
 				]
 			},
 			"exists": {
 				"field": "{field}"
 			},
-			"feature": {},
 			"function_score": {
 				"query": {
-					"__children_of": "query"
+					"__children_of": "query_dsl"
 				},
 				"boost": 5,
 				"functions": [
 					{
 						"filter": {
-							"__children_of": "query"
+							"__children_of": "query_dsl"
 						},
 						"weight": 42,
 						"script_score": {
@@ -177,7 +286,7 @@
 				"max_children": 10,
 				"ignore_unmapped": false,
 				"query": {
-					"__children_of": "query"
+					"__children_of": "query_dsl"
 				}
 			},
 			"has_parent": {
@@ -188,7 +297,7 @@
 					"__children_of": "score_modes"
 				},
 				"query": {
-					"__children_of": "query"
+					"__children_of": "query_dsl"
 				}
 			},
 			"ids": {
@@ -199,22 +308,8 @@
 				"boost": 1.0
 			},
 			"match_none": {},
-			"match_phrase_prefix":{
-				"{field}": {
-					"__children_of": "default_match",
-					"max_expansions": 50
-				}
-			},
-			"match_phrase": {
-				"{field}": {
-					"__children_of": "default_match"
-				}
-			},
-			"match": {
-				"{field}": {
-					"__children_of": "match_options"
-				}
-			},
+
+
 			"more_like_this": {
 				"fields": ["{field}"],
 				"like": [],
@@ -236,21 +331,7 @@
 				"include": false,
 				"boost": 1.0
 			},
-			"multi_match":{
-				"query": "this is a simple test",
-				"fields": ["{field}"],
-				"type": {
-					"__as_type": "string",
-					"best_fields": {},
-					"most_fields": {},
-					"cross_fields": {},
-					"phrase": {},
-					"phrase_prefix": {}
-				},
-				"use_dis_max": true,
-				"tie_breaker": 0.0,
-				"__children_of": "match_options"
-			},
+
 			"nested": {
 				"path": "",
 				"ignore_unmapped": false,
@@ -263,7 +344,7 @@
 					"none": {}
 				},
 				"query": {
-					"__children_of": "query"
+					"__children_of": "query_dsl"
 				}
 			},
 			"parent_id": {
@@ -287,7 +368,7 @@
 				"version": ""
 			},
 			"prefix": {},
-			"query_string": {},
+
 			"range": {},
 			"regexp": {
 				"value": "",
@@ -306,7 +387,7 @@
 			"script": {
 				"__children_of": "script"
 			},
-			"simple_query_string": {},
+
 			"span_containing": {},
 			"span_field_masking": {},
 			"span_first": {},
@@ -337,7 +418,9 @@
 				}
 			},
 			"wrapper": {
-				"query": ""
+				"query": {
+					"__children_of": "query_dsl"
+				}
 			}
 		}
 	}
