@@ -95,7 +95,7 @@ export class ElasticsearchQuery extends Entity {
         for(let index = 0; index < keys.length; index++) {
             let key = keys[index];
             let value = this._options[key];
-            let keyValue = key + '="' + value + '"';
+            let keyValue = key + '=' + value;
 
             if(!value) {
                 keyValue = key;
