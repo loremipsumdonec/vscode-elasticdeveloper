@@ -61,6 +61,51 @@
 				"decay": 0.5
 			}
 		},
+		"boost_modes": {
+			"multiply": {},
+			"replace": {},
+			"sum": {},
+			"avg": {},
+			"max": {},
+			"min": {}
+		},
+		"function_score_functions": {
+			"script_score": {
+				"__children_of": "script_template"
+			},
+			"weight": 1,
+			"random_score": {
+				"field":"{field}",
+				"seed": 1
+			},
+			"field_value_factor": {
+				"field":"{field}",
+				"factor": 1.2,
+				"modifier": {
+					"__as_type": "string",
+					"none": {},
+					"log": {},
+					"log1p": {},
+					"log2p": {},
+					"ln": {},
+					"ln1p": {},
+					"ln2p": {},
+					"square": {},
+					"sqrt": {},
+					"reciprocal": {}
+				},
+				"missing": 1
+			},
+			"gauss": {
+				"__children_of": "decay_function_options"
+			},
+			"exp": {
+				"__children_of": "decay_function_options"
+			},
+			"linear": {
+				"__children_of": "decay_function_options"
+			}
+		},
 		"score_modes": {
 			"min": { },
 			"max": { },
@@ -281,16 +326,36 @@
 			},
 			"bool": {
 				"must": {
-					"__children_of": "query_dsl"
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
 				},
 				"must_not": {
-					"__children_of": "query_dsl"
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
 				},
 				"should": {
-					"__children_of": "query_dsl"
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
 				},
 				"filter": {
-					"__children_of": "query_dsl"
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
 				},
 				"minimum_should_match": 1,
 				"boost": 1.0
@@ -308,44 +373,25 @@
 				"query": {
 					"__children_of": "query_dsl"
 				},
-				"boost": 5,
+				"boost": 1,
 				"functions": [
 					{
 						"filter": {
 							"__children_of": "query_dsl"
 						},
-						"weight": 42,
-						"script_score": {
-							"__children_of": "script_template"
-						},
-						"random_score": {
-							"seed": 10,
-							"field": "{field}"
-						},
-						"field_value_factor": {
-							"field": "{field}",
-							"factor": 1.2,
-							"modifier": {
-							},
-							"missing": 1
-						},
-						"gauss": {
-							"__children_of": "decay_function_options"
-						},
-						"exp": {
-							"__children_of": "decay_function_options"
-						},
-						"linear": {
-							"__children_of": "decay_function_options"
-						}
+						"__children_of": "function_score_functions"
 					}
 				],
-				"random_score": {},
-				"boost_mode": "",
+				"boost_mode": {
+					"__as_type": "string",
+					"__children_of": "boost_modes"
+				},
 				"score_mode": {
 					"__children_of": "score_modes"
 				},
-				"min_score": 42
+				"max_boost": 42,
+				"min_score": 42,
+				"__children_of": "function_score_functions"
 			},
 			"boosting": {
 				"positive": {

@@ -2,7 +2,7 @@
   "name": "elasticdeveloper",
   "displayName": "Elasticsearch Developer tool",
   "description": "Has autocomplete support and other features",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "license": "MIT",
   "preview": false,
   "publisher": "crasnam",

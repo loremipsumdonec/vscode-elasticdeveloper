@@ -8,6 +8,12 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
     
+## [1.2.3] - 2018-08-10
+### Fixed
+- Problem with query dsl
+    - bool query: must, must_not, should and filter not showing query dsl when array.
+    - function_score: problem with functions, boost_mode etc.
+
 ## [1.2.2] - 2018-08-09
 ### Fixed
 - Removed quotes from querystring
