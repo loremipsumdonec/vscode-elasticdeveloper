@@ -58,6 +58,8 @@ export class ElasticService {
 
     public async perform(url: string, body:string, method:string = 'GET', contentType:string = 'application/json') : Promise<ElasticsearchResponse> {
 
+        body = this.normalizeBody(body);
+
         let uri = this._host + url;
         let options: any = {
             method: method,
@@ -137,6 +139,15 @@ export class ElasticService {
     }
 
     public post(url: string, body) {
+    }
+
+    private normalizeBody(body:string):string {
+
+        if(body && body.length > 0) {
+            body = body.replace(/[\r\n]+/g, '');
+        }
+
+        return body;
     }
 
 }
