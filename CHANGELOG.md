@@ -8,6 +8,11 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## [1.2.5] - 2018-08-14
+### Fixed
+- And now the autocomplete in arrays should be back. :)
+    - (hope I have not forgotten to change any more places)
+
 ## [1.2.4] - 2018-08-14
 ### Fixed
 - Autocomplete not showing after a multi-field.
