@@ -2,6 +2,7 @@
 
 import * as textTokenFactory from "../models/textToken";
 import * as propertyTokenFactory from "../models/propertyToken";
+import * as constant from "../constant";
 import { TextStream, TextStreamDirection } from "./textStream";
 import { TextToken } from "../models/textToken";
 import { PropertyToken } from "../models/propertyToken";
@@ -319,7 +320,7 @@ export class EntityDocumentScanner {
 
             for(let step of this._steps) {
 
-                let seperator = '.';
+                let seperator = constant.JsonPathSeperatorChar;
 
                 if(step.text.startsWith('[')) {
                     seperator = '';
@@ -338,7 +339,7 @@ export class EntityDocumentScanner {
                 if(propertyName.startsWith('[')) {
                     path = path = path + propertyName;
                 } else {
-                    path = path = path + '.' + propertyName;
+                    path = path = path + constant.JsonPathSeperatorChar + propertyName;
                 }
 
             }

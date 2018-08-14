@@ -13,23 +13,3 @@ GET /lorem/_search(name="a_simple_search") {
         }
     }
 }
-
-GET /lorem/_search {
-    "query": {
-        "match": {
-            "lorem": "hlleo"
-        }
-    },
-    "highlight": {
-        "type": "",
-        "fields": {
-        }
-    }
-    "aggregations": {
-        "lorem": {
-            "geo_bounds": {
-                "field": "lorem"
-            }
-        }
-    }
-}

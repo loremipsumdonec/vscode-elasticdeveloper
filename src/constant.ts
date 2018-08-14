@@ -7,6 +7,8 @@ export const WorkspaceStateEnvironmentPath = 'environment.path';
 export const CommandPrefix = Name;
 export const DefaultVersion = '6.3';
 
+export const JsonPathSeperatorChar = '/';
+
 /**
  *  ElasticsearchQuery
  */

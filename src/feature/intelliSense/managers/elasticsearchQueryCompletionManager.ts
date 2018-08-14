@@ -1,6 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode';
+import * as constant from "../../../constant";
 
 import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
 import { TokenType } from "../../../parsers/elasticsearchQueryDocumentScanner";
@@ -243,11 +244,11 @@ export class ElasticsearchQueryCompletionManager {
 
                 if(tokenPath) {
                     tokenPath = tokenPath.replace('[', '.[');
-                    tokenSteps = tokenPath.split('.')                   
+                    tokenSteps = tokenPath.split(constant.JsonPathSeperatorChar)                   
                             .filter(s => s !== '');
 
                     tokenPath.replace(/\[\w+\]/, '.[0]')
-                            .split('.')
+                            .split(constant.JsonPathSeperatorChar)
                             .filter(s => s !== '')
                             .forEach(s=> nodeSteps.push(s));
                 }
@@ -335,7 +336,7 @@ export class ElasticsearchQueryCompletionManager {
                                 if(tokenSteps[index].startsWith('[')) {
                                     path += tokenSteps[index];
                                 } else {
-                                    path += '.' + tokenSteps[index];
+                                    path += constant.JsonPathSeperatorChar + tokenSteps[index];
                                 }
                             } else {
                                 path = tokenSteps[index];
@@ -394,7 +395,7 @@ export class ElasticsearchQueryCompletionManager {
                         let label = target.label;
                         let hasLabel:boolean = true;
                         let kind:string = edge.kind;
-                        let propertyPath = token.path + '.' + target.label;
+                        let propertyPath = token.path + constant.JsonPathSeperatorChar + target.label;
 
                         if(!token.path) {
                             propertyPath = target.label;

@@ -22,7 +22,7 @@ suite("EntityDocumentScanner.test", () => {
 
         let entityAsString = '{ "lorem": { "ipsum": 56 } }';
         let scanner = createScanner(entityAsString);
-        let token = scanner.scanUntilPath("lorem.ipsum") as PropertyToken;
+        let token = scanner.scanUntilPath("lorem/ipsum") as PropertyToken;
         
         assert.equal(token.text, 'ipsum');
         assert.equal(token.propertyValueToken.text, 56);
@@ -32,7 +32,7 @@ suite("EntityDocumentScanner.test", () => {
 
         let entityAsString = '{ "lorem": { "ipsum": 56 } }';
         let scanner = createScanner(entityAsString);
-        let t = scanner.scanUntilPath("lorem.ipsum") as PropertyToken;
+        let t = scanner.scanUntilPath("lorem/ipsum") as PropertyToken;
         let token = scanner.scan() as PropertyToken;
 
         assert.equal(token.text, 'lorem');
@@ -43,7 +43,7 @@ suite("EntityDocumentScanner.test", () => {
 
         let entityAsString = '{ "lorem": { "ipsum": 56, "donec": { "durp": "hello world" } } }';
         let scanner = createScanner(entityAsString);
-        let token = scanner.scanUntilPath("lorem.donec.durp") as PropertyToken;
+        let token = scanner.scanUntilPath("lorem/donec/durp") as PropertyToken;
 
         assert.equal(token.text, 'durp');
         assert.equal(token.propertyValueToken.text, "hello world");
@@ -73,9 +73,9 @@ suite("EntityDocumentScanner.test", () => {
 
         let entityAsString = '{ "lorem": [{"donec": 16 }, {"donec": 34}] }';
         let scanner = createScanner(entityAsString);
-        let token = scanner.scanUntilPath("lorem[1].donec") as PropertyToken;
+        let token = scanner.scanUntilPath("lorem[1]/donec") as PropertyToken;
 
-        assert.equal(token.path, "lorem[1].donec");
+        assert.equal(token.path, "lorem[1]/donec");
         assert.equal(token.propertyValueToken.text, 34);
     });
 
@@ -83,9 +83,9 @@ suite("EntityDocumentScanner.test", () => {
 
         let entityAsString = '{ "lorem": [{"donec": 16, "ipsum":[1,2,3,4] }, {"donec": 34, "ipsum":[1,267,3,4]}] }';
         let scanner = createScanner(entityAsString);
-        let token = scanner.scanUntilPath("lorem[1].ipsum[1]") as PropertyToken;
+        let token = scanner.scanUntilPath("lorem[1]/ipsum[1]") as PropertyToken;
 
-        assert.equal(token.path, "lorem[1].ipsum[1]");
+        assert.equal(token.path, "lorem[1]/ipsum[1]");
         assert.equal(token.propertyValueToken.text, 267);
     });
 
@@ -105,8 +105,8 @@ suite("EntityDocumentScanner.test", () => {
         let mappingAsJson = JSON.stringify(mapping);
 
         let scanner = createScanner(mappingAsJson);
-        let token = scanner.scanUntilPath("properties.title") as PropertyToken;
+        let token = scanner.scanUntilPath("properties/title") as PropertyToken;
 
-        assert.equal(token.path, "properties.title");
+        assert.equal(token.path, "properties/title");
     });
 });

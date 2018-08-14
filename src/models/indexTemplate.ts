@@ -1,5 +1,6 @@
 'use strict'
 
+import * as constant from '../constant';
 import { Entity } from "./entity";
 import { PropertyToken } from "./propertyToken";
 import { TokenType } from "../parsers/entityDocumentScanner";
@@ -81,7 +82,7 @@ export class IndexTemplate extends Entity {
         if(textToken.path) {
 
             let context = this;
-            let steps = textToken.path.split('.');
+            let steps = textToken.path.split(constant.JsonPathSeperatorChar);
             let lastStepIndex = steps.length - 1; 
 
             for(let index = 0; index < steps.length; index++) {

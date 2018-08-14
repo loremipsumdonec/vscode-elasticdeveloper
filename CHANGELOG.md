@@ -7,6 +7,10 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
 - Rebuild syntax highlight
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
+
+## [1.2.4] - 2018-08-14
+### Fixed
+- Autocomplete not showing after a multi-field.
     
 ## [1.2.3] - 2018-08-10
 ### Fixed
