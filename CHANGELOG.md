@@ -8,6 +8,10 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## [1.2.6] - 2018-08-15
+### Fixed
+-  Updated multiple indices endpoints
+
 ## [1.2.5] - 2018-08-14
 ### Fixed
 - And now the autocomplete in arrays should be back. :)
