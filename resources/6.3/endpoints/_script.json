@@ -1,5 +1,5 @@
 {
-    "__import_file": ["_query_dsl", "_aggregations", "_highlight"],
+    "__import_file": ["_query_dsl"],
     "__templates": {
         "script_language": {
             "painless":{},

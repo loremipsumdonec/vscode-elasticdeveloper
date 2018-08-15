@@ -1,28 +1,6 @@
 {
-    "__templates": {
-        "field": {
-            "type": {
-                "__as_type": "string",
-                "__children_of": "field_types"
-            },
-            "fields": {
-                "{field}": {
-                    "__children_of": "field"
-                }
-            }
-        },
-        "field_types": {
-            "text": {},
-            "keyword": {},
-            "date": {},
-            "long": {},
-            "double": {},
-            "boolean": {}
-        }
-    },
+    "__import_file": ["_mappings"],
     "properties": {
-        "{field}": {
-            "__children_of": "field"
-        }
+        "__children_of": "mappings_properties/properties"
     }
 }

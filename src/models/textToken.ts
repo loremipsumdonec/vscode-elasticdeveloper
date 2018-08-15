@@ -1,5 +1,7 @@
 'use strict'
 
+import * as constant from '../constant';
+
 export class TextToken {
 
     private _type:number;
@@ -63,7 +65,7 @@ export class TextToken {
         this._path = value;
         
         if(this._path) {
-            this._depth = this._path.split('.').length - 1;
+            this._depth = this._path.split(constant.JsonPathSeperatorChar).length - 1;
         }
     }
 

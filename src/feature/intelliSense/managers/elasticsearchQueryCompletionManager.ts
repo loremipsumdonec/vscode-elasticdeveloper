@@ -314,6 +314,45 @@ export class ElasticsearchQueryCompletionManager {
                 getNode.push(
                     (step, token, tokens, edges, visited, graph) => {
 
+                        if(token.propertyValueToken.type === EntityTokenType.OpenEntity) {
+
+                            let depth = token.depth;
+                            let previousEdge = visited[visited.length -1];
+                            let previousNodeEdges = graph.findEdges(e=> e.sourceId == previousEdge.targetId && (
+                                e.kind !== 'array' && e.kind !== 'object' && e.kind !== 'children_of'));
+
+                            for(let previousNodeEdge of previousNodeEdges) {
+                                let targetNode = graph.getNodeWithId(previousNodeEdge.targetId);
+                                let contextToken = tokens.find(t=> t.depth === depth && t.text === targetNode.label);
+
+                                if(contextToken) {
+                                    let expectedId = targetNode.id + '/' + contextToken.propertyValueToken.text;
+                                    let hasNodeWithExpectedValue = graph.getNodeWithId(expectedId);
+
+                                    if(hasNodeWithExpectedValue) {
+                                        let edges = graph.getEdgesWithSourceId(hasNodeWithExpectedValue.id);
+
+                                        for(let edge of edges) {
+                                            let node = graph.getNodeWithId(edge.targetId);
+
+                                            if(node.label === step) {
+                                                visited.push(edge);
+                                                return node;
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+
+                        }
+
+                    return null;
+                });
+
+                getNode.push(
+                    (step, token, tokens, edges, visited, graph) => {
+
                         for(let edge of edges) {
                             let n = graph.getNodeWithId(edge.targetId);
                             
@@ -354,7 +393,8 @@ export class ElasticsearchQueryCompletionManager {
                                 e.kind !== 'array' && e.kind !== 'object' && e.kind !== 'children_of'));
 
                         } else if(tokenType === EntityTokenType.OpenEntity) {
-                            edges = graph.findEdges(e=> e.sourceId == node.id && e.kind === 'object');
+                            edges = graph.findEdges(e=> e.sourceId == node.id && (e.kind === 'object' || 
+                                (e.kind !== 'array' && e.kind !== 'children_of')));
                         } else if(tokenType === EntityTokenType.OpenArray) {
                             edges = graph.findEdges(e=> e.sourceId == node.id && e.kind === 'array');
                         }
@@ -459,10 +499,16 @@ export class ElasticsearchQueryCompletionManager {
                                     pattern = pattern.replace('{value}', '[$0]');
                                     break;
                                 case 'number':
+                                    if(target.data.defaultValue !== undefined) {
+                                        pattern = pattern.replace('{value}', target.data.defaultValue + '$0');
+                                    } else {
+                                        pattern = pattern.replace('{value}', '$0');
+                                    }
+
                                 case 'boolean':
     
                                     if(target.data.defaultValue !== undefined) {
-                                        pattern = pattern.replace('{value}', ' {' + target.data.defaultValue + '}$0');
+                                        pattern = pattern.replace('{value}', '"{' + target.data.defaultValue + '}"$0');
                                     } else {
                                         pattern = pattern.replace('{value}', '$0');
                                     }

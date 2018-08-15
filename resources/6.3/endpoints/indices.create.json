@@ -1,39 +1,12 @@
 {
-    "__import_file": ["_index_settings", "_mappings", "_aliases", "_analysis"],
+    "__import_file": ["_index_settings", "_index_analysis", "_mappings", "_aliases"],
     "settings": {
         "index": {
             "__children_of": "index_settings"
         },
         "__children_of": "index_settings",
         "analysis": {
-            "analyzer": {
-                "{name}": {
-                    "type": {
-                        "__as_type":"string",
-                        "__children_of": "analyzers"
-                    }
-                }
-            },
-            "normalizer": {
-                "{name}": {
-                    "type": "{custom}"
-                }
-            },
-            "tokenizer": {
-                "{name}": {
-                    "type": "{standard}"
-                }
-            },
-            "filter": {
-                "{name}": {
-                    "type": ""
-                }
-            },
-            "char_filter": {
-                "{name}": {
-                    "type": ""
-                }
-            }
+            "__children_of": "index_settings_analysis"
         }
     },
     "mappings": {
