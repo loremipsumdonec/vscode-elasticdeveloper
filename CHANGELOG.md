@@ -8,6 +8,10 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## [1.2.7] - 2018-08-17
+### Fixed
+-  Intellisense for the query body will only trigger on empty line.
+
 ## [1.2.6] - 2018-08-15
 ### Fixed
 -  Updated multiple indices endpoints

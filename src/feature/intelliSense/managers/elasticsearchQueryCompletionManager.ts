@@ -56,7 +56,7 @@ export class ElasticsearchQueryCompletionManager {
         return this.getEndpointIdWith(query.method, query.command);
     }
 
-    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string, textDocument: vscode.TextDocument): vscode.CompletionItem[] {
+    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string, line: vscode.TextLine): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
@@ -71,7 +71,13 @@ export class ElasticsearchQueryCompletionManager {
                     completionItems = this.getCompletionItemsForQueryString(query, token as PropertyToken, offset);
                     break;
                 case TokenType.Body:
-                    completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter, textDocument);
+
+                    if(triggerCharacter == '\n' && line.isEmptyOrWhitespace) {
+                        completionItems = this.getCompletionItemsForQueryBody(query, offset);
+                    } else if(triggerCharacter != '\n') {
+                        completionItems = this.getCompletionItemsForQueryBody(query, offset);
+                    }
+                    
                     break;
             }
 
@@ -223,7 +229,7 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
-    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string, textDocument: vscode.TextDocument): vscode.CompletionItem[] {
+    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let bodyToken = query.tokenAt(offset);

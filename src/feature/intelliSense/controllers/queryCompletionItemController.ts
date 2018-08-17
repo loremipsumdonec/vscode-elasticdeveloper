@@ -24,9 +24,10 @@ export class QueryCompletionItemController extends QueryController
 
             let triggerCharacter = context.triggerCharacter;
             let offset = document.offsetAt(position);
+            let currentLine = this.getCurrentLine(offset, document);
 
             var manager = ElasticsearchQueryCompletionManager.get();
-            completionItems = manager.getCompletionItems(query, offset, triggerCharacter, document);
+            completionItems = manager.getCompletionItems(query, offset, triggerCharacter, currentLine);
 
         }
 
@@ -44,5 +45,13 @@ export class QueryCompletionItemController extends QueryController
         let query = ElasticsearchQueryDocument.getQueryWithOffset(offset, text);
 
         return query;
+    }
+    
+    private getCurrentLine(offset:number, textDocument:vscode.TextDocument):vscode.TextLine {
+
+        let position = textDocument.positionAt(offset); 
+        let line = textDocument.lineAt(position.line);
+
+        return line;
     }
 }
