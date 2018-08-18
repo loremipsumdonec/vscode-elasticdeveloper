@@ -10,7 +10,7 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
 
 ## [1.2.8] - 2018-08-17
 ### Fixed
--  Intellisense for the query body will only trigger on empty line.
+-  Better support for intellisense and quotes
 
 ## [1.2.7] - 2018-08-17
 ### Fixed
