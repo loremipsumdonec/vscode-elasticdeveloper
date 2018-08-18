@@ -56,7 +56,7 @@ export class ElasticsearchQueryCompletionManager {
         return this.getEndpointIdWith(query.method, query.command);
     }
 
-    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string, line: vscode.TextLine): vscode.CompletionItem[] {
+    public getCompletionItems(query:ElasticsearchQuery, offset:number, triggerCharacter:string, line: vscode.TextLine, range:vscode.Range): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
@@ -73,9 +73,9 @@ export class ElasticsearchQueryCompletionManager {
                 case TokenType.Body:
 
                     if(triggerCharacter == '\n' && line.isEmptyOrWhitespace) {
-                        completionItems = this.getCompletionItemsForQueryBody(query, offset);
+                        completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter, range);
                     } else if(triggerCharacter != '\n') {
-                        completionItems = this.getCompletionItemsForQueryBody(query, offset);
+                        completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter, range);
                     }
                     
                     break;
@@ -229,7 +229,7 @@ export class ElasticsearchQueryCompletionManager {
         return completionItems;
     }
 
-    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number): vscode.CompletionItem[] {
+    public getCompletionItemsForQueryBody(query:ElasticsearchQuery, offset:number, triggerCharacter:string, range:vscode.Range): vscode.CompletionItem[] {
 
         let completionItems:vscode.CompletionItem[] = [];
         let bodyToken = query.tokenAt(offset);
@@ -471,6 +471,11 @@ export class ElasticsearchQueryCompletionManager {
 
                             let pattern = '"{label}": {value}';
 
+                            if(triggerCharacter == '"') {
+                                pattern = pattern.substr(1);
+                                range = new vscode.Range(range.start.line, range.start.character, range.end.line, range.end.character + 1);
+                            }
+
                             if((token.hasText && !token.propertyValueToken) && target.label !== token.text) {
                                 continue;
                             } else if(token.hasText && token.propertyValueToken && token.propertyValueToken.type === EntityTokenType.PropertyValue) {
@@ -493,6 +498,7 @@ export class ElasticsearchQueryCompletionManager {
                             let item:vscode.CompletionItem = new vscode.CompletionItem(label);
                             item.filterText = label.replace('{','').replace('}', '');
                             item.detail = kind;
+                            item.range = range;
     
                             switch(kind) {
     

@@ -24,11 +24,15 @@ export class QueryCompletionItemController extends QueryController
 
             let triggerCharacter = context.triggerCharacter;
             let offset = document.offsetAt(position);
-            let currentLine = document.lineAt(position);
+            let line = document.lineAt(position);
+            let range = document.getWordRangeAtPosition(position);
+
+            if(!range) {
+                range = new vscode.Range(position, position);
+            }
 
             var manager = ElasticsearchQueryCompletionManager.get();
-            completionItems = manager.getCompletionItems(query, offset, triggerCharacter, currentLine);
-
+            completionItems = manager.getCompletionItems(query, offset, triggerCharacter, line, range);
         }
 
         return completionItems;
