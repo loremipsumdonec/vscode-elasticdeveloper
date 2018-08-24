@@ -2,7 +2,7 @@
     "__import_file": ["_index_settings", "_index_analysis", "_mappings", "_aliases"],
     "settings": {
         "index": {
-            "__children_of": "index_settings"
+            "__children_of": "index_settings_no_index_prefix"
         },
         "__children_of": "index_settings",
         "analysis": {

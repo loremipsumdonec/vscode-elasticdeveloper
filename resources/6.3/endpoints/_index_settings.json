@@ -10,6 +10,10 @@
             "__children_of": ["index_settings_static", "index_settings_dynamic", "index_mappings_settings"],
             "index.write.wait_for_active_shards": 2
         },
+        "index_settings_no_index_prefix": {
+            "__children_of": ["index_settings_static_no_index_prefix", "index_settings_dynamic_no_index_prefix", "index_mappings_settings_no_index_prefix"],
+            "write.wait_for_active_shards": 2
+        },
         "index_settings_static": {
             "index.number_of_shards": 5,
             "index.shard.check_on_startup": {
@@ -25,6 +29,22 @@
                 "best_compression": { }
             },
             "index.routing_partition_size": 1
+        },
+        "index_settings_static_no_index_prefix": {
+            "number_of_shards": 5,
+            "shard.check_on_startup": {
+                "__as_type": "string",
+                "false": { },
+                "checksum": { },
+                "true": { },
+                "fix": { }
+            },
+            "codec": {
+                "__as_type": "string",
+                "default": { },
+                "best_compression": { }
+            },
+            "routing_partition_size": 1
         },
         "index_settings_dynamic": {
             "index.number_of_replicas": 1,
@@ -55,10 +75,45 @@
             },
             "index.gc_deletes": "60s"
         },
+        "index_settings_dynamic_no_index_prefix": {
+            "number_of_replicas": 1,
+            "auto_expand_replicas": false,
+            "refresh_interval": "1s",
+            "max_result_window":  10000,
+            "max_inner_result_window": 100,
+            "max_rescore_window": 10000,
+            "max_docvalue_fields_search": 100,
+            "max_script_fields": 32,
+            "max_ngram_diff": 1,
+            "max_shingle_diff": 3,
+            "blocks.read_only": false,
+            "blocks.read_only_allow_delete": false,
+            "blocks.read": false,
+            "blocks.write": false,
+            "blocks.metadata": false,
+            "max_refresh_listeners":5,
+            "highlight.max_analyzed_offset": -1,
+            "max_terms_count": 65536,
+            "routing.allocation.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "routing.rebalance.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "gc_deletes": "60s"
+        },
+
         "index_mappings_settings": {
             "index.mapping.total_fields.limit": 1000,
             "index.mapping.depth.limit": 20,
             "index.mapping.nested_fields.limit": 50
+        },
+        "index_mappings_settings_no_index_prefix": {
+            "mapping.total_fields.limit": 1000,
+            "mapping.depth.limit": 20,
+            "mapping.nested_fields.limit": 50
         }
     }
 }

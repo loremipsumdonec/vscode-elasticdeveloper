@@ -4,7 +4,19 @@
         "max_docs": 1000,
         "max_size": "5gb"
     },
-    "settings": {},
-    "mappings": {},
-    "aliases":{}
+    "settings": {
+        "index": {
+            "__children_of": "index_settings_no_index_prefix"
+        },
+        "__children_of": "index_settings",
+        "analysis": {
+            "__children_of": "index_settings_analysis"
+        }
+    },
+    "mappings": {
+        "__children_of": "index_mappings"
+    },
+    "aliases":{
+        "__children_of": "index_aliases"
+    }
 }
