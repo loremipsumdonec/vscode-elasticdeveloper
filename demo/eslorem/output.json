@@ -1,59 +1,54 @@
 {
-    "statusCode": 200,
+    "statusCode": 400,
     "body": {
-        "lorem": {
-            "mappings": {
-                "document": {
-                    "properties": {
-                        "main": {
-                            "type": "text"
-                        },
-                        "preamble": {
-                            "type": "text"
-                        },
-                        "title": {
-                            "type": "text"
-                        }
-                    }
+        "error": {
+            "root_cause": [
+                {
+                    "type": "illegal_argument_exception",
+                    "reason": "persistent setting [index.auto_expand_replicas], not recognized"
                 }
-            }
-        }
+            ],
+            "type": "illegal_argument_exception",
+            "reason": "persistent setting [index.auto_expand_replicas], not recognized"
+        },
+        "status": 400
     },
     "headers": {
         "content-type": "application/json; charset=UTF-8",
-        "content-length": "126"
+        "content-length": "263"
     },
     "request": {
         "uri": {
             "protocol": "http:",
             "slashes": true,
             "auth": null,
-            "host": "localhost:9200",
-            "port": "9200",
+            "host": "localhost:9201",
+            "port": "9201",
             "hostname": "localhost",
             "hash": null,
             "search": null,
             "query": null,
-            "pathname": "/lorem/_mapping/document",
-            "path": "/lorem/_mapping/document",
-            "href": "http://localhost:9200/lorem/_mapping/document"
+            "pathname": "/_cluster/settings",
+            "path": "/_cluster/settings",
+            "href": "http://localhost:9201/_cluster/settings"
         },
-        "method": "GET",
+        "method": "put",
         "headers": {
             "Accept": "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "content-length": 71
         }
     },
-    "message": "OK",
-    "completed": true,
+    "message": "Bad Request",
+    "completed": false,
     "environment": {
         "_textTokens": [],
         "_version": {
-            "_major": "5",
-            "_minor": "6",
-            "_patch": "2"
+            "_major": "6",
+            "_minor": "2",
+            "_patch": "3"
         },
-        "_host": "http://localhost:9200",
-        "_name": "dev 5.6.2"
+        "_host": "http://localhost:9201",
+        "_name": "dev 6.2.3"
     }
 }

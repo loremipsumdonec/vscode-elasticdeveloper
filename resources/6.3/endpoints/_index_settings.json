@@ -104,7 +104,50 @@
             },
             "gc_deletes": "60s"
         },
-
+        "indices_settings_dynamic": {
+            "__children_of": [
+                "indices_recovery_settings_dynamic", 
+                "indices_circuit_breaker_settings_dynamic"
+            ]
+        },
+        "indices_recovery_settings_dynamic": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/recovery.html",
+            "indices.recovery.max_bytes_per_sec": "40mb"
+        },
+        "indices_shard_request_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/shard-request-cache.html",
+            "indices.requests.cache.size": "2%",
+            "indices.requests.cache.expire": ""
+        },
+        "indices_indexing_buffer_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/indexing-buffer.html",
+            "indices.memory.index_buffer_size": "10%",
+            "indices.memory.min_index_buffer_size": "48mb",
+            "indices.memory.max_index_buffer_size": ""
+        },
+        "indices_node_query_cache_settings_dynamic": {
+        },
+        "indices_node_query_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-cache.html",
+            "indices.queries.cache.size": "10%"
+        },
+        "indices_fielddata_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/6.3/modules-fielddata.html",
+            "indices.fielddata.cache.size": ""
+        },
+        "indices_circuit_breaker_settings_dynamic": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/circuit-breaker.html",
+            "indices.breaker.total.limit": "70%",
+            "indices.breaker.fielddata.limit": "60%",
+            "indices.breaker.fielddata.overhead": "1.03",
+            "indices.breaker.request.limit": "60%",
+            "indices.breaker.request.overhead": 1,
+            "network.breaker.inflight_requests.limit": "100%",
+            "network.breaker.inflight_requests.overhead": 1,
+            "indices.breaker.accounting.limit": "100%",
+            "indices.breaker.accounting.overhead": 1,
+            "script.max_compilations_rate": "75/5m"
+        },
         "index_mappings_settings": {
             "index.mapping.total_fields.limit": 1000,
             "index.mapping.depth.limit": 20,
