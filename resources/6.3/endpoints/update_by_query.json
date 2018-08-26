@@ -1,3 +1,9 @@
 {
-    "query": {}
+    "__import_file": ["_query_dsl", "_script"],
+    "query": {
+        "__children_of": "query_dsl"
+    },
+    "script": {
+        "__children_of": "script_template"
+    }
 }
