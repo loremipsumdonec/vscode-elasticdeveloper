@@ -249,11 +249,11 @@ export class ElasticsearchQueryCompletionManager {
                 let tokenPath = token.path;
 
                 if(tokenPath) {
-                    tokenPath = tokenPath.replace('[', constant.JsonPathSeperatorChar + '[');
+                    tokenPath = tokenPath.replace(/\[/g, constant.JsonPathSeperatorChar + '[');
                     tokenSteps = tokenPath.split(constant.JsonPathSeperatorChar)                   
                             .filter(s => s !== '');
 
-                    tokenPath.replace(/\[\w+\]/, constant.JsonPathSeperatorChar + '[0]')
+                    tokenPath.replace(/\[\w+\]/g, constant.JsonPathSeperatorChar + '[0]')
                             .split(constant.JsonPathSeperatorChar)
                             .filter(s => s !== '')
                             .forEach(s=> nodeSteps.push(s));
