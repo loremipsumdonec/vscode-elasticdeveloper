@@ -126,22 +126,26 @@
 		},
 		"full_text_queries": {
 			"match": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query.html",
 				"{field}": {
 					"__children_of": "match_options"
 				}
 			},
 			"match_phrase": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query-phrase.html",
 				"{field}": {
 					"__children_of": "default_match"
 				}
 			},
 			"match_phrase_prefix":{
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query-phrase-prefix.html",
 				"{field}": {
 					"__children_of": "default_match",
 					"max_expansions": 50
 				}
 			},
 			"multi_match":{
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-multi-match-query.html",
 				"query": "this is a simple test",
 				"fields": ["{field}"],
 				"type": {
@@ -153,6 +157,7 @@
 				"__children_of": "match_options"
 			},
 			"common": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-common-terms-query.html",
 				"{field}": {
 					"query": "",
 					"cutoff_frequency": 0.001,
@@ -167,6 +172,7 @@
 				}
 			},
 			"query_string": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html",
 				"fields": ["{field}"],
 				"type": {
 					"__as_type": "string",
@@ -206,6 +212,7 @@
 				"all_fields": "*"
 			},
 			"simple_query_string": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-simple-query-string-query.html",
 				"fields": ["{field}"],
 				"default_operator": {
 					"__as_type": "string",
