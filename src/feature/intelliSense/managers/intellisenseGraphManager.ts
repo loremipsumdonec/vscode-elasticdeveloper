@@ -531,11 +531,23 @@ export class IntellisenseGraphManager {
         }
 
         let extension = vscode.extensions.getExtension(constant.ExtensionId);
-        let versionNumber = this.getVersionNumber();
-        let file =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId + '.json');
+        let versionNumbers:string[] = [];
+        let file:string = null;
 
-        if(!fs.existsSync(file)) {
-            file = null;
+        versionNumbers.push(this.getDefaultVersionNumber());
+        versionNumbers.push(this.getVersionNumber());
+
+        while(versionNumbers.length > 0) {
+
+            let versionNumber = versionNumbers.pop();
+            file =  path.join(extension.extensionPath, 'resources', versionNumber, 'endpoints', endpointId + '.json');
+
+            if(fs.existsSync(file)) {
+                break;
+            } else {
+                file = null;
+            }
+
         }
 
         return file;
@@ -566,7 +578,29 @@ export class IntellisenseGraphManager {
         return jsonFiles;
     }
 
-    private getVersionNumber() {
+    private getDefaultVersionNumber():string {
+
+        let versionNumber:string = null;
+
+        let extension = vscode.extensions.getExtension(constant.ExtensionId);
+        let folderPath = path.join(extension.extensionPath, 'resources');
+        let version = Version.parse(constant.DefaultVersion);
+
+        let folders = fs.readdirSync(folderPath)
+            .filter(
+                f=> fs.statSync(path.join(folderPath, f)).isDirectory()
+            );
+
+        let closestVersion = Version.getClosest(version, folders);
+
+        if(closestVersion) {
+            versionNumber = closestVersion.toString();
+        }
+
+        return versionNumber;
+    }
+
+    private getVersionNumber():string {
 
         let versionNumber:string = null;
 
