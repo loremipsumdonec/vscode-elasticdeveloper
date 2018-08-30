@@ -576,7 +576,7 @@ export class IntellisenseGraphManager {
             let environment = EnvironmentManager.get().environment;
 
             let extension = vscode.extensions.getExtension(constant.ExtensionId);
-            let folderPath =  extension.extensionPath +  '\\resources';
+            let folderPath = path.join(extension.extensionPath, 'resources');
 
             let folders = fs.readdirSync(folderPath)
                 .filter(

@@ -34,8 +34,7 @@ export class FileSystemLoaderServiceSpecificationManagerDecorator extends Servic
                 const extension = path.extname(filename);
                 
                 if(extension === '.json') {
-                    
-                    const filePath = folderPath + '\\' + filename;
+                    const filePath = path.join(folderPath, filename)
                     let specificationItems = this.loadSpecificationItemFromFile(filePath);
 
                     for(let specificationItem of specificationItems) {
@@ -108,7 +107,7 @@ export class FileSystemLoaderServiceSpecificationManagerDecorator extends Servic
         if(environment && environment.hasVersion) {
 
             let extension = vscode.extensions.getExtension(constant.ExtensionId);
-            folderPath =  extension.extensionPath +  '\\resources\\rest-api-spec';
+            folderPath = path.join(extension.extensionPath, 'resources', 'rest-api-spec');
 
             let folders = fs.readdirSync(folderPath)
                 .filter(
@@ -118,7 +117,7 @@ export class FileSystemLoaderServiceSpecificationManagerDecorator extends Servic
             let closest = Version.getClosest(environment.version, folders);
 
             if(closest) {
-                folderPath = folderPath + '\\' + closest.toString();
+                folderPath = path.join(folderPath, closest.toString());
             } else {
                 folderPath = null;
             }
