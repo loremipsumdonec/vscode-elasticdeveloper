@@ -1,4 +1,12 @@
 {
-    "settings":{},
-    "aliases":{}
+    "__import_file": ["_index_settings", "_index_analysis", "_mappings", "_aliases"],
+    "settings": {
+        "__children_of": "index_settings",
+        "analysis": {
+            "__children_of": "index_settings_analysis"
+        }
+    },
+    "aliases": {
+        "__children_of": "index_aliases"
+    }
 }

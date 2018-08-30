@@ -2,7 +2,26 @@
     "__import_file": ["_query_dsl", "_aggregations", "_highlight"],
     "from": 0,
 	"size": 10,
-	"sort": [ { "{field}": {"order": "asc"} }],
+	"sort": {
+		"__array": [{ 
+			"{field}": {
+				"order": {
+					"__as_type": "string",
+					"asc": {},
+					"desc": {}
+				}
+			} 
+		}],
+		"__object": { 
+			"{field}": {
+				"order": {
+					"__as_type": "string",
+					"asc": {},
+					"desc": {}
+				}
+			} 
+		}
+	},
 	"_source": [""],
 	"stored_fields": ["{field}"],
 	"script_fields": {
