@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export class HttpService {
 
@@ -12,7 +13,7 @@ export class HttpService {
     constructor(portNumber:number, rootFolder:string) {
         this._outputChannel = vscode.window.createOutputChannel('Elasticdeveloper HTTP');
         this._portNumber = portNumber;
-        this._rootFolder = rootFolder + '\\.wwwroot';
+        this._rootFolder = path.join(rootFolder, '.wwwroot');
     }
 
     public async start() {
