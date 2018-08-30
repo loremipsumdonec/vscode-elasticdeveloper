@@ -1,5 +1,6 @@
 {
     "__import_file": ["_analysis"],
+        "field": "{field}",
         "text": {
             "__as_type": ["array", "string"]
         },
