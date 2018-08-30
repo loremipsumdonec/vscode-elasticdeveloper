@@ -14,7 +14,7 @@
     "url": "https://github.com/Crasnam/vscode-elasticdeveloper.git"
   },
   "bugs": {
-     "url": "https://github.com/Crasnam/vscode-elasticdeveloper/issues"
+    "url": "https://github.com/Crasnam/vscode-elasticdeveloper/issues"
   },
   "categories": [
     "Programming Languages",
@@ -274,14 +274,14 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.66",
+    "@types/node": "^7.0.70",
     "typescript": "^2.9.2",
-    "vscode": "^1.1.18"
+    "vscode": "^1.1.21"
   },
   "dependencies": {
     "handlebars": "^4.0.11",
     "path": "^0.12.7",
-    "request": "^2.87.0",
+    "request": "^2.88.0",
     "tmp": "0.0.33"
   }
 }
