@@ -14,7 +14,7 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
 - Using default version for endpoint file if current target environment version does not exists
 
 ## Changed
-- Updated autocomplete endpoints: indices.shrink, indices.split, search, search_template and _script
+- Updated autocomplete endpoints: indices.analyze, indices.shrink, indices.split, search, search_template and _script
 
 ## [1.2.9] - 2018-08-24
 ### Fixed
