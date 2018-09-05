@@ -1,5 +1,6 @@
 {
-    "__import_file": ["_query_dsl", "_aggregations", "_highlight"],
+	"__import_file": ["_query_dsl", "_aggregations", "_highlight"],
+	"profile": true,
     "from": 0,
 	"size": 10,
 	"sort": {
