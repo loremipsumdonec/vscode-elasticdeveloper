@@ -13,171 +13,171 @@
             "map": {},
             "global_ordinals": {},
             "bytes_hash": {}
-        }
-    },
-    "aggregations": {
-        "{name}": {
-           "adjacency_matrix": {
-               "filters": {
-                   "{bucket}": {}
-               }
-           },
-           "children": {
-               "type": "{type}"
-           },
-           "composite": {
-                "sources": [],
-                "size": 10,
-                "after": {}
-           },
-           "date_histogram": {
-                "field": "{field}",
-                "format": "",
-                "keyed": true,
-                "interval": "",
-                "time_zone": "",
-                "offset": "",
-                
-                "missing": "",
-                "min_doc_count": 0,
-                "order": {
-                    "_key": "asc",
-                    "_count": "asc"
-                }
-           },
-           "date_range": {
-                "field": "{field}",
-                "format": "",
-                "ranges": [
-                    { "to": "{value}", "from": "{value}"} ],
-                "keyed": true,
-                "script": {
-                    "__children_of": "script"
-                }
-           },
-           "diversified_sampler": {
-                "field": "{field}",
-                "shard_size": 200,
-                "max_docs_per_value": 3,
-                "execution_hint": "",
-                "script": {
-                    "__children_of": "script"
-                }
-           },
-           "filter": {},
-           "filters": {
-               "other_bucket_key": "",
-               "filters" : {
-                   "{name}": {}
-               }
-           },
-           "geo_distance": {
-            "field": "{field}",
-               "origin": "",
-               "unit": "",
-               "distance_type": "",
-               "keyed": true,
-               "ranges": [{"to": "{value}", "from": "{value}"} ]
-           },
-           "geohash_grid": {
-               "field": "{field}",
-               "precision": 3,
-               "size": 10,
-               "shard_size": 10
-           },
-           "global": {},
-           "histogram": {
-               "field": "{field}",
-               "interval": 50,
-               "min_doc_count": 1,
-               "extended_bounds": {
-                   "min": 0,
-                   "max": 50
+        },
+        "aggregations_template": {
+            "{name}": {
+               "adjacency_matrix": {
+                   "filters": {
+                       "{bucket}": {}
+                   }
                },
-               "keyed": true,
-               "missing": "",
-               "order": {
-                   "_key": "asc",
-                   "_count": "asc"
-               }
-           },
-           "ip_range": {
-               "field": "{field}",
-               "format": "",
-               "ranges": [{"to": "{value}", "from": "{value}"} ],
-               "keyed": true
-           },
-           "missing": {
-               "field": "{field}"
-           },
-           "nested": {
-               "path": "{value}",
-               "aggs": {
-                   "__children_of": "aggregations"
-               }
-           },
-           "range": {
-               "field": "{field}",
-               "ranges": [{"to": "{value}", "from": "{value}"} ],
-               "keyed": true,
-               "script": {
-                    "__children_of": "script"
-                },
-                "aggs": {
-                    "__children_of": "aggregations"
+               "children": {
+                   "type": "{type}"
+               },
+               "composite": {
+                    "sources": [],
+                    "size": 10,
+                    "after": {}
+               },
+               "date_histogram": {
+                    "field": "{field}",
+                    "format": "",
+                    "keyed": true,
+                    "interval": "",
+                    "time_zone": "",
+                    "offset": "",
+                    
+                    "missing": "",
+                    "min_doc_count": 0,
+                    "order": {
+                        "_key": "asc",
+                        "_count": "asc"
+                    }
+               },
+               "date_range": {
+                    "field": "{field}",
+                    "format": "",
+                    "ranges": [
+                        { "to": "{value}", "from": "{value}"} ],
+                    "keyed": true,
+                    "script": {
+                        "__children_of": "script"
+                    }
+               },
+               "diversified_sampler": {
+                    "field": "{field}",
+                    "shard_size": 200,
+                    "max_docs_per_value": 3,
+                    "execution_hint": "",
+                    "script": {
+                        "__children_of": "script"
+                    }
+               },
+               "filter": {},
+               "filters": {
+                   "other_bucket_key": "",
+                   "filters" : {
+                       "{name}": {}
+                   }
+               },
+               "geo_distance": {
+                "field": "{field}",
+                   "origin": "",
+                   "unit": "",
+                   "distance_type": "",
+                   "keyed": true,
+                   "ranges": [{"to": "{value}", "from": "{value}"} ]
+               },
+               "geohash_grid": {
+                   "field": "{field}",
+                   "precision": 3,
+                   "size": 10,
+                   "shard_size": 10
+               },
+               "global": {},
+               "histogram": {
+                   "field": "{field}",
+                   "interval": 50,
+                   "min_doc_count": 1,
+                   "extended_bounds": {
+                       "min": 0,
+                       "max": 50
+                   },
+                   "keyed": true,
+                   "missing": "",
+                   "order": {
+                       "_key": "asc",
+                       "_count": "asc"
+                   }
+               },
+               "ip_range": {
+                   "field": "{field}",
+                   "format": "",
+                   "ranges": [{"to": "{value}", "from": "{value}"} ],
+                   "keyed": true
+               },
+               "missing": {
+                   "field": "{field}"
+               },
+               "nested": {
+                   "path": "{value}",
+                   "aggs": {
+                       "__children_of": "aggregations_template"
+                   }
+               },
+               "range": {
+                   "field": "{field}",
+                   "ranges": [{"to": "{value}", "from": "{value}"} ],
+                   "keyed": true,
+                   "script": {
+                        "__children_of": "script"
+                    },
+                    "aggs": {
+                        "__children_of": "aggregations_template"
+                    }
+               },
+               "reverse_nested": {
+                   "path": "{value}"
+               },
+               "sampler": {
+                    "field": "{field}",
+                    "shard_size": 200,
+                    "max_docs_per_value": 3,
+                    "execution_hint": "",
+                    "script": {
+                        "__children_of": "script"
+                    }
+               },
+               "significant_terms": {
+                    "field": "{field}",
+                    "size": 10,
+                    "shard_size": 10,
+                    "shard_min_doc_count": 10,
+                    "min_doc_count": 10,
+                    "include": "",
+                    "exclude": "",
+                    "execution_hint": ""
+               },
+               "significant_text": {
+                    "field": "{field}",
+                    "filter_duplicate_text": true,
+                    "size": 10,
+                    "shard_size": 10,
+                    "shard_min_doc_count": 10,
+                    "min_doc_count": 10,
+                    "include": "",
+                    "exclude": "",
+                    "execution_hint": ""
+               },
+               "terms": {
+                   "field": "{field}",
+                   "size": 10,
+                   "shard_size": 10,
+                   "min_doc_count": 10,
+                   "order": {
+                        "_key": "asc",
+                        "_count": "asc"
+                    },
+                    "script": {
+                        "__children_of": "script"
+                    },
+                    "include": "",
+                    "exclude": "",
+                    "execution_hint": "",
+                    "show_term_doc_count_error": true,
+                    "collect_mode": "breadth_first",
+                    "missing": ""
                 }
-           },
-           "reverse_nested": {
-               "path": "{value}"
-           },
-           "sampler": {
-                "field": "{field}",
-                "shard_size": 200,
-                "max_docs_per_value": 3,
-                "execution_hint": "",
-                "script": {
-                    "__children_of": "script"
-                }
-           },
-           "significant_terms": {
-                "field": "{field}",
-                "size": 10,
-                "shard_size": 10,
-                "shard_min_doc_count": 10,
-                "min_doc_count": 10,
-                "include": "",
-                "exclude": "",
-                "execution_hint": ""
-           },
-           "significant_text": {
-                "field": "{field}",
-                "filter_duplicate_text": true,
-                "size": 10,
-                "shard_size": 10,
-                "shard_min_doc_count": 10,
-                "min_doc_count": 10,
-                "include": "",
-                "exclude": "",
-                "execution_hint": ""
-           },
-           "terms": {
-               "field": "{field}",
-               "size": 10,
-               "shard_size": 10,
-               "min_doc_count": 10,
-               "order": {
-                    "_key": "asc",
-                    "_count": "asc"
-                },
-                "script": {
-                    "__children_of": "script"
-                },
-                "include": "",
-                "exclude": "",
-                "execution_hint": "",
-                "show_term_doc_count_error": true,
-                "collect_mode": "breadth_first",
-                "missing": ""
             }
         }
     }

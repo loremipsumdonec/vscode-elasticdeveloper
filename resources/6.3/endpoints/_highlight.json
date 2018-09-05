@@ -47,14 +47,14 @@
 					"phrase_limit": 256
 				}
 			}
-		}		
-	},
-    "highlight": {
-		"fields": {
-			"{field}": {
-				"__children_of":"highlight_options"
-			}
 		},
-		"__children_of":"highlight_options"
-    }
+		"highlight_template": {
+			"fields": {
+				"{field}": {
+					"__children_of":"highlight_options"
+				}
+			},
+			"__children_of":"highlight_options"
+		}		
+	}
 }
