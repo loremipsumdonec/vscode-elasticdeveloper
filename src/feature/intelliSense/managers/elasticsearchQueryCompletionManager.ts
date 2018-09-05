@@ -664,7 +664,7 @@ export class ElasticsearchQueryCompletionManager {
         if(text && text.length > 0){
 
             text = text.replace('{{', '{').replace('}}', '}');
-            let matches = text.match(/\{([\w,\%,\., ]+)\}/g);
+            let matches = text.match(/\{([\w,\%,\.,\<,\>,\/]+)\}/g);
 
             if(matches) {
     
