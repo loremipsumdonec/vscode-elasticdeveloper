@@ -535,7 +535,7 @@ export class ElasticsearchQueryCompletionManager {
                                         if(token.propertyValueToken.type === EntityTokenType.OpenArray || 
                                             token.propertyValueToken.type === EntityTokenType.BetweenArrayValue) {
     
-                                            if(target.data.defaultValue !== undefined) {
+                                            if(target.data.defaultValue !== undefined && target.data.defaultValue.toString().length > 0) {
                                                 pattern = pattern.replace('{value}', '"{'+ target.data.defaultValue +'}"$0');
                                             } else {
                                                 pattern = pattern.replace('{value}', '"$2"$0');
@@ -549,7 +549,7 @@ export class ElasticsearchQueryCompletionManager {
                                         } 
     
                                     } else {
-                                        if(target.data.defaultValue !== undefined) {
+                                        if(target.data.defaultValue !== undefined && target.data.defaultValue.toString().length > 0) {
                                             pattern = pattern.replace('{value}', '"{'+ target.data.defaultValue +'}"$0');
                                         } else {
                                             pattern = pattern.replace('{value}', '"$2"$0');
@@ -677,6 +677,8 @@ export class ElasticsearchQueryCompletionManager {
                 }
             }
 
+        } else {
+            text = "${1}"
         }
 
         return text;
