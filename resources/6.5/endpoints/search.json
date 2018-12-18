@@ -1,0 +1,44 @@
+{
+	"__import_file": ["_query_dsl", "_aggregations", "_highlight"],
+	"profile": true,
+    "from": 0,
+	"size": 10,
+	"sort": {
+		"__array": [{ 
+			"{field}": {
+				"order": {
+					"__as_type": "string",
+					"asc": {},
+					"desc": {}
+				}
+			} 
+		}],
+		"__object": { 
+			"{field}": {
+				"order": {
+					"__as_type": "string",
+					"asc": {},
+					"desc": {}
+				}
+			} 
+		}
+	},
+	"_source": [""],
+	"stored_fields": ["{field}"],
+	"script_fields": {
+		"{name}": {
+			"script": {
+				"__children_of": "script_template"
+			}
+		}
+	},
+	"query": {
+		"__children_of": "query_dsl"
+	},
+	"highlight": {
+		"__children_of": "highlight_template"
+	},
+	"aggregations": {
+		"__children_of": "aggregations_template"
+	}
+}

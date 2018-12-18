@@ -1,0 +1,23 @@
+{
+    "__import_file": ["_query_dsl", "_script"],
+    "source": {
+        "from": 0,
+        "size": 10,
+        "sort": [ { "{field}": {"order": "asc"} }],
+        "_source": [""],
+        "stored_fields": ["{field}"],
+        "script_fields": {
+            "{name}": {
+                "script": {
+                    "__children_of": "script_template"
+                }
+            }
+        },
+        "query": {
+            "__children_of": "query_dsl"
+        }
+    },
+    "params": {
+        "{parameter}": "{value}"
+    }
+}

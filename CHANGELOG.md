@@ -8,6 +8,10 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## 1.2.12 - 2018-12-08
+### Added
+- Added rest-api-spec for 6.5
+
 ## 1.2.11 - 2018-09-05
 ### Changed
 - Updated autocomplete endpoints: _highlight, _aggregations, _script

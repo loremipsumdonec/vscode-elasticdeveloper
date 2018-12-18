@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "{field}": {
+            "{type}": {
+                "searchable": true,
+                "aggregatable": false,
+                "indices": [],
+                "non_aggregatable_indices": []
+            }
+        }
+    }
+}

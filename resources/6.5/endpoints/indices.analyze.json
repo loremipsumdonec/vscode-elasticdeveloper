@@ -1,0 +1,52 @@
+{
+    "__import_file": ["_analysis"],
+        "field": "{field}",
+        "text": {
+            "__as_type": ["array", "string"]
+        },
+        "analyzer": {
+            "__as_type":"string",
+            "__children_of": "analyzers"
+        },
+        "tokenizer": 
+            {
+                "__string": {
+                    "__as_type": "string",
+                    "__children_of": "tokenizers"
+                },
+                "__object": {
+                    "__as_type": "object",
+                    "type": {
+                        "__as_type":"string",
+                        "__children_of": "tokenizers"
+                    }
+                }
+            },
+        "filter": [
+            {
+                "type": {
+                    "__as_type":"string",
+                    "__children_of": "token_filters"
+                }
+            },
+            {
+                "__as_type":"string",
+                "__children_of": "token_filters"
+            }],
+        "char_filter": [
+            {
+                "type": {
+                    "__as_type":"string",
+                    "__children_of": "character_filters"
+                }
+            },
+            {
+                "__as_type":"string",
+                "__children_of": "character_filters"
+            }
+        ],
+        "normalizer": {
+            "__as_type":"string",
+            "__children_of": "normalization_token_filters"
+        }
+}

@@ -1,0 +1,187 @@
+{
+    "__import_file": ["_script"],
+    "__templates":{
+        "default_processor":{
+            "on_failure":[
+                {
+                    "__children_of": "standard_processors"
+                }
+            ]
+        },
+        "standard_processors":{
+            "append": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/append-processor.html",
+                "field": "{field}",
+                "value": ["item"],
+                "__children_of": "default_processor"
+            },
+            "convert": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/convert-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "type": {
+                    "__as_type":"string",
+                    "integer": {},
+                    "long": {},
+                    "float": {},
+                    "double": {},
+                    "string": {},
+                    "boolean": {},
+                    "auto": {}
+                },
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "date": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/date-processor.html",
+                "field": "{field}",
+                "target_field":"{field}",
+                "formats": [],
+                "timezone": "{UTC}",
+                "locale": "{ENGLISH}",
+                "__children_of": "default_processor"
+            },
+            "date_index_name": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/date-index-name-processor.html",
+                "field": "{field}",
+                "index_name_prefix": "",
+                "date_rounding": "",
+                "date_formats": "",
+                "timezone": "{UTC}",
+                "locale": "{ENGLISH}",
+                "index_name_format": "yyyy-MM-dd",
+                "__children_of": "default_processor"
+            },
+            "dot_expander":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/dot-expand-processor.html",
+                "field": "{field}",
+                "path": "",
+                "__children_of": "default_processor"
+            },
+            "fail": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/fail-processor.html",
+                "message": "an error message",
+                "__children_of": "default_processor"
+            },
+            "foreach": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/foreach-processor.html",
+                "field": "{field}",
+                "processor": {
+                    "__children_of": "standard_processors"
+                },
+                "__children_of": "default_processor"
+            },
+            "grok": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/grok-processor.html",
+                "field": "{field}",
+                "patterns": [],
+                "pattern_definitions": {
+                    "{pattern}": "{value}"
+                },
+                "trace_match": false,
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "gsub": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/gsub-processor.html",
+                "field": "{field}",
+                "pattern": "",
+                "replacement": "",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "join": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/join-processor.html",
+                "field": "{field}",
+                "separator": "",
+                "target_field": "{field}",
+                "__children_of": "default_processor"
+            },
+            "json": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/json-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "add_to_root": false,
+                "__children_of": "default_processor"
+            },
+            "kv": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/kv-processor.html",
+                "field": "{field}",
+                "field_split": "",
+                "value_split": "",
+                "target_field": "{field}",
+                "include_keys": [],
+                "exclude_keys": [],
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "lowercase": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/lowercase-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "remove": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/remove-processor.html",
+                "field": "{field}",
+                "__children_of": "default_processor"
+            },
+            "rename":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/rename-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "script":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/script-processor.html",
+                "__children_of": ["script_template", "default_processor"]
+            },
+            "set":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/set-processor.html",
+                "field": "{field}",
+                "value": "{value}",
+                "override": true,
+                "__children_of": "default_processor"
+            },
+            "split": {
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/split-processor.html",
+                "field": "{field}",
+                "separator": "",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "sort":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/sort-processor.html",
+                "field": "{field}",
+                "order": "asc",
+                "target_field": "{field}",
+                "__children_of": "default_processor"
+            },
+            "trim":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/trim-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "uppercase":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/uppercase-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            },
+            "urldecode":{
+                "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/urldecode-processor.html",
+                "field": "{field}",
+                "target_field": "{field}",
+                "ignore_missing": false,
+                "__children_of": "default_processor"
+            }
+        }
+    }
+}

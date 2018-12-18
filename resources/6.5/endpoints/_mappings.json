@@ -1,0 +1,235 @@
+{
+    "__import_file": ["_analysis"],
+    "__templates": {
+        "date_formats": {
+            "epoch_millis": {},
+            "epoch_second": {},
+            "date_optional_time": {},
+            "strict_date_optional_time": {},
+            "basic_date": {},
+            "basic_date_time": {},
+            "basic_date_time_no_millis": {},
+            "basic_ordinal_date": {},
+            "basic_ordinal_date_time": {},
+            "basic_ordinal_date_time_no_millis": {},
+            "basic_time": {},
+            "basic_time_no_millis": {},
+            "basic_t_time": {},
+            "basic_t_time_no_millis": {},
+            "basic_week_date": {},
+            "strict_basic_week_date":{},
+            "basic_week_date_time": {},
+            "strict_basic_week_date_time": {},
+            "basic_week_date_time_no_millis": {},
+            "strict_basic_week_date_time_no_millis":{},
+            "date": {},
+            "strict_date": {},
+            "date_hour": {},
+            "strict_date_hour": {},
+            "date_hour_minute": {},
+            "strict_date_hour_minute":{},
+            "date_hour_minute_second": {},
+            "strict_date_hour_minute_second": {},
+            "date_hour_minute_second_fraction":{},
+            "strict_date_hour_minute_second_fraction": {},
+            "date_hour_minute_second_millis": {},
+            "strict_date_hour_minute_second_millis": {},
+            "date_time": {},
+            "strict_date_time":{},
+            "date_time_no_millis": {},
+            "strict_date_time_no_millis": {},
+            "hour": {},
+            "strict_hour": {},
+            "hour_minute": {},
+            "strict_hour_minute": {},
+            "hour_minute_second": {},
+            "strict_hour_minute_second": {},
+            "hour_minute_second_fraction": {},
+            "strict_hour_minute_second_fraction": {},
+            "hour_minute_second_millis": {},
+            "strict_hour_minute_second_millis": {},
+            "ordinal_date": {},
+            "strict_ordinal_date": {},
+            "ordinal_date_time": {},
+            "strict_ordinal_date_time":{},
+            "ordinal_date_time_no_millis": {},
+            "strict_ordinal_date_time_no_millis": {},
+            "time": {},
+            "strict_time": {},
+            "time_no_millis": {},
+            "strict_time_no_millis": {},
+            "t_time": {},
+            "strict_t_time": {},
+            "t_time_no_millis": {},
+            "strict_t_time_no_millis": {},
+            "week_date": {},
+            "strict_week_date": {},
+            "week_date_time": {},
+            "strict_week_date_time": {},
+            "week_date_time_no_millis": {},
+            "strict_week_date_time_no_millis": {},
+            "weekyear": {},
+            "strict_weekyear": {},
+            "weekyear_week": {},
+            "strict_weekyear_week": {},
+            "weekyear_week_day": {},
+            "strict_weekyear_week_day": {},
+            "year": {},
+            "strict_year": {},
+            "year_month": {},
+            "strict_year_month": {},
+            "year_month_day": {},
+            "strict_year_month_day": {}
+        },
+        "field_datatypes": {
+            "__children_of": ["field_datatypes_string", "field_datatypes_numeric", "field_datatypes_range"],
+            "date": {},
+            "boolean": {},
+            "binary":  {},
+            "ip": {},
+            "geo_point": {},
+            "geo_shape": {},
+            "completion": {},
+            "nested": {},
+            "token_count": {},
+            "murmur3": {},
+            "percolator": {},
+            "join": {}
+        },
+        "field_datatypes_string": {
+            "text": {},
+            "keyword": {}
+        },
+        "field_datatypes_numeric": {
+            "long": {},
+            "integer": {},
+            "short": {},
+            "byte": {},
+            "double": {},
+            "float": {},
+            "half_float": {},
+            "scaled_float": {}
+        },
+        "field_datatypes_range": {
+            "integer_range": {},
+            "float_range": {},
+            "long_range": {},
+            "double_range": {},
+            "date_range": {}
+        },
+        "mappings_properties": {
+            "properties": {
+                "{field}": {
+                    "type": {
+                        "__as_type": "string",
+                        "__children_of": "field_datatypes"
+                    },
+                    "fields": {
+                        "__children_of": "mappings_properties/properties"
+                    },
+                    "analyzer": {
+                        "__as_type": "string",
+                        "__children_of": "analyzers"
+                    },
+                    "normalizer": {
+                        "__as_type": "string"
+                    },
+                    "boost": 1.0,
+                    "coerce": false,
+                    "copy_to": "{field}",
+                    "doc_values": false,
+                    "dynamic": {
+                        "__as_type": "string",
+                        "true":{},
+                        "false":{},
+                        "strict":{}
+                    },
+                    "enabled": false,
+                    "eager_global_ordinals": false,
+                    "fielddata": {
+                        "__as_type":"string",
+                        "true": {
+                            "fielddata_frequency_filter": {
+                                "min": 0.1,
+                                "max": 0.1,
+                                "min_segment_size": 500
+                            }
+                        },
+                        "false": {}
+                    },
+                    "format": {
+                        "__as_type":"string",
+                        "__children_of": "date_formats"
+                    },
+                    "ignore_above": 20,
+                    "ignore_malformed": true,
+                    "index": true,
+                    "index_options": {
+                        "__as_type": "string",
+                        "docs": {},
+                        "freqs": {},
+                        "positions": {},
+                        "offsets": {}
+                    },
+                    "norms": false,
+                    "null_value": "NULL",
+                    "position_increment_gap": 0,
+                    "search_analyzer": {
+                        "__as_type": "string",
+                        "__children_of": "analyzers"
+                    },
+                    "similarity": {
+                        "__as_type": "string",
+                        "BM25": {},
+                        "classic": {},
+                        "boolean": {}
+                    },
+                    "store": true,
+                    "term_vector": {
+                        "__as_type": "string",
+                        "no": {},
+                        "yes": {},
+                        "with_positions": {},
+                        "with_offsets": {},
+                        "with_positions_offsets": {}
+                    },
+                    "__children_of": "mappings_properties"
+                }
+            }
+        },
+        "index_mappings": {
+            "{_doc}": {
+                "date_detection": true,
+                "dynamic_date_formats": [{
+                        "__as_type":"string",
+                        "__children_of": "date_formats"
+                    }],
+                "numeric_detection": true,
+                "dynamic_templates": [{
+                    "{field}": {
+                        "match_mapping_type": {
+                            "__as_type":"string",
+                            "boolean": {},
+                            "date": {},
+                            "double": {},
+                            "long": {},
+                            "object": {},
+                            "string": {},
+                            "*": {}
+                        },
+                        "match_pattern": "regex",
+                        "match": "{pattern}",
+                        "unmatch": "{pattern}",
+                        "path_match": "{pattern}",
+                        "path_unmatch": "{pattern}",
+
+                        "mapping": {
+                            "__children_of": "mappings_properties/properties/{field}"
+                        }
+                    }
+                }],
+                "__children_of": "mappings_properties"
+            }
+        }
+    }
+}

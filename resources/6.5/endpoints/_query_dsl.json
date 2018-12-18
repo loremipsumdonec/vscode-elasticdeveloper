@@ -1,0 +1,677 @@
+{
+	"__import_file": ["_analysis", "_script"],
+	"__templates": {
+		"artificial_document": {
+			"doc": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"__children_of": "artificial_document/doc"
+				}
+			}
+		},
+		"boolean_operators": {
+			"and": {},
+			"or": {}
+		},
+		"multi_match_types": {
+			"best_fields": {},
+			"most_fields": {},
+			"cross_fields": {},
+			"phrase": {},
+			"phrase_prefix": {}
+		},
+		"default_match": {
+			"query": "this is a simple test",
+			"zero_terms_query": "",
+			"analyzer": {
+				"__as_type": "string",
+				"__children_of": "analyzers"
+			}
+		},
+		"fuzziness": {
+			"cutoff_frequency": 0.001,
+			"max_expansions": 50,
+			"lenient": true,
+			"fuzzy_transpositions": true,
+			"auto_generate_synonyms_phrase_query": true,
+			"fuzziness": 1.0,
+			"prefix_length": 1
+		},
+		"match_options": {
+			"operator": {
+				"__as_type": "string",
+				"__children_of": "boolean_operators"
+			},
+			"boost": 1.0,
+			"minimum_should_match": 1,
+			"__children_of": ["default_match", "fuzziness"]
+		},
+		"decay_function_options": {
+			"multi_value_mode": {
+				"__as_type": "string",
+				"min": { },
+				"max": { },
+				"sum": { },
+				"avg": { }
+			},
+			"{field}": {
+				"orgin": "",
+				"scale": "",
+				"offset": "",
+				"decay": 0.5
+			}
+		},
+		"boost_modes": {
+			"multiply": {},
+			"replace": {},
+			"sum": {},
+			"avg": {},
+			"max": {},
+			"min": {}
+		},
+		"function_score_functions": {
+			"script_score": {
+				"__children_of": "script_template"
+			},
+			"weight": 1,
+			"random_score": {
+				"field":"{field}",
+				"seed": 1
+			},
+			"field_value_factor": {
+				"field":"{field}",
+				"factor": 1.2,
+				"modifier": {
+					"__as_type": "string",
+					"none": {},
+					"log": {},
+					"log1p": {},
+					"log2p": {},
+					"ln": {},
+					"ln1p": {},
+					"ln2p": {},
+					"square": {},
+					"sqrt": {},
+					"reciprocal": {}
+				},
+				"missing": 1
+			},
+			"gauss": {
+				"__children_of": "decay_function_options"
+			},
+			"exp": {
+				"__children_of": "decay_function_options"
+			},
+			"linear": {
+				"__children_of": "decay_function_options"
+			}
+		},
+		"score_modes": {
+			"min": { },
+			"max": { },
+			"sum": { },
+			"avg": { },
+			"none": { }
+		},
+		"geo_spatial_relations": {
+			"INTERSECTS": {},
+			"DISJOINT": {},
+			"WITHIN": {},
+			"CONTAINS": {}
+		},
+		"geo_validation_methods": {
+			"IGNORE_MALFORMED": {},
+			"COERCE": {},
+			"STRICT": {}
+		},
+		"full_text_queries": {
+			"match": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query.html",
+				"{field}": {
+					"__children_of": "match_options"
+				}
+			},
+			"match_phrase": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query-phrase.html",
+				"{field}": {
+					"__children_of": "default_match"
+				}
+			},
+			"match_phrase_prefix":{
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-query-phrase-prefix.html",
+				"{field}": {
+					"__children_of": "default_match",
+					"max_expansions": 50
+				}
+			},
+			"multi_match":{
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-multi-match-query.html",
+				"query": "this is a simple test",
+				"fields": ["{field}"],
+				"type": {
+					"__as_type": "string",
+					"__children_of": "multi_match_types"
+				},
+				"use_dis_max": true,
+				"tie_breaker": 0.0,
+				"__children_of": "match_options"
+			},
+			"common": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-common-terms-query.html",
+				"{field}": {
+					"query": "",
+					"cutoff_frequency": 0.001,
+					"low_freq_operator": {
+						"__as_type": "string",
+						"__children_of": "boolean_operators"
+					},
+					"minimum_should_match": {
+						"low_freq" : 2,
+						"high_freq" : 3
+					}
+				}
+			},
+			"query_string": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html",
+				"fields": ["{field}"],
+				"type": {
+					"__as_type": "string",
+					"__children_of": "multi_match_types"
+				},
+				"tie_breaker": 0,
+				"query": "",
+				"default_field": "",
+				"default_operator": {
+					"__as_type": "string",
+					"__children_of": "boolean_operators"
+				},
+				"analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"quote_analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"allow_leading_wildcard": true,
+				"enable_position_increments": true,
+				"fuzzy_max_expansions": 50,
+				"fuzziness": "AUTO",
+				"fuzzy_prefix_length": 0,
+				"fuzzy_transpositions": true,
+				"phrase_slop": 0,
+				"boost": 1.0,
+				"auto_generate_phrase_queries": false,
+				"analyze_wildcard": true,
+				"max_determinized_states": 10000,
+				"minimum_should_match": "30%",
+				"lenient": false,
+				"time_zone": "",
+				"quote_field_suffix": "",
+				"auto_generate_synonyms_phrase_query": "",
+				"all_fields": "*"
+			},
+			"simple_query_string": {
+				"__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-simple-query-string-query.html",
+				"fields": ["{field}"],
+				"default_operator": {
+					"__as_type": "string",
+					"__children_of": "boolean_operators"
+				},
+				"analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"flags": "ALL",
+				"analyze_wildcard": false,
+				"lenient": false,
+				"minimum_should_match": "30%",
+				"quote_field_suffix": "",
+				"auto_generate_synonyms_phrase_query": "",
+				"all_fields": "*",
+				"fuzzy_prefix_length": 0,
+				"fuzzy_max_expansions": 50,
+				"fuzzy_transpositions": true
+			}
+		},
+		"term_level_queries": {
+			"term": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "{term}",
+					"boost": 1.0
+				}
+			},
+			"terms": {
+				"{field}": {
+					"__as_type": ["array", "object"],
+					"index": "{index}",
+					"type": "_doc",
+					"id": 1,
+					"path": "{path}"
+				}
+			},
+			"terms_set": {
+				"terms": ["{term}"],
+				"minimum_should_match_field": "{field}",
+				"minimum_should_match_script": {
+					"__children_of": "script_template"
+				}
+			},
+			"range": {
+				"{field}": {
+					"gte": 10,
+					"gt": 10,
+					"lte": 10,
+					"lt": 10,
+					"boost": 1.0
+				}
+			},
+			"exists": {
+				"field": "{field}"
+			},
+			"prefix": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 2.0
+				}
+			},
+			"wildcard": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 2.0
+				}
+			},
+			"regexp": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 1.2,
+					"flags": {
+						"__as_type": "string",
+						"ALL": {},
+						"ANYSTRING": {},
+						"COMPLEMENT": {},
+						"EMPTY": {},
+						"INTERSECTION": {},
+						"INTERVAL": {},
+						"NONE": {}
+					},
+					"max_determinized_states": 10000
+				}
+			},
+			"fuzzy": {
+				"{field}": {
+					"__as_type": ["string", "object"],
+					"value": "",
+					"boost": 1.0,
+					"fuzziness": "AUTO",
+					"prefix_length": 0,
+					"max_expansions": 50,
+					"transpositions": false
+				}
+			},
+			"type": {
+				"value": "_doc"
+			},
+			"ids": {
+				"type": "_doc",
+				"values": []
+			}
+		},
+		"compound_queries": {
+			"constant_score": {
+				"query": {
+					"__children_of": "query_dsl"
+				},
+				"filter": {
+					"__children_of": "query_dsl"
+				},
+				"boost": 1.2
+			},
+			"bool": {
+				"must": {
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
+				},
+				"must_not": {
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
+				},
+				"should": {
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
+				},
+				"filter": {
+					"__array": [{
+						"__children_of": "query_dsl"
+					}],
+					"__object": {
+						"__children_of": "query_dsl"
+					}
+				},
+				"minimum_should_match": 1,
+				"boost": 1.0
+			},
+			"dis_max": {
+				"tie_breaker": 0.0,
+				"boost": 1.0,
+				"queries": [
+					{
+						"__children_of": "query_dsl"
+					}
+				]
+			},
+			"function_score": {
+				"query": {
+					"__children_of": "query_dsl"
+				},
+				"boost": 1,
+				"functions": [
+					{
+						"filter": {
+							"__children_of": "query_dsl"
+						},
+						"__children_of": "function_score_functions"
+					}
+				],
+				"boost_mode": {
+					"__as_type": "string",
+					"__children_of": "boost_modes"
+				},
+				"score_mode": {
+					"__children_of": "score_modes"
+				},
+				"max_boost": 42,
+				"min_score": 42,
+				"__children_of": "function_score_functions"
+			},
+			"boosting": {
+				"positive": {
+					"__children_of": "query_dsl"
+				},
+				"negative": {
+					"__children_of": "query_dsl"
+				},
+				"negative_boost": 0.2
+			}
+		},
+		"joining_queries": {
+			"nested": {
+				"path": "",
+				"ignore_unmapped": false,
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"has_child": {
+				"type": "{type}",
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"min_children": 2,
+				"max_children": 10,
+				"ignore_unmapped": false,
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"has_parent": {
+				"parent_type": "{type}",
+				"score": true,
+				"ignore_unmapped": false,
+				"score_mode": {
+					"__as_type": "string",
+					"__children_of": "score_modes"
+				},
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			},
+			"parent_id": {
+				"type": "{type}",
+				"id": "",
+				"ignore_unmapped": false
+			}
+		},
+		"geo_queries": {
+			"geo_shape": {
+				"{field}": {
+					"shape": {
+						"type": "",
+						"coordinates": []
+					},
+					"relation": {
+						"__as_type": "string",
+						"__children_of": "geo_spatial_relations"
+					},
+					"ignore_unmapped": false
+				}
+			},
+			"geo_bounding_box": {
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"type": {
+					"__as_type": "string",
+					"memory": {},
+					"indexed":{}
+				},
+				"ignore_unmapped": false,
+				"{field}": {
+					"wkt": "{value}",
+					"top_left": {
+						"__as_type": ["string", "object", "array"],
+						"lat": "{value}",
+						"lon": "{value}"
+					},
+					"bottom_right": {
+						"__as_type": ["string", "object", "array"],
+						"lat": "{value}",
+						"lon": "{value}"
+					},
+					"top": "{value}",
+					"left": "{value}",
+					"bottom": "{value}",
+					"right": "{value}"
+				}
+			},
+			"geo_distance": {
+				"distance": "{value}",
+				"distance_type": {
+					"__as_type": "string",
+					"arc": {},
+					"plane": {}
+				},
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"{field}": {
+					"__as_type": ["string", "object", "array"],
+					"lat": "{value}",
+					"lon": "{value}"
+				}
+			},
+			"geo_polygon": {
+				"validation_method": {
+					"__as_type": "string",
+					"__children_of": "geo_validation_methods"
+				},
+				"{field}": {
+					"points": [{
+						"lat": "{value}",
+						"lon": "{value}"
+					}]
+				}
+			}
+		},
+		"specialized_queries":{
+			"more_like_this": {
+				"fields": ["{field}"],
+				"like": {
+					"__array": ["{some text}", {
+						"_index": "{index}",
+						"_type": "{_doc}",
+						"_id": "{id}",
+						"__children_of": "artificial_document"
+					}]
+				},
+				"unlike": {
+					"__array": ["{some text}", {
+						"_index": "{index}",
+						"_type": "{_doc}",
+						"_id": "{id}",
+						"__children_of": "artificial_document"
+					}]
+				},
+				"max_query_terms": 25,
+				"min_term_freq": 2,
+				"min_doc_freq": 5,
+				"max_doc_freq": 0,
+				"min_word_length": 0,
+				"max_word_length": 0,
+				"stop_words": [""],
+				"analyzer": {
+					"__as_type": "string",
+					"__children_of": "analyzers"
+				},
+				"minimum_should_match": "30%",
+				"fail_on_unsupported_field": true,
+				"boost_terms": 0,
+				"include": false,
+				"boost": 1.0
+			},
+			"script": {
+				"__children_of": "script"
+			},
+			"percolate": {
+				"field": "{field}",
+				"name": "",
+				"document_type": "{type}",
+				"document": {
+					"{field}": "{value}"
+				},
+				"documents": [{ "{field}": "{value}" }],
+				"index": "{index}",
+				"type": "",
+				"id": "",
+				"routing": "",
+				"preference": "",
+				"version": ""
+			},
+			"wrapper": {
+				"query": {
+					"__children_of": "query_dsl"
+				}
+			}
+		},
+		"span_queries": {
+			"span_term": {
+				"__children_of": "term_level_queries/term"
+			},
+			"span_multi": {
+				"match": {
+					"wildcard":{
+						"__children_of": "term_level_queries/wildcard"
+					},
+					"fuzzy":{
+						"__children_of": "term_level_queries/fuzzy"
+					},
+					"prefix":{
+						"__children_of": "term_level_queries/prefix"
+					},
+					"range":{
+						"__children_of": "term_level_queries/range"
+					},
+					"regexp":{
+						"__children_of": "term_level_queries/regexp"
+					}
+				}
+			},
+			"span_first": {
+				"match": {
+					"__children_of": "span_queries"
+				},
+				"end": 3
+			},
+			"span_near": {
+				"clauses": [{
+					"__children_of": "span_queries"
+				}],
+				"slop": 12,
+				"in_order": false
+			},
+			"span_or": {
+				"clauses": [{
+					"__children_of": "span_queries"
+				}]
+			},
+			"span_not": {
+				"pre": 0,
+				"post": 0,
+				"dist": 0,
+				"include": {
+					"__children_of": "span_queries"
+				},
+				"exclude": {
+					"__children_of": "span_queries"
+				}
+			},
+			"span_containing": {
+				"big": {
+					"__children_of": "span_queries"
+				},
+				"little": {
+					"__children_of": "span_queries"
+				}
+			},
+			"span_within": {
+				"big": {
+					"__children_of": "span_queries"
+				},
+				"little": {
+					"__children_of": "span_queries"
+				}
+			},
+			"field_masking_span": {
+				"field": "{field}",
+				"query": {
+					"__children_of": "span_queries"
+				}
+			}
+		},
+		"query_dsl": {
+			"__children_of": [
+				"full_text_queries", 
+				"term_level_queries", 
+				"compound_queries", 
+				"joining_queries", 
+				"geo_queries", 
+				"specialized_queries",
+				"span_queries"],	
+			"match_all": {},
+			"match_none": {}
+		}
+	}
+}

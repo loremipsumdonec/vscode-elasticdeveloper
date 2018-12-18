@@ -1,0 +1,6 @@
+{
+    "__import_file": ["_script"],
+    "script": {
+        "__children_of": "script_template"
+    }    
+}

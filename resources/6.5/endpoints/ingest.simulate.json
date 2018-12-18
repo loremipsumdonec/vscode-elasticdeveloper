@@ -1,0 +1,24 @@
+{
+    "__import_file": ["_ingest"],
+    "pipeline": {
+        "description": "",
+        "processors": [
+            {
+                "__children_of": "standard_processors"
+            }
+        ],
+        "on_failure":[{
+            "__children_of": "standard_processors"
+        }]
+    },
+    "docs":[
+        {
+            "_index": "{index}",
+            "_type": "",
+            "_id": "",
+            "_source": {
+                "{field}": "{value}"
+            }
+        }
+    ]
+}

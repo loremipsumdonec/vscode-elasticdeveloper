@@ -1,0 +1,6 @@
+{
+    "__import_file": ["_mappings"],
+    "properties": {
+        "__children_of": "mappings_properties/properties"
+    }
+}

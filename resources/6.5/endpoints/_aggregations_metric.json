@@ -1,0 +1,98 @@
+{
+    "__templates": {
+        "base_metric": {
+            "__is_template": true,
+            "field": "{field}",
+            "missing": "",
+            "script": {
+                "__children_of": "script_template"
+            }
+        },    
+        "aggregations_template": {
+            "{name}": {
+                "avg": {
+                    "__children_of": "base_metric"
+                },
+                "cardinality": {
+                    "__children_of": "base_metric",
+                    "precision_threshold": 100
+                },
+                "extended_stats": {
+                    "__children_of": "base_metric",
+                    "sigma": 3
+                },
+                "geo_bounds": {
+                    "field": "{field}",
+                    "wrap_longitude": true
+                },
+                "geo_centroid": {
+                    "field": "{field}"
+                },
+                "max": {
+                    "__children_of": "base_metric"
+                },
+                "min": {
+                    "__children_of": "base_metric"
+                },
+                "percentiles": {
+                    "__children_of": "base_metric",
+                    "percents": [95],
+                    "keyed": true,
+                    "tdigest": {
+                        "compression": 200
+                    },
+                    "hdr": {
+                       "number_of_significant_value_digits": 3 
+                    }
+                },
+                "percentile_ranks": {
+                    "__children_of": "base_metric",
+                    "values": [95],
+                    "keyed": true,
+                    "hdr": {
+                        "number_of_significant_value_digits": 3 
+                     }
+                },
+                "scripted_metric": {
+                    "init_script": "",
+                    "map_script": "",
+                    "combine_script": "",
+                    "reduce_script": "",
+                    "params": {
+                        "{property}": "{value}", 
+                        "_agg": {}        
+                    }
+                },
+                "stats": {
+                    "__children_of": "base_metric"
+                },
+                "sum": {
+                    "__children_of": "base_metric"
+                },
+                "top_hits": {
+                    "from": 0,
+                    "size": 10,
+                    "sort": [],
+                    "highlight": {
+                        "__children_of": "highlight"
+                    },
+                    "explain": "false",
+                    "_name": "",
+                    "_source": ["{field}"],
+                    "stored_fields": ["{field}"],
+                    "script_fields": {
+                        "__children_of": "script_fields"
+                    },
+                    "docvalue_fields" : ["{field}"],
+                    "version": true
+                },
+                "value_count": {
+                    "field": "{field}",
+                    "script": {
+                        "__children_of": "script"
+                    }
+                }
+            }
+        }
+    }
+}

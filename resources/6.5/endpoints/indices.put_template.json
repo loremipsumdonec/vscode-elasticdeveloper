@@ -1,0 +1,19 @@
+{
+    "__import_file": ["_index_settings", "_index_analysis", "_mappings", "_aliases"],
+    
+    "index_patterns": ["{pattern}"],
+    "order": 0,
+    "version": 1,
+    "settings": {
+        "__children_of": "index_settings",
+        "analysis": {
+            "__children_of": "index_settings_analysis"
+        }
+    },
+    "mappings": {
+        "__children_of": "index_mappings"
+    },
+    "aliases": {
+        "__children_of": "index_aliases"
+    }
+}

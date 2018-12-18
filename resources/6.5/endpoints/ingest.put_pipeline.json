@@ -1,0 +1,12 @@
+{
+    "__import_file": ["_ingest"],
+    "description": "",
+    "processors": [
+        {
+            "__children_of": "standard_processors"
+        }
+    ],
+    "on_failure":[{
+        "__children_of": "standard_processors"
+    }]
+}

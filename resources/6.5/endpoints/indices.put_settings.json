@@ -1,0 +1,10 @@
+{
+    "__import_file": ["_index_settings", "_index_analysis"
+    ],
+    "index": {
+        "__children_of": "index_settings_dynamic_no_index_prefix"
+    },
+    "analysis": {
+        "__children_of": "index_settings_analysis"
+    }
+}

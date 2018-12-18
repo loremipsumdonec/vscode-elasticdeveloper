@@ -1,0 +1,33 @@
+{
+    "commands": [{
+        "move": {
+            "index": "{index}",
+            "shard": 0,
+            "from_node": "{node}",
+            "to_node": "{node}"
+        },
+        "cancel": {
+            "index": "{index}",
+            "shard": 0,
+            "node": "{node}",
+            "allow_primary": false
+        },
+        "allocate_replica": {
+            "index": "{index}",
+            "shard": 0,
+            "node": "{node}"
+        },
+        "allocate_stale_primary": {
+            "index": "{index}",
+            "shard": 0,
+            "node": "{node}",
+            "accept_data_loss": false
+        },
+        "allocate_empty_primary": {
+            "index": "{index}",
+            "shard": 0,
+            "node": "{node}",
+            "accept_data_loss": false
+        }
+    }]
+}

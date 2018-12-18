@@ -1,0 +1,162 @@
+{
+    "__templates": {
+        "shard_allocations": {
+            "all": {},
+            "primaries ": {},
+            "replicas ": {},
+            "none ": {}
+        },
+        "index_settings": {
+            "__children_of": ["index_settings_static", "index_settings_dynamic", "index_mappings_settings"],
+            "index.write.wait_for_active_shards": 2
+        },
+        "index_settings_no_index_prefix": {
+            "__children_of": ["index_settings_static_no_index_prefix", "index_settings_dynamic_no_index_prefix", "index_mappings_settings_no_index_prefix"],
+            "write.wait_for_active_shards": 2
+        },
+        "index_settings_static": {
+            "index.number_of_shards": 5,
+            "index.shard.check_on_startup": {
+                "__as_type": "string",
+                "false": { },
+                "checksum": { },
+                "true": { },
+                "fix": { }
+            },
+            "index.codec": {
+                "__as_type": "string",
+                "default": { },
+                "best_compression": { }
+            },
+            "index.routing_partition_size": 1
+        },
+        "index_settings_static_no_index_prefix": {
+            "number_of_shards": 5,
+            "shard.check_on_startup": {
+                "__as_type": "string",
+                "false": { },
+                "checksum": { },
+                "true": { },
+                "fix": { }
+            },
+            "codec": {
+                "__as_type": "string",
+                "default": { },
+                "best_compression": { }
+            },
+            "routing_partition_size": 1
+        },
+        "index_settings_dynamic": {
+            "index.number_of_replicas": 1,
+            "index.auto_expand_replicas": false,
+            "index.refresh_interval": "1s",
+            "index.max_result_window":  10000,
+            "index.max_inner_result_window": 100,
+            "index.max_rescore_window": 10000,
+            "index.max_docvalue_fields_search": 100,
+            "index.max_script_fields": 32,
+            "index.max_ngram_diff": 1,
+            "index.max_shingle_diff": 3,
+            "index.blocks.read_only": false,
+            "index.blocks.read_only_allow_delete": false,
+            "index.blocks.read": false,
+            "index.blocks.write": false,
+            "index.blocks.metadata": false,
+            "index.max_refresh_listeners":5,
+            "index.highlight.max_analyzed_offset": -1,
+            "index.max_terms_count": 65536,
+            "index.routing.allocation.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "index.routing.rebalance.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "index.gc_deletes": "60s"
+        },
+        "index_settings_dynamic_no_index_prefix": {
+            "number_of_replicas": 1,
+            "auto_expand_replicas": false,
+            "refresh_interval": "1s",
+            "max_result_window":  10000,
+            "max_inner_result_window": 100,
+            "max_rescore_window": 10000,
+            "max_docvalue_fields_search": 100,
+            "max_script_fields": 32,
+            "max_ngram_diff": 1,
+            "max_shingle_diff": 3,
+            "blocks.read_only": false,
+            "blocks.read_only_allow_delete": false,
+            "blocks.read": false,
+            "blocks.write": false,
+            "blocks.metadata": false,
+            "max_refresh_listeners":5,
+            "highlight.max_analyzed_offset": -1,
+            "max_terms_count": 65536,
+            "routing.allocation.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "routing.rebalance.enable": {
+                "__as_type": "string",
+                "__children_of": "shard_allocations"
+            },
+            "gc_deletes": "60s"
+        },
+        "indices_settings_dynamic": {
+            "__children_of": [
+                "indices_recovery_settings_dynamic", 
+                "indices_circuit_breaker_settings_dynamic"
+            ]
+        },
+        "indices_recovery_settings_dynamic": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/recovery.html",
+            "indices.recovery.max_bytes_per_sec": "40mb"
+        },
+        "indices_shard_request_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/shard-request-cache.html",
+            "indices.requests.cache.size": "2%",
+            "indices.requests.cache.expire": ""
+        },
+        "indices_indexing_buffer_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/indexing-buffer.html",
+            "indices.memory.index_buffer_size": "10%",
+            "indices.memory.min_index_buffer_size": "48mb",
+            "indices.memory.max_index_buffer_size": ""
+        },
+        "indices_node_query_cache_settings_dynamic": {
+        },
+        "indices_node_query_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-cache.html",
+            "indices.queries.cache.size": "10%"
+        },
+        "indices_fielddata_cache_settings_static": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/6.3/modules-fielddata.html",
+            "indices.fielddata.cache.size": ""
+        },
+        "indices_circuit_breaker_settings_dynamic": {
+            "__documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/circuit-breaker.html",
+            "indices.breaker.total.limit": "70%",
+            "indices.breaker.fielddata.limit": "60%",
+            "indices.breaker.fielddata.overhead": "1.03",
+            "indices.breaker.request.limit": "60%",
+            "indices.breaker.request.overhead": 1,
+            "network.breaker.inflight_requests.limit": "100%",
+            "network.breaker.inflight_requests.overhead": 1,
+            "indices.breaker.accounting.limit": "100%",
+            "indices.breaker.accounting.overhead": 1,
+            "script.max_compilations_rate": "75/5m"
+        },
+        "index_mappings_settings": {
+            "index.mapping.total_fields.limit": 1000,
+            "index.mapping.depth.limit": 20,
+            "index.mapping.nested_fields.limit": 50
+        },
+        "index_mappings_settings_no_index_prefix": {
+            "mapping.total_fields.limit": 1000,
+            "mapping.depth.limit": 20,
+            "mapping.nested_fields.limit": 50
+        }
+    }
+}
