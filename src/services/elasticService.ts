@@ -2,8 +2,8 @@
 
 import * as request from 'request'
 
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
-import { ElasticsearchResponse } from '../models/elasticSearchResponse';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
+import { ElasticsearchResponse } from '../models/elasticsearchResponse';
 import { Environment } from '../models/environment';
 import { LogManager } from '../managers/logManager';
 
@@ -16,7 +16,7 @@ export class ElasticService {
     }
 
     public static async execute(query:any, environment:any): Promise<ElasticsearchResponse> {
-        
+
         let host:string;
         let q:ElasticsearchQuery;
 
@@ -25,10 +25,10 @@ export class ElasticService {
         } else {
             q = query;
         }
-        
+
         if(environment instanceof Object) {
             host = (environment as Environment).host;
-            
+
         } else {
             host = environment as string;
         }
@@ -88,13 +88,13 @@ export class ElasticService {
 
                     let elasticsearchResponse = response.toJSON();
                     elasticsearchResponse.message = response.statusMessage;
-                    
+
                     if(elasticsearchResponse.body) {
 
                         try
                         {
                             elasticsearchResponse.body = JSON.parse(elasticsearchResponse.body);
-                        
+
                             if(response.statusCode === 200) {
                                 elasticsearchResponse.completed = true;
                             } else {
@@ -102,7 +102,7 @@ export class ElasticService {
                             }
 
                         } catch(ex) {
-                            
+
                             LogManager.warning(false, 'failed parse elasticsearchResponse.body with reason %s', ex.message);
                             elasticsearchResponse.message = 'elastic developer failed parse elasticsearchResponse.body with reason ' + ex.message;
                             elasticsearchResponse.completed = false;
@@ -114,14 +114,14 @@ export class ElasticService {
                         } else {
                             elasticsearchResponse.completed = false;
                         }
-                    }                    
+                    }
 
                     resolve(elasticsearchResponse);
-                    
+
                 }
             });
 
-        }); 
+        });
     }
 
     public async performBulk(url: string, bulk:string[], method:string = 'POST'): Promise<ElasticsearchResponse> {

@@ -2,12 +2,12 @@
 
 import * as urlhelper from '../helpers/url';
 import { TextToken } from "./textToken";
-import { ElasticsearchQueryDocument } from '../parsers/elasticSearchQueryDocument';
+import { ElasticsearchQueryDocument } from '../parsers/elasticsearchQueryDocument';
 import { TokenType } from "../parsers/elasticsearchQueryDocumentScanner";
 import { Entity } from './entity';
 import { PropertyToken } from './propertyToken';
 import { TextStream } from '../parsers/textStream';
-import { ElasticsearchResponse } from './elasticSearchResponse';
+import { ElasticsearchResponse } from './elasticsearchResponse';
 import { Environment } from './environment';
 import { ElasticService } from '../services/elasticService';
 
@@ -159,7 +159,7 @@ export class ElasticsearchQuery extends Entity {
     }
 
     public addBody(value:string) {
-        
+
         value = this.stringifySearchTemplateSource(value);
 
         if(!this.hasBody) {
@@ -183,12 +183,12 @@ export class ElasticsearchQuery extends Entity {
         let output:string = '';
         let stream = new TextStream(inputValue, 0);
         let value = stream.advanceUntilRegEx(/"source"\s*:\s*{/);
-        
+
         if(value) {
             stream.advance(value.length - 1);
             let s = stream.position;
             stream.advanceToJsonObjectEnd();
-    
+
             if(stream.char === '}') {
 
                 let source = JSON.stringify(
@@ -250,7 +250,7 @@ export class ElasticsearchQuery extends Entity {
             if(propertyToken.text && propertyToken.propertyValueToken) {
                 this[propertyToken.text] = propertyToken.propertyValueToken.text;
             }
-            
+
         } else if(textToken.type === TokenType.Body) {
             this.addBody(textToken.text);
         }
@@ -266,7 +266,7 @@ export class ElasticsearchQuery extends Entity {
             if(token.isInRange(offset)) {
                 tokenType = token.type;
             }
-            
+
         }
 
         switch(tokenType) {
@@ -280,17 +280,17 @@ export class ElasticsearchQuery extends Entity {
     }
 
     public tokenAt(offset:number): TextToken {
-     
+
         let token:TextToken = null;
 
         for(let textToken of this.textTokens) {
-            
+
             if(textToken as PropertyToken) {
-                
+
                 if(textToken.isInRange(offset)) {
                     token = textToken;
                 }
-                
+
             } else {
 
                 if(textToken.isInRange(offset)) {

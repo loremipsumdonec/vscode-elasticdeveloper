@@ -6,20 +6,20 @@ import * as fs from 'fs';
 import * as path from 'path'
 
 import { QueryController } from './queryController';
-import { ElasticsearchQueryDocument} from '../parsers/elasticSearchQueryDocument';
+import { ElasticsearchQueryDocument} from '../parsers/elasticsearchQueryDocument';
 
 export class QueryCommandController extends QueryController {
 
     public registerCommands() {
 
-        this.registerCommand(constant.ElasticsearchQueryCommandRunAllQueries, 
-            (input) => { 
-                this.runAllQueriesInUri(input) 
+        this.registerCommand(constant.ElasticsearchQueryCommandRunAllQueries,
+            (input) => {
+                this.runAllQueriesInUri(input)
             });
 
-        this.registerTextEditorCommand(constant.ElasticsearchQueryTextEditorCommandRunAllQueries, 
-            (input) => { 
-                this.runAllQueriesInUri(input) 
+        this.registerTextEditorCommand(constant.ElasticsearchQueryTextEditorCommandRunAllQueries,
+            (input) => {
+                this.runAllQueriesInUri(input)
             });
     }
 
@@ -38,10 +38,10 @@ export class QueryCommandController extends QueryController {
                 configuration = document.configurations[0];
                 configuration.source = uri.fsPath;
             }
-    
+
             this.runAllQueries(document.queries, configuration);
-            
+
         }
-        
+
     }
 }

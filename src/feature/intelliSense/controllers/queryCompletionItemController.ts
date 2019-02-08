@@ -4,11 +4,11 @@ import * as vscode from 'vscode';
 import * as constant from '../../../constant';
 
 import { QueryController } from '../../../controllers/queryController';
-import { ElasticsearchQueryDocument} from '../../../parsers/elasticSearchQueryDocument';
-import { ElasticsearchQuery } from '../../../models/elasticSearchQuery';
+import { ElasticsearchQueryDocument} from '../../../parsers/elasticsearchQueryDocument';
+import { ElasticsearchQuery } from '../../../models/elasticsearchQuery';
 import { ElasticsearchQueryCompletionManager } from '../managers/elasticsearchQueryCompletionManager';
 
-export class QueryCompletionItemController extends QueryController 
+export class QueryCompletionItemController extends QueryController
     implements vscode.CompletionItemProvider {
 
     public registerCommands() {
@@ -16,7 +16,7 @@ export class QueryCompletionItemController extends QueryController
     }
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-        
+
         let completionItems:vscode.CompletionItem[] = []
         let query = this.getQueryWithPosition(position, document);
 
@@ -37,7 +37,7 @@ export class QueryCompletionItemController extends QueryController
 
         return completionItems;
     }
-    
+
     public resolveCompletionItem?(item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CompletionItem> {
         return null;
     }

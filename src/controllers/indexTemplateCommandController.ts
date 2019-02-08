@@ -7,10 +7,10 @@ import { IndexTemplateController } from './indexTemplateController';
 import { IndexTemplateDocument } from '../parsers/indexTemplateDocument';
 import { ITreeNode } from '../feature/explorer/models/interfaces';
 import { IndexTemplate } from '../models/indexTemplate';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 
 export class IndexTemplateCommandController extends IndexTemplateController  {
-    
+
     public registerCommands() {
         this.registerCommand(constant.IndexTemplateCommandDeploy, (input)=> { this.deployWithUri(input) });
         this.registerCommand(constant.IndexTemplateCommandRetract, (input)=> { this.retractWithUri(input) });
@@ -28,14 +28,14 @@ export class IndexTemplateCommandController extends IndexTemplateController  {
             let textDocument = await vscode.workspace.openTextDocument(uri);
             let text = textDocument.getText();
             let document = IndexTemplateDocument.parse(text);
-            
+
             if(document.indexTemplates.length > 0) {
                 let indexTemplate = document.indexTemplates[0];
                 indexTemplate.name = this.getIndexTemplateName(textDocument.fileName);
 
                 this.deploy(document.indexTemplates[0]);
             }
-            
+
         }
 
     }
@@ -49,16 +49,16 @@ export class IndexTemplateCommandController extends IndexTemplateController  {
             let textDocument = await vscode.workspace.openTextDocument(uri);
             let text = textDocument.getText();
             let document = IndexTemplateDocument.parse(text);
-            
+
             if(document.indexTemplates.length > 0) {
                 let indexTemplate = document.indexTemplates[0];
                 indexTemplate.name = this.getIndexTemplateName(textDocument.fileName);
-                
+
                 this.retract(document.indexTemplates[0]);
             }
-            
+
         }
-        
+
     }
 
     private async retractWithNode(input:ITreeNode) {
@@ -72,7 +72,7 @@ export class IndexTemplateCommandController extends IndexTemplateController  {
     }
 
     private async createFileWithNode(input:ITreeNode) {
-        
+
         let indexTemplateName = input.id;
         let files = await vscode.workspace.findFiles('**/' + indexTemplateName +'.' + constant.IndexTemplateLanguageId);
 
@@ -91,7 +91,7 @@ export class IndexTemplateCommandController extends IndexTemplateController  {
             vscode.window.showTextDocument(deployedIndexTemplateTextDocument);
         }
     }
- 
+
     private async compareWithNode(input:ITreeNode) {
 
         let indexTemplateName = input.id;
