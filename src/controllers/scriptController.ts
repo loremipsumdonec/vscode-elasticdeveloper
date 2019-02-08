@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as constant from '../constant';
 
 import { Controller } from './controller';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 import { Environment } from '../models/environment';
 
 export class ScriptController extends Controller {

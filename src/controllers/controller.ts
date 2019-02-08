@@ -5,14 +5,14 @@ import * as fs from 'fs';
 import * as constant from '../constant';
 import * as tmp from 'tmp';
 import * as path from 'path';
-import * as handlebars from 'Handlebars';
+import * as handlebars from 'handlebars';
 
 import { LogManager } from '../managers/logManager';
 import { Environment } from '../models/environment';
 import { Configuration } from '../models/configuration';
 import { EnvironmentManager } from '../managers/environmentManager';
-import { ElasticsearchResponse } from '../models/elasticSearchResponse';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
+import { ElasticsearchResponse } from '../models/elasticsearchResponse';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 import { ElasticService } from '../services/elasticService';
 import { TextToken } from '../models/textToken';
 
@@ -43,20 +43,20 @@ export abstract class Controller {
             if(environment) {
 
                 response = await executeQuery(query, environment);
-                
+
                 if(query.hasName) {
                     this.info(false, 'executed query %s %s %s on host %s', query.name, query.method, query.command, environment);
                 } else {
                     this.info(false, 'executed query %s %s on host %s', query.method, query.command, environment);
                 }
-        
+
             } else {
-    
+
                 this.warning(false, 'could not find a target environment');
-    
+
                 response = {
                     message: 'could not find a target environment',
-                    completed: false 
+                    completed: false
                 };
             }
 
@@ -65,7 +65,7 @@ export abstract class Controller {
 
             response = {
                 message: ex.message,
-                completed: false 
+                completed: false
             };
         }
 
@@ -73,7 +73,7 @@ export abstract class Controller {
     }
 
     public register(context: vscode.ExtensionContext) {
-        
+
         this._context = context;
         this.initiate();
     }
@@ -106,7 +106,7 @@ export abstract class Controller {
     }
 
     protected registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
-        
+
         command = constant.CommandPrefix + '.' + command;
 
         this.verbose('register command %s', command);
@@ -126,7 +126,7 @@ export abstract class Controller {
     }
 
     protected registerDocumentHighlightProvider(languageId: string, provider: vscode.DocumentHighlightProvider) {
-        
+
         this.verbose('register highlight provider with selector %s', languageId);
 
         this._context.subscriptions.push(
@@ -135,9 +135,9 @@ export abstract class Controller {
     }
 
     protected registerCompletionItemProvider(languageId: string, provider: vscode.CompletionItemProvider, ...triggerCharacters: string[]) {
-        
+
         this.verbose('register completion item provider with selector %s', languageId);
-        
+
         this._context.subscriptions.push(
             vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: languageId}, provider, ...triggerCharacters)
         );
@@ -197,7 +197,7 @@ export abstract class Controller {
                 let textDocument:vscode.TextDocument = await vscode.workspace.openTextDocument(to);
                 vscode.window.showTextDocument(textDocument, vscode.ViewColumn.Two, true);
             }
-            
+
             this.info(false, 'saved output %s.', to);
 
         }catch(ex) {
@@ -238,7 +238,7 @@ export abstract class Controller {
                 let template = handlebars.compile(source);
 
                 var result = template(model);
-    
+
                 fs.writeFileSync(to, result, 'UTF-8');
                 this.info(false, 'saved output %s', to)
             } else {
@@ -248,7 +248,7 @@ export abstract class Controller {
         }catch(ex) {
             this.error(true, 'failed to load input template from %s', fileTemplate,  ex);
         }
-        
+
     }
 
     protected getFileName(fileName:string, languageId:string) {
@@ -293,7 +293,7 @@ export abstract class Controller {
         if(input && input.fsPath) {
             uri = input;
         } else if(input && vscode.window.activeTextEditor) {
-            
+
             let activeTextEditor = vscode.window.activeTextEditor;
 
             if(activeTextEditor.document.languageId === languageId) {

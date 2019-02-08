@@ -4,10 +4,10 @@ import * as vscode from 'vscode';
 import * as constant from '../constant';
 
 import { QueryController } from './queryController';
-import { ElasticsearchQueryDocument} from '../parsers/elasticSearchQueryDocument';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
+import { ElasticsearchQueryDocument} from '../parsers/elasticsearchQueryDocument';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 
-export class QueryCodeLensController extends QueryController 
+export class QueryCodeLensController extends QueryController
     implements vscode.CodeLensProvider {
 
     private _onDidChangeCodeLensesEventEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
@@ -16,19 +16,19 @@ export class QueryCodeLensController extends QueryController
     public get onDidChangeCodeLenses(): vscode.Event<void> {
         return this._onDidChangeCodeLensesEventEmitter.event;
     }
-    
+
     protected initiate() {
-        
+
         this.loadQueryCodeLensProviders();
         super.initiate();
     }
 
     protected registerCommands() {
 
-        this.registerCommand(constant.ElasticsearchQueryCodeLensCommandRunQuery, 
+        this.registerCommand(constant.ElasticsearchQueryCodeLensCommandRunQuery,
             (query, configuration) => { this.runQuery(query, configuration) });
 
-        this.registerCommand(constant.ElasticsearchQueryCodeLensCommandRunAllQueries, 
+        this.registerCommand(constant.ElasticsearchQueryCodeLensCommandRunAllQueries,
             (queries, configuration) => { this.runAllQueries(queries, configuration)});
 
         this.registerCodeLensProvider(constant.ElasticsearchQueryDocumentSelector, this);
@@ -39,16 +39,16 @@ export class QueryCodeLensController extends QueryController
 
         vscode.workspace.onDidChangeConfiguration((e)=> {
             this.loadQueryCodeLensProviders();
-            this._onDidChangeCodeLensesEventEmitter.fire(); 
+            this._onDidChangeCodeLensesEventEmitter.fire();
         });
     }
 
     public provideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens[]> {
-        
+
         var codeLenses = [];
-        
+
         let text = textDocument.getText();
-        let document = ElasticsearchQueryDocument.parse(text);        
+        let document = ElasticsearchQueryDocument.parse(text);
         let configuration = null;
 
         let configurationCodeLensProvider:((configuration:any, document:ElasticsearchQueryDocument, range:vscode.Range) => vscode.CodeLens)[] = []
@@ -61,7 +61,7 @@ export class QueryCodeLensController extends QueryController
 
             for(let provider of configurationCodeLensProvider) {
                 let codeLens = provider.call(this, configuration,document, range);
-            
+
                 if(codeLens) {
                     codeLenses.push(codeLens);
                 }
@@ -69,23 +69,23 @@ export class QueryCodeLensController extends QueryController
         }
 
         for(let query of document.queries) {
-            
+
             let range = this.getRangeWithin(textDocument, query.textTokens[0]);
-            
+
             for(let provider of this._queryCodeLensProviders) {
                 let codeLens = provider.call(this, query, configuration, range);
-            
+
                 if(codeLens) {
                     codeLenses.push(codeLens);
                 }
             }
 
         }
-        
+
         return codeLenses;
 
     }
-    
+
     public resolveCodeLens?(codeLens: vscode.CodeLens, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens> {
         return null;
     }
@@ -94,23 +94,23 @@ export class QueryCodeLensController extends QueryController
 
         let configuration = vscode.workspace.getConfiguration();
         this._queryCodeLensProviders = [];
-        
+
         this._queryCodeLensProviders.push(this.createRunQueryCodeLens);
         this._queryCodeLensProviders.push(this.createHasNameCodeLens);
-        
+
         let value = configuration.get(constant.IntelliSenseConfigurationCodeLensCommandOpenEndpointDocumentationEnabled);
         if(value) {
             this._queryCodeLensProviders.push(this.createOpenEndpointDocumentationCodeLens);
         }
-        
+
     }
 
     private createConfigurationRunAllCodeLens(configuration:any, document:ElasticsearchQueryDocument, range:vscode.Range): vscode.CodeLens {
 
         if(document.hasQueries) {
-            
+
             const runAllQueriesCommand = this.getCommand(constant.ElasticsearchQueryCodeLensCommandRunAllQueries);
-            
+
             return new vscode.CodeLens(range, {
                 title: 'run all queries',
                 command: runAllQueriesCommand,
@@ -142,7 +142,7 @@ export class QueryCodeLensController extends QueryController
     private createHasNameCodeLens(query:ElasticsearchQuery, configuration:any, range:vscode.Range): vscode.CodeLens {
 
         if(query.hasName) {
-                
+
             return new vscode.CodeLens(range, {
                 title: query.name,
                 command: ''
@@ -154,7 +154,7 @@ export class QueryCodeLensController extends QueryController
     private createHasBodyCodeLens(query:ElasticsearchQuery, configuration:any, range:vscode.Range): vscode.CodeLens {
 
         if(query.hasBody) {
-                
+
             return new vscode.CodeLens(range, {
                 title: 'has body',
                 command: ''
@@ -166,7 +166,7 @@ export class QueryCodeLensController extends QueryController
     private createShowUrlCodeLens(query:ElasticsearchQuery, configuration:any, range:vscode.Range): vscode.CodeLens {
 
         if(query.hasCommand) {
-                
+
             let url = query.getUrl();
             return new vscode.CodeLens(range, {
                 title: url,
@@ -187,9 +187,9 @@ export class QueryCodeLensController extends QueryController
                 command: command,
                 arguments:[query.endpointId]
             });
-    
+
         }
-    
+
         return null;
 
     }

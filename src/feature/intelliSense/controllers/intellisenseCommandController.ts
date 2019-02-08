@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as constant from '../../../constant';
-import { IEndpoint } from '../models/iendpoint';
+import { IEndpoint } from '../models/IEndpoint';
 import { Controller } from '../../../controllers/controller';
 import { ElasticsearchQueryCompletionManager } from '../managers/elasticsearchQueryCompletionManager';
 import { GephiStreamService } from '../../gephi/services/gephiStreamService';
@@ -14,9 +14,9 @@ export class IntellisenseCommandController extends Controller {
 
     public registerCommands() {
 
-        this.registerCommand(constant.IntelliSenseCommandStreamGraph, 
-            (input) => { 
-                this.streamGraph(input) 
+        this.registerCommand(constant.IntelliSenseCommandStreamGraph,
+            (input) => {
+                this.streamGraph(input)
             });
 
         this.registerCommand(constant.IntelliSenseCodeLensCommandOpenEndpointDocumentation,
@@ -29,7 +29,7 @@ export class IntellisenseCommandController extends Controller {
 
         let manager:IntellisenseGraphManager = IntellisenseGraphManager.get();
         let endpoint:IEndpoint = manager.getEndpointWithId(endpointId);
-    
+
         if(endpoint && endpoint.documentation) {
             let url = endpoint.documentation;
 
@@ -47,20 +47,20 @@ export class IntellisenseCommandController extends Controller {
 
         let keys = Object.keys(manager.graphs);
         let key = await vscode.window.showQuickPick(keys, { canPickMany: false });
-        let baseUrl = await vscode.window.showInputBox({ 
+        let baseUrl = await vscode.window.showInputBox({
             value: 'http://localhost:8080',
             prompt: 'Enter Gephi master server URL'
         });
 
-        let workspace = await vscode.window.showInputBox({ 
+        let workspace = await vscode.window.showInputBox({
             value: 'workspace1',
             prompt: 'Enter Gephi workspace name'
         });
-        
+
         if(key && manager.graphs[key]) {
             let graph:Graph = manager.graphs[key];
 
-            LogManager.verbose('Streaming graph %s with %s nodes and %s edges to Gephi', key, 
+            LogManager.verbose('Streaming graph %s with %s nodes and %s edges to Gephi', key,
                 graph.getNodes().length, graph.getEdges().length);
 
             let url = baseUrl + '/' + workspace;

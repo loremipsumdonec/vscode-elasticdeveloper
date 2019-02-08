@@ -1,7 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode';
-import * as elasticsearchQueryFactory from '../models/elasticSearchQuery';
+import * as elasticsearchQueryFactory from '../models/elasticsearchQuery';
 
 import { Controller } from './controller';
 import { Environment } from '../models/environment';
