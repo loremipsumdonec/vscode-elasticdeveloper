@@ -3,19 +3,19 @@
 import * as vscode from 'vscode';
 import * as constant from "../../../constant";
 
-import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
+import { ElasticsearchQuery } from "../../../models/elasticsearchQuery";
 import { TokenType } from "../../../parsers/elasticsearchQueryDocumentScanner";
 import { EntityDocumentScanner, TokenType as EntityTokenType } from "../../../parsers/entityDocumentScanner";
 import { Graph, Node, Edge } from "../../../models/graph";
 import { PropertyToken } from '../../../models/propertyToken';
-import { IEndpoint } from '../models/iendpoint';
+import { IEndpoint } from '../models/IEndpoint';
 import { LogManager } from '../../../managers/logManager';
 import { IntellisenseGraphManager } from './intellisenseGraphManager';
 
 var _queryCompletionManager:ElasticsearchQueryCompletionManager;
 
 export class ElasticsearchQueryCompletionManager {
-    
+
     public getEndpointWithId(endpointId:string): IEndpoint {
         return IntellisenseGraphManager.get().getEndpointWithId(endpointId);
     }
@@ -42,7 +42,7 @@ export class ElasticsearchQueryCompletionManager {
 
             let nodes = this.getNodesWithSteps(steps, null, graph, n=> n.label);
             let endpointNode = nodes.find(n=> n.data.kind === 'endpoint');
-    
+
             if(endpointNode) {
                 endpointId = endpointNode.id
             }
@@ -60,7 +60,7 @@ export class ElasticsearchQueryCompletionManager {
 
         let completionItems:vscode.CompletionItem[] = [];
         let token = query.tokenAt(offset);
-        
+
         if(token) {
 
             switch(token.type) {
@@ -77,7 +77,7 @@ export class ElasticsearchQueryCompletionManager {
                     } else if(triggerCharacter != '\n') {
                         completionItems = this.getCompletionItemsForQueryBody(query, offset, triggerCharacter, range);
                     }
-                    
+
                     break;
             }
 
@@ -121,43 +121,43 @@ export class ElasticsearchQueryCompletionManager {
                 let context = roots.pop();
 
                 if(!visited.find(s => s === context.current.id)) {
-                    
+
                     visited.push(context.current.id);
                     let edges = graph.getEdgesWithSourceId(context.current.id);
-                
+
                     for(let edge of edges) {
                         let target = graph.getNodeWithId(edge.targetId);
                         let label = context.path;
 
                         if(target.data.kind === 'endpoint') {
-                          
+
                             completionItems = completionItems.filter(c=> c.label !== label);
-                            
+
                             let item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Method);
                             let snippet = this.createTextSnippet(label);
                             item.insertText = new vscode.SnippetString(snippet);
                             item.filterText = label.replace('{','').replace('}', '');
 
                             completionItems.push(item);
-    
+
                         } else if(target.data.kind === 'step') {
-    
+
                             if(context.depth === 0) {
 
                                 let exists = completionItems.find(c=> c.label === label);
                                 let children = graph.getEdgesWithSourceId(target.id);
 
                                 if(!exists && children.length > 1) {
-                                    
+
                                     let item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Folder);
                                     let snippet = this.createTextSnippet(label);
                                     item.insertText = new vscode.SnippetString(snippet);
                                     item.filterText = label.replace('{','').replace('}', '');
-                                    
+
                                     completionItems.push(item);
                                 }
                             }
-    
+
                             roots.push({
                                 current: target,
                                 path: context.path + '/' + target.label,
@@ -177,7 +177,7 @@ export class ElasticsearchQueryCompletionManager {
     public getCompletionItemsForQueryString(query:ElasticsearchQuery, token:PropertyToken, offset:number): vscode.CompletionItem[]  {
 
         let completionItems:vscode.CompletionItem[] = [];
-        
+
         if(query.hasEndpointId) {
             let graph = this.getGraphWithMethod(query.method);
 
@@ -187,7 +187,7 @@ export class ElasticsearchQueryCompletionManager {
                 let node = graph.getNodeWithId(parameterId);
 
                 if(node) {
-                    
+
                     if(node.data.options) {
                         for(let option of node.data.options) {
                             let item = new vscode.CompletionItem(option, vscode.CompletionItemKind.Value);
@@ -197,30 +197,30 @@ export class ElasticsearchQueryCompletionManager {
                         completionItems.push(new vscode.CompletionItem('true', vscode.CompletionItemKind.Value));
                         completionItems.push(new vscode.CompletionItem('false', vscode.CompletionItemKind.Value));
                     }
-                    
-                } 
+
+                }
 
             } else {
 
                 let nodes = graph.getOutgoingNodes(query.endpointId);
 
                 for(let node of nodes) {
-    
+
                     if(node.data.kind === 'parameter') {
-                        
+
                         let item = new vscode.CompletionItem(node.label, vscode.CompletionItemKind.Field);
                         item.detail = 'type:' + node.data.type;
-    
+
                         if(node.data.options) {
                             item.detail += ' options:[' + node.data.options.toString() + ']';
                         }
-    
+
                         item.documentation =  node.data.description;
                         item.filterText = node.label.replace('{','').replace('}', '');
-    
+
                         completionItems.push(item);
                     }
-    
+
                 }
 
             }
@@ -238,7 +238,7 @@ export class ElasticsearchQueryCompletionManager {
         let entityDocumentScanner = new EntityDocumentScanner(body);
         let token = entityDocumentScanner.scanUntilPosition(offsetInBody) as PropertyToken;
         let tokens = entityDocumentScanner.store;
-        
+
         if(token) {
             let graph = this.getGraphWithEndpointId(query.endpointId);
 
@@ -250,7 +250,7 @@ export class ElasticsearchQueryCompletionManager {
 
                 if(tokenPath) {
                     tokenPath = tokenPath.replace(/\[/g, constant.JsonPathSeperatorChar + '[');
-                    tokenSteps = tokenPath.split(constant.JsonPathSeperatorChar)                   
+                    tokenSteps = tokenPath.split(constant.JsonPathSeperatorChar)
                             .filter(s => s !== '');
 
                     tokenPath.replace(/\[\w+\]/g, constant.JsonPathSeperatorChar + '[0]')
@@ -258,7 +258,7 @@ export class ElasticsearchQueryCompletionManager {
                             .filter(s => s !== '')
                             .forEach(s=> nodeSteps.push(s));
                 }
-                
+
                 let node:Node = undefined;
                 let visited:Edge[] = [];
 
@@ -268,7 +268,7 @@ export class ElasticsearchQueryCompletionManager {
 
                         for(let edge of edges) {
                             let n = graph.getNodeWithId(edge.targetId);
-                            
+
                             if(n.label === step) {
                                 visited.push(edge);
                                 return n;
@@ -285,7 +285,7 @@ export class ElasticsearchQueryCompletionManager {
                             let contextToken = tokens.find(t=> t.depth === token.depth && t.text === targetNode.label);
 
                             if(contextToken) {
-  
+
                                 let edgesBasedOnContext = graph.getEdgesWithSourceId(edge.targetId);
 
                                 for(let e of edgesBasedOnContext) {
@@ -308,7 +308,7 @@ export class ElasticsearchQueryCompletionManager {
                                                 }
                                             }
                                         }
-                                    } 
+                                    }
                                 }
                             }
 
@@ -361,7 +361,7 @@ export class ElasticsearchQueryCompletionManager {
 
                         for(let edge of edges) {
                             let n = graph.getNodeWithId(edge.targetId);
-                            
+
                             if(n.data.isDynamicNode) {
                                 visited.push(edge);
                                 return n;
@@ -399,7 +399,7 @@ export class ElasticsearchQueryCompletionManager {
                                 e.kind !== 'array' && e.kind !== 'object' && e.kind !== 'children_of'));
 
                         } else if(tokenType === EntityTokenType.OpenEntity) {
-                            edges = graph.findEdges(e=> e.sourceId == node.id && (e.kind === 'object' || 
+                            edges = graph.findEdges(e=> e.sourceId == node.id && (e.kind === 'object' ||
                                 (e.kind !== 'array' && e.kind !== 'children_of')));
                         } else if(tokenType === EntityTokenType.OpenArray) {
                             edges = graph.findEdges(e=> e.sourceId == node.id && e.kind === 'array');
@@ -426,13 +426,13 @@ export class ElasticsearchQueryCompletionManager {
                 }
 
                 if(node) {
-                    
+
                     let context:Edge;
 
                     if(visited.length > 0) {
                         context = visited[visited.length - 1];
                     }
-                    
+
                     let edges = graph.findEdges(e=> e.sourceId == node.id && e.kind != 'children_of');
 
                     while(edges.length > 0) {
@@ -450,14 +450,14 @@ export class ElasticsearchQueryCompletionManager {
                         let targetToken = tokens.find(c=> c.path === propertyPath);
 
                         if(targetToken) {
-                            
+
                             if(kind === 'string' && targetToken.propertyValueToken) {
-                            
+
                                 let edgesBasedOnContext = graph.getEdgesWithSourceId(edge.targetId);
-    
+
                                 for(let e of edgesBasedOnContext) {
                                     let contextNode = graph.getNodeWithId(e.targetId);
-    
+
                                     if(contextNode.label == targetToken.propertyValueToken.text) {
                                         graph.getEdgesWithSourceId(contextNode.id).forEach(c=> edges.push(c));
                                         break;
@@ -482,11 +482,11 @@ export class ElasticsearchQueryCompletionManager {
                                 pattern = '{value}';
                                 hasLabel = false;
                                 kind = context.kind;
-                            } else if(token.hasText && token.propertyValueToken && 
-                                    (   
-                                        token.propertyValueToken.type === EntityTokenType.OpenArray || 
+                            } else if(token.hasText && token.propertyValueToken &&
+                                    (
+                                        token.propertyValueToken.type === EntityTokenType.OpenArray ||
                                         token.propertyValueToken.type === EntityTokenType.BetweenArrayValue
-                                    )) 
+                                    ))
                             {
                                 pattern = '{value}';
                                 hasLabel = false;
@@ -494,14 +494,14 @@ export class ElasticsearchQueryCompletionManager {
                             } else {
                                 pattern = pattern.replace('{label}', label);
                             }
-    
+
                             let item:vscode.CompletionItem = new vscode.CompletionItem(label);
                             item.filterText = label.replace('{','').replace('}', '');
                             item.detail = kind;
                             item.range = range;
-    
+
                             switch(kind) {
-    
+
                                 case 'object':
                                     item.kind = vscode.CompletionItemKind.Module;
                                     pattern = pattern.replace('{value}', '{$0}');
@@ -518,36 +518,36 @@ export class ElasticsearchQueryCompletionManager {
                                     }
 
                                 case 'boolean':
-    
+
                                     if(target.data.defaultValue !== undefined) {
                                         pattern = pattern.replace('{value}', '"{' + target.data.defaultValue + '}"$0');
                                     } else {
                                         pattern = pattern.replace('{value}', '$0');
                                     }
-                                    
+
                                     break;
                                 default:
-    
+
                                     if(!hasLabel && token.propertyValueToken) {
-    
+
                                         item.kind = vscode.CompletionItemKind.EnumMember;
-    
-                                        if(token.propertyValueToken.type === EntityTokenType.OpenArray || 
+
+                                        if(token.propertyValueToken.type === EntityTokenType.OpenArray ||
                                             token.propertyValueToken.type === EntityTokenType.BetweenArrayValue) {
-    
+
                                             if(target.data.defaultValue !== undefined && target.data.defaultValue.toString().length > 0) {
                                                 pattern = pattern.replace('{value}', '"{'+ target.data.defaultValue +'}"$0');
                                             } else {
                                                 pattern = pattern.replace('{value}', '"$2"$0');
                                             }
-                                            
-    
+
+
                                         } else if(!token.propertyValueToken.isValid) {
-                                            pattern = pattern.replace('{value}', target.label + '"$0');    
+                                            pattern = pattern.replace('{value}', target.label + '"$0');
                                         } else if(!target.data.isDynamicNode) {
                                             pattern = null;
-                                        } 
-    
+                                        }
+
                                     } else {
                                         if(target.data.defaultValue !== undefined && target.data.defaultValue.toString().length > 0) {
                                             pattern = pattern.replace('{value}', '"{'+ target.data.defaultValue +'}"$0');
@@ -556,19 +556,19 @@ export class ElasticsearchQueryCompletionManager {
                                         }
                                     }
                                     break;
-    
+
                             }
-    
+
                             if(pattern) {
                                 pattern = this.createTextSnippet(pattern);
                                 item.insertText = new vscode.SnippetString(pattern);
                             }
-                            
+
                             completionItems.push(item);
 
                         }
                     }
-                
+
                 }
             }
         }
@@ -610,9 +610,9 @@ export class ElasticsearchQueryCompletionManager {
     public getNodesWithSteps(steps:string[], root:Node, graph:Graph, findNode: (node:Node) => string):Node[] {
 
         let children:Node[] = [];
-        
+
         if(steps.length > 0 && steps[0].length > 0){
-            
+
             if(!root) {
                 let roots = graph.getRootNodes();
                 root = roots.find(n=> findNode.call(n, n) === steps[0]);
@@ -628,18 +628,18 @@ export class ElasticsearchQueryCompletionManager {
             if(node) {
 
                 for(let index = 0; index < steps.length; index++) {
-        
+
                     let nextNodeId = steps[index + 1];
-                    let isNotLastStep:boolean = index < steps.length - 1; 
-                    
+                    let isNotLastStep:boolean = index < steps.length - 1;
+
                     children = this.getChildrenNodesWithParentNodeId(node, graph);
 
                     if(isNotLastStep) {
                         node = children.find(n => findNode.call(n, n) === nextNodeId);
-        
+
                         if(!node && nextNodeId.length > 0) {
                             node = children.find(n=> n.data.isDynamicNode);
-        
+
                             if(!node) {
                                 children = [];
                                 break;
@@ -648,7 +648,7 @@ export class ElasticsearchQueryCompletionManager {
                             children = [];
                             break;
                         }
-    
+
                         steps[index + 1] = node.id;
                     }
                 }
@@ -667,9 +667,9 @@ export class ElasticsearchQueryCompletionManager {
             let matches = text.match(/\{([\w,\%,\.,\<,\>,\/]+)\}/g);
 
             if(matches) {
-    
+
                 let index = 1;
-    
+
                 for(let m of matches) {
                     let key = m.substring(1, m.length - 1);
                     text = text.replace(m, '${' + index + ':' + key + '}');
@@ -686,12 +686,12 @@ export class ElasticsearchQueryCompletionManager {
 
     public static get(): ElasticsearchQueryCompletionManager {
 
-    
+
         if(!_queryCompletionManager) {
             _queryCompletionManager = new ElasticsearchQueryCompletionManager();
         }
-    
+
         return _queryCompletionManager;
-    
+
     }
 }

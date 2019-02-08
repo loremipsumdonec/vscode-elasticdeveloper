@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import * as ElasticsearchQueryManager from '../../../models/elasticSearchQuery';
+import * as ElasticsearchQueryManager from '../../../models/elasticsearchQuery';
 
-import { ElasticsearchResponse } from "../../../models/elasticSearchResponse";
+import { ElasticsearchResponse } from "../../../models/elasticsearchResponse";
 import { EnvironmentManager } from "../../../managers/environmentManager";
 import { ElasticService } from "../../../services/elasticService";
-import { ElasticsearchQuery } from "../../../models/elasticSearchQuery";
+import { ElasticsearchQuery } from "../../../models/elasticsearchQuery";
 
 import { ThemeIcon, Uri, env } from "vscode";
 import { Environment } from "../../../models/environment";
@@ -55,13 +55,13 @@ export class TreeNode implements ITreeNode {
     private _treeDataProvider:EnvironmentTreeDataProviderController;
     private _parent:ITreeNode;
     private _iconPath:string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
-    
+
     constructor(id:string, label?:string, iconPath?:ThemeIcon) {
-        
+
         if(!iconPath) {
             iconPath = ThemeIcon.File;
         }
-        
+
         this._id = id;
 
         if(label) {
@@ -69,7 +69,7 @@ export class TreeNode implements ITreeNode {
         } else {
             this._label = id;
         }
-        
+
         this._iconPath = iconPath;
     }
 
@@ -198,7 +198,7 @@ export class ParentTreeNode extends TreeNode implements IParentTreeNode {
     public clear() {
         this._children = [];
     }
-    
+
     public addChild(child:ITreeNode) {
 
         let exists = this.children.find(n=> n.id === child.id);
@@ -220,7 +220,7 @@ export class ParentTreeNode extends TreeNode implements IParentTreeNode {
             if(!exists) {
                 children.push(child);
             }
-            
+
         }
 
         this._children = children;
@@ -262,7 +262,7 @@ export class ObjectTreeNode extends ParentTreeNode {
             for(let key in this.object) {
 
                 let value = this.object[key];
-    
+
                 if(isObject(value)) {
                     let child = new ObjectTreeNode(key, value);
                     child.iconPath = null;
@@ -281,14 +281,14 @@ export class ObjectTreeNode extends ParentTreeNode {
             for(let key in this.object) {
 
                 let value = this.object[key];
-    
+
                 if(isObject(value)) {
                     let child = new ObjectTreeNode(key, value);
                     child.iconPath = null;
                     this.addChild(child);
                 } else {
                     let id = key + ': ' + value;
-                    
+
                     let child = new TreeNode(id);
                     child.iconPath = null;
                     this.addChild(child);
@@ -300,10 +300,10 @@ export class ObjectTreeNode extends ParentTreeNode {
 }
 
 export class EnvironmentsParentTreeNode extends ParentTreeNode {
- 
+
     constructor(treeDataProvider:EnvironmentTreeDataProviderController) {
         super('environments')
-    
+
         this.treeDataProvider = treeDataProvider;
         let watcher = vscode.workspace.createFileSystemWatcher('**/*.esenv');
         watcher.onDidChange((e)=> {
@@ -321,7 +321,7 @@ export class EnvironmentsParentTreeNode extends ParentTreeNode {
     }
 
     protected async loadChildren() {
-        
+
         let files = await vscode.workspace.findFiles('**/*.esenv');
         let notVisited:ITreeNode[] = [];
         this.children.forEach(c=> notVisited.push(c));
@@ -420,7 +420,7 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
     }
 
     public set environment(environment:Environment) {
-        
+
         this._environment = environment;
         this._online = undefined;
         this.label = environment.name;
@@ -459,7 +459,7 @@ export class EnvironmentTreeNode extends ParentTreeNode implements IEnvironmentT
             this.addChild(new TemplatesQueryTreeNode());
             this.addChild(new ScriptsQueryTreeNode());
         }
-        
+
     }
 
 }
@@ -473,15 +473,15 @@ abstract class QueryTreeNode extends ParentTreeNode {
 
         this._query = query;
     }
-    
+
     public get isParent():boolean {
         return true;
     }
-    
+
     public get query():string {
         return this._query;
     }
-    
+
     public set query(value:string) {
         this._query = value;
     }
@@ -510,7 +510,7 @@ abstract class QueryTreeNode extends ParentTreeNode {
 }
 
 export class IndicesQueryTreeNode extends QueryTreeNode {
-    
+
     constructor() {
         super('indices','GET /_cat/indices');
     }
@@ -580,7 +580,7 @@ export class ScriptsQueryTreeNode extends QueryTreeNode {
                     }
                 }
 
-                
+
             }
         }
 
@@ -620,12 +620,12 @@ export class ScriptQueryTreeNode extends QueryTreeNode {
 }
 
 export class IndexTreeNode extends ParentTreeNode {
-    
+
     private _index:any;
 
     constructor(index:any) {
         super(index.index);
-    
+
         this._index = index;
     }
 
@@ -677,18 +677,18 @@ export class IndexTemplateQueryTreeNode extends QueryTreeNode {
 }
 
 export class AliasesQueryTreeNode extends QueryTreeNode {
-    
+
     private _loadOnlyAlias:boolean;
 
     constructor(query?:string, loadOnlyAlias:boolean = false) {
         super('aliases','GET /_alias');
 
         this._loadOnlyAlias = loadOnlyAlias;
-        
+
         if(query) {
             this.query = query;
         }
-        
+
     }
 
     protected async getChildrenInResponse(response:ElasticsearchResponse): Promise<ITreeNode[]> {
@@ -721,7 +721,7 @@ export class AliasesQueryTreeNode extends QueryTreeNode {
                             exists = new ParentTreeNode(alias);
                             children.push(exists);
                         }
-                        
+
                         exists.addChild(new TreeNode(index));
                     }
                 }

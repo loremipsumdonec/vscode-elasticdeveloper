@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 
 import { Controller } from './controller';
-import { ElasticsearchQuery } from '../models/elasticSearchQuery';
+import { ElasticsearchQuery } from '../models/elasticsearchQuery';
 import { Configuration } from '../models/configuration';
 
 export class QueryController extends Controller {
@@ -16,13 +16,13 @@ export class QueryController extends Controller {
     }
 
     public async runAllQueries(queries: ElasticsearchQuery[], configuration?:Configuration) {
-        
+
         let model = {
             responses: []
         };
 
         for(let query of queries) {
-            
+
             let response = await this.executeQuery(query);
 
             if(query.hasName) {
