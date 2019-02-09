@@ -205,7 +205,8 @@
           "esquery"
         ],
         "extensions": [
-          ".esquery"
+          ".esquery",
+          ".es"
         ],
         "configuration": "./languages/esquery-configuration.json"
       },
