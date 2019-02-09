@@ -8,6 +8,14 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
     - Color highlight for mustache syntax
     - Color highlight for query-string syntax
 
+## 1.2.13
+### Changed
+- Updated packages
+### Added
+- Support for file extension _.es_
+### Fixed
+- [The plugin does not work on VSCode Linux](https://github.com/Crasnam/vscode-elasticdeveloper/issues/6) (_Thanks @chanaksha_)
+
 ## 1.2.12 - 2018-12-08
 ### Added
 - Added rest-api-spec for 6.5
@@ -18,7 +26,7 @@ All notable changes to the "Elasticsearch Developer tool" extension will be docu
 
 ## [1.2.10] - 2018-08-30
 ### Fixed
-- Generate correct file paths on both Windows and POSIX (Thanks @vhyza)
+- [Generate correct file paths on both Windows and POSIX](https://github.com/Crasnam/vscode-elasticdeveloper/pull/4) (_Thanks @vhyza_)
 - Using default version for endpoint file if current target environment version does not exists
 
 ### Changed
