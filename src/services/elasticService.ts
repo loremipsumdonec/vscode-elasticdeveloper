@@ -57,8 +57,9 @@ export class ElasticService {
     }
 
     public async perform(url: string, body:string, method:string = 'GET', contentType:string = 'application/json') : Promise<ElasticsearchResponse> {
-
-        body = this.normalizeBody(body);
+        if (contentType !== 'application/x-ndjson') {
+            body = this.normalizeBody(body);
+        }
 
         let uri = this._host + url;
         let options: any = {
