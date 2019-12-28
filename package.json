@@ -280,7 +280,7 @@
     "vscode": "^1.1.36"
   },
   "dependencies": {
-    "handlebars": "^4.5.2",
+    "handlebars": "^4.5.3",
     "path": "^0.12.7",
     "request": "^2.88.0",
     "tmp": "^0.1.0"
