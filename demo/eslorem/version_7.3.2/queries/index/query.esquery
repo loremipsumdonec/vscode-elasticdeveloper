@@ -1,0 +1,15 @@
+{
+    "output": "../../../output.html|json",
+    "params": {
+        "query": "lorem"
+    }
+}
+
+GET /lorem/_search(name="a_simple_search") {
+    "query": {
+        "multi_match": {
+            "query": "{{query}}",
+            "fields": ["title", "preamble"]
+        }
+    }
+}

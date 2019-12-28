@@ -1,0 +1,26 @@
+/**
+    Create a new index with the name donec and alias with name ipsum
+*/
+
+PUT /donec
+{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "mappings" : {
+        "document" : {
+            "properties" : {
+                "title" : { "type" : "text" },
+                "preamble": {"type": "text"},
+                "main": {"type": "text"}
+            }
+        }
+    }
+}
+
+POST /_aliases {
+    "actions": [
+        { "add": {"index": "lor*", "alias": "ipsum"} },
+        { "add": {"index": "donec", "alias": "ipsum"} }
+    ]
+}
