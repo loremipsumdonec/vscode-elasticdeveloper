@@ -1,8 +1,6 @@
 # Elasticsearch Developer tool
 This is a vscode extension that I have built to make it easier to work with Elasticsearch queries. This is also my first vscode extension so there is probably some _"undocumented features"_.
 
-> If you find any problem with this extension don’t hesitate to [create an issue](https://github.com/Crasnam/vscode-elasticdeveloper/issues/new) 
-
 ## Features
 - Environment
     - Mutiple environments

@@ -10,14 +10,21 @@ import { LogManager } from '../managers/logManager';
 export class ElasticService {
 
     private _host: string;
+    private _userAgent: string;
 
-    constructor(host:string) {
+    constructor(host:string, userAgent:string) {
         this._host = host;
+        this._userAgent = userAgent;
+
+        if(!this._userAgent) {
+            this._userAgent = "elasticdeveloper";
+        }
     }
 
     public static async execute(query:any, environment:any): Promise<ElasticsearchResponse> {
 
         let host:string;
+        let userAgent:string;
         let q:ElasticsearchQuery;
 
         if(!(query instanceof Object)) {
@@ -28,12 +35,12 @@ export class ElasticService {
 
         if(environment instanceof Object) {
             host = (environment as Environment).host;
-
+            userAgent = (environment as Environment).userAgent;
         } else {
             host = environment as string;
         }
 
-        let service = new ElasticService(host);
+        let service = new ElasticService(host, userAgent);
         let response = await service.execute(q);
 
         if(q.hasName) {
@@ -68,7 +75,8 @@ export class ElasticService {
             body: body,
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': contentType
+                'Content-Type': contentType,
+                'User-Agent': this._userAgent
             }
         };
 
