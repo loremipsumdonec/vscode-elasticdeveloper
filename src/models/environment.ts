@@ -11,12 +11,14 @@ export class Environment extends Entity {
     private _name:string;
     private _version:Version = null;
     private _host:string;
+    private _userAgent:string;
     
     public static hydrate(environmentAsObject:any):Environment {
 
         let environment: Environment = new Environment();
         environment.host = environmentAsObject._host;
         environment.name = environmentAsObject._name;
+        environment.userAgent = environmentAsObject._userAgent;
         environment.version = Version.hydrate(environmentAsObject._version);
 
         return environment;
@@ -75,6 +77,18 @@ export class Environment extends Entity {
         return (this._host && this._host.length > 0);
     }
 
+    public get userAgent():string {
+        return this._userAgent;
+    }
+
+    public set userAgent(userAgent:string) {
+        this._userAgent = userAgent;
+    }
+
+    public get hasUserAgent():boolean {
+        return (this._userAgent && this._userAgent.length > 0);
+    }
+
     public addTextToken(textToken:PropertyToken) {
         
         super.addTextToken(textToken);
@@ -90,6 +104,9 @@ export class Environment extends Entity {
                     break;
                 case "name":
                     this.name = textToken.propertyValueToken.text;
+                    break;
+                case "useragent":
+                    this.userAgent = textToken.propertyValueToken.text;
                     break;
             }
 
